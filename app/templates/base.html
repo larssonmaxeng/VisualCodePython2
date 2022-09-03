@@ -1,17 +1,40 @@
 <!DOCTYPE html>
-<html lang="en">
+<html>
 <head>
-    <meta charset="UTF-8">
-    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ nome }} - My Flask Application</title>
+    <link rel="stylesheet" type="text/css" href="/static/content/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/static/content/site.css" />
     <title>Document</title>
+    <link rel="stylesheet" href={{url_for('static',filename='estilo.css')}}
 </head>
 <body>
-    <nav>
-        <a href="/index"> Página inicial</a>
-        <a href="/contato"> Contato</a>        
-    </nav>
+    <div class="navbar navbar-inverse navbar-fixed-top">
+        <div class="container">
+            <div class="navbar-header">
+                <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".navbar-collapse">
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                    <span class="icon-bar"></span>
+                </button>
+                <a href="/" class="navbar-brand">Controlador fuzzy</a>
+            </div>
+            <div class="navbar-collapse collapse">
+                <ul class="nav navbar-nav">
+                    <li><a href="{{ url_for('index') }}">Critério</a></li>
+                    <li><a href="{{ url_for('resultado') }}">Resultado</a></li>
+                </ul>
+            </div>
+        </div>
+    </div>
+    <div class="container body-content">
     {% block conteudo %}
     {% endblock %}
+    </div>
+    <script src="/static/scripts/jquery-1.10.2.js"></script>
+    <script src="/static/scripts/bootstrap.js"></script>
+    <script src="/static/scripts/respond.js"></script>
+    {% block scripts %}{% endblock %}
 </body>
 </html>

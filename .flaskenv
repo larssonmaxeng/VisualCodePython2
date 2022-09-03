@@ -1,1 +1,2 @@
 FLASK_APP=visualcodepython.py
+FLASK_ENV=development
