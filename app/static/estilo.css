@@ -4,3 +4,116 @@
 .imagem300{
     height: 300px;
 }
+.textoCentralizado{
+    text-align: center;
+}
+.tituloPagina{
+
+}
+.tabelaAlterada {
+  font-family: arial, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+
+}
+.tituloColuna{
+  text-align: left;
+
+  font-size: 20px;
+}
+.tituloSubcriterio{
+  padding: 8px;
+  text-align: left;
+  font-size: 20px;
+}
+.botao {
+  font-size: 1.2em;
+  background: darkcyan;
+  border: 0;
+  margin-bottom: 1em;
+  color: white;
+  padding: 0.2em 0.6em;
+  box-shadow: 2px 2px 2px rgba(0, 0, 0, 0.2);
+  text-shadow: 1px 1px 1px rgba(0, 0, 0, 0.2);
+  transform: translate(-50% -50%);
+}
+.tabelaSemBorda{
+  border:none;
+}
+.botaoSelecionar {
+  border-top: 1px solid #282f33;
+  background: #191e21;
+  background: -webkit-gradient(linear, left top, left bottom, from(#0b0c0d), to(#191e21));
+  background: -webkit-linear-gradient(top, #0b0c0d, #191e21);
+  background: -moz-linear-gradient(top, #0b0c0d, #191e21);
+  background: -ms-linear-gradient(top, #0b0c0d, #191e21);
+  background: -o-linear-gradient(top, #0b0c0d, #191e21);
+  padding: 5.5px 11px;
+  -webkit-border-radius: 8px;
+  -moz-border-radius: 8px;
+  border-radius: 8px;
+  -webkit-box-shadow: rgba(0,0,0,1) 0 1px 0;
+  -moz-box-shadow: rgba(0,0,0,1) 0 1px 0;
+  box-shadow: rgba(0,0,0,1) 0 1px 0;
+  text-shadow: rgba(0,0,0,.4) 0 1px 0;
+  color: white;
+  font-size: 14px;
+  font-family: Arial, Helvetica, sans-serif;
+  text-decoration: none;
+  vertical-align: middle;
+  }
+.botaoSelecionar:hover {
+  border-top-color: #131e29;
+  background: #131e29;
+  color: #ccc;
+  }
+.botaoSelecionar:active {
+  border-top-color: #1b435e;
+  background: #1b435e;
+  }
+ .divFundoBotao
+ {
+  background-color: black;
+  border: none;
+ }
+ .selectOpcoes {
+  -webkit-appearance: none;
+  /* Remove estilo padrão do Chrome */
+  -moz-appearance: none;
+  /* Remove estilo padrão do FireFox */
+  appearance: none;
+  /* Remove estilo padrão do FireFox*/
+  background: black;/*url(http://www.webcis.com.br/images/imagens-noticias/select/ico-seta-appearance.gif) no-repeat #eeeeee;*/
+  /* Imagem de fundo (Seta) */
+  background-position: 218px center;
+  /*Posição da imagem do background*/
+  width: 250px;
+  /* Tamanho do select, maior que o tamanho da div "div-select" */
+  height: 30px;
+  /* Altura do select, importante para que tenha a mesma altura em todo os navegadores */
+  border: 1px solid #ddd;
+  color: white;
+  font-family: Arial, Helvetica, sans-serif;
+
+}
+.selectNotas {
+  -webkit-appearance: none;
+  /* Remove estilo padrão do Chrome */
+  -moz-appearance: none;
+  /* Remove estilo padrão do FireFox */
+  appearance: none;
+  /* Remove estilo padrão do FireFox*/
+  /*background: g;/*url(http://www.webcis.com.br/images/imagens-noticias/select/ico-seta-appearance.gif) no-repeat #eeeeee;*/
+  /* Imagem de fundo (Seta) */
+  background-position: 218px center;
+  /*Posição da imagem do background*/
+  width: 250px;
+  /* Tamanho do select, maior que o tamanho da div "div-select" */
+  height: 30px;
+  /* Altura do select, importante para que tenha a mesma altura em todo os navegadores */
+  border: 1px solid #ddd;
+  color: black;
+  font-family: Arial, Helvetica, sans-serif;
+  font-size: 20px;
+
+}

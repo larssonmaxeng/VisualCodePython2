@@ -1,7 +1,85 @@
 {% extends 'base.html' %}
 {% block conteudo %}
-<img class='imgquadrada' src="{{url_for('static', filename = 'Grafico.jpg')}}"><br/>
-        Criterio: {{criterio.nome}}<br/>
-        Nota: {{criterio.nota}}<br/>
-<img class='imagem300' id="picture" src="data:image/png;base64,{{ imagem }}">
+<h1 class="tituloPagina textoCentralizado">Definição dos critérios</h1>
+<div class="divFundoBotao">
+       <form action = "/your_url" onSubmit="calcular()" method="PUT">
+        <button name = "hhhhh" type="submit">Teste</button>
+       </form>
+        <table class="tabelaSemBorda">
+                <th>
+                <form action="/limpar">
+                        <button class="botaoSelecionar" type="submit" title="Limpar os dados do fornecedor">Limpar</button>
+                </form>
+                </th>
+                <th>  
+                        <form  action="/calcular">
+                       
+                                <button class="botaoSelecionar" type="submit" title="Enviar dados para controlador Fuzzy">Calcular</button>
+                        </form>
+                </th>
+                <th>
+                        <form  action="/importarDoExcel">
+                         <button class="botaoSelecionar" id="1000114" type="submit" title="Importar dados do excel">Importar dados</button>
+                        </form>
+                </th>
+                <th>                    
+                        <select name="cenario" id="cenario100" class="selectOpcoes">
+                                <option value="Material">Material</option>
+                                <option value="Mdo">Mão de obra</option>
+                                <option value="Material/Mdo">Material e mão de obra</option>
+                                >
+                        </select>
+                </th>
+        </table>
+
+</div>
+
+<div name="div3">
+        <table class="tabelaAlterada">
+       
+           {% for crit in criterios %}
+           <tr>    
+                <th width="100px" class="tituloColuna" name={{crit[0]}}>{{crit[0]}}</th>
+                <th width="80px" class="tituloColuna">Notas</th>                
+                {% for subCrit in subcriterios %}
+                        {% if subCrit[0]==crit[0] %}
+                        <tr>
+                                <td class="tituloSubcriterio" >{{subCrit[1]}}
+                                </td>
+                                <td>
+                                        {% if subCrit[2]=='crisp'%}
+                                             <input type="number" placeholder ="Digite a nota"></input>                                        
+                                        {% else %}
+                                        <select class="selectNotas" name="cars" id="cars">
+                                                {% for opcao in subCrit[3] %}      
+                                                        <option value={{opcao}}>{{opcao}}</option>
+                                                {% endfor %}
+                                        </select>
+                                        {% endif %}
+
+                                </td>
+                        </tr>
+                        {% endif %}
+
+                {% endfor %}
+ 
+                <tr>
+                        <td class="tituloSubcriterio" >Resultado</td>
+                        {% if modo=='Limpeza' %}
+                        <td class="tituloSubcriterio" >Aguardando cálculo</td>
+                        {% else %}        
+                        <td class="tituloSubcriterio" >Falta programar</td>
+                        {% endif %}
+                        
+                </tr>
+           </tr>
+           {% endfor %}   
+        
+        </table>
+
+        <button id="gdgdgdg" onclick="calcular()" name="bsdfbse" tag="sjdbnjseb">Teste</button>
+
+</div>
+
+
 {% endblock %}

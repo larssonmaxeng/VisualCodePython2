@@ -1,11 +1,13 @@
 import base64
+
 from app import app
-from flask import render_template
+from flask import render_template, redirect, jsonify, make_response
 import matplotlib.pyplot as mlt
 import numpy as np
 import skfuzzy as fuzz
 from time import sleep
 from skfuzzy import control as ctrl
+from flask import request
 import io
 
 @app.route('/')
@@ -14,6 +16,14 @@ def index():
     nome = "dissertação2"
     criterio = {"nome":"Preço", "nota":"Médio"}
     return render_template('index.html', nome=nome, criterio=criterio)
+@app.route('/login')
+def login():
+    return render_template('login.html')
+@app.route('/autenticar', methods=['GET'])
+def autenticar():
+    usuario = request.args.get('usuario')
+    return "Usuario logado"    
+
 @app.route('/resultado')
 def resultado():
     medio = 'médio'
@@ -146,6 +156,36 @@ def resultado():
     print(fecharCompra_simulador.output[vsFecharCompra])"""
     nome = "dissertação2"
     criterio = {"nome":"Preço", "nota":"Médio"}
-    return render_template('resultado.html', nome=nome, criterio=criterio, imagem = encodes_img_data.decode('utf-8'))
+    return render_template('resultado.html', modo="Limpeza", criterios = [], subcriterios = [], imagens=[])
 
+@app.route('/limpar')
+def limpar():
+    #criterio = {"nome":"Preço", "nota":"Médio"}
+    criterios = []
+    criterios.append(['01- Custo', 'crisp'])
+    criterios.append(['02- Qualidade','fuzzy'])
+    criterios.append(['03- Prazo','fuzzy' ])
+    criterios.append(['04- Gestão', 'fuzzy'])
+    criterios.append(['05- Geral', 'fuzzy'])
+    variavelLinguistica3Opcoes = ['Selecionar', 'Ruim', 'Medio', 'Bom']
+    subcriterios = [] 
+    subcriterios.append(['01- Custo', 'Preço', 'crisp', []])
+    subcriterios.append(['01- Custo', 'Condições de pagamento', 'fuzzy', variavelLinguistica3Opcoes ])
+    subcriterios.append(['01- Custo', 'Modelo de reajuste','fuzzy', variavelLinguistica3Opcoes])
+    
+    
+    
+    return render_template('resultado.html', modo="Limpeza", criterios = criterios, subcriterios = subcriterios, imagens=[])
+
+@app.route('/your_url', methods=["POST", "GET", "PUT"])
+def your_url():
+    #criterio = {"nome":"Preço", "nota":"Médio"}
+    #req = request.div["div3"]
+    #print(req.name)
+
+
+    print('foi ate aqui')
+    #print(req)
+    criterio = {"nome":"Preço", "nota":"Médio"}
+    return render_template('index.html', nome="foi", criterio=criterio)
      

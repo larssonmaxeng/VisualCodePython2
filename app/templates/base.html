@@ -23,7 +23,8 @@
             <div class="navbar-collapse collapse">
                 <ul class="nav navbar-nav">
                     <li><a href="{{ url_for('index') }}">Critério</a></li>
-                    <li><a href="{{ url_for('resultado') }}">Resultado</a></li>
+                    <li><a href="{{ url_for('limpar') }}">Calcular</a></li>
+                    <li><a href="{{ url_for('login') }}">Login</a></li>
                 </ul>
             </div>
         </div>
@@ -35,6 +36,7 @@
     <script src="/static/scripts/jquery-1.10.2.js"></script>
     <script src="/static/scripts/bootstrap.js"></script>
     <script src="/static/scripts/respond.js"></script>
+    <script src="/static/scripts/funcoesFuzzy.js"></script>
     {% block scripts %}{% endblock %}
 </body>
 </html>
