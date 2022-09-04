@@ -1,3 +1,4 @@
+import base64
 from app import app
 from flask import render_template
 import matplotlib.pyplot as mlt
@@ -5,6 +6,7 @@ import numpy as np
 import skfuzzy as fuzz
 from time import sleep
 from skfuzzy import control as ctrl
+import io
 
 @app.route('/')
 @app.route('/index')
@@ -128,19 +130,22 @@ def resultado():
 
     fecharCompra_simulador.compute()
 
-    preco.view(sim=fecharCompra_simulador)
+    v = fuzz.control.visualization.FuzzyVariableVisualizer(preco)
+    imagem, b = v.view()
+    #preco.view(sim=fecharCompra_simulador)
     #qualidade.view(sim=fecharCompra_simulador)
     #prazo.view(sim=fecharCompra_simulador)
     #meioAmbiente.view(sim=fecharCompra_simulador)
     #gestao.view(sim=fecharCompra_simulador)
     #geral.view(sim=fecharCompra_simulador)
-    
-
+    data = io.BytesIO()
+    imagem.savefig(data, format="PNG")
+    encodes_img_data = base64.b64encode(data.getbuffer())
 
     """fecharCompra.view(sim=fecharCompra_simulador)
     print(fecharCompra_simulador.output[vsFecharCompra])"""
     nome = "dissertação2"
     criterio = {"nome":"Preço", "nota":"Médio"}
-    return render_template('resultado.html', nome=nome, criterio=criterio)
+    return render_template('resultado.html', nome=nome, criterio=criterio, imagem = encodes_img_data.decode('utf-8'))
 
      

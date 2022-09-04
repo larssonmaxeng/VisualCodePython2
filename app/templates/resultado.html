@@ -2,5 +2,6 @@
 {% block conteudo %}
 <img class='imgquadrada' src="{{url_for('static', filename = 'Grafico.jpg')}}"><br/>
         Criterio: {{criterio.nome}}<br/>
-        Nota: {{criterio.nota}}
+        Nota: {{criterio.nota}}<br/>
+<img class='imagem300' id="picture" src="data:image/png;base64,{{ imagem }}">
 {% endblock %}
