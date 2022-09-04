@@ -1,5 +1,5 @@
 import base64
-
+from json import *
 from app import app
 from flask import render_template, redirect, jsonify, make_response
 import matplotlib.pyplot as mlt
@@ -177,15 +177,20 @@ def limpar():
     
     return render_template('resultado.html', modo="Limpeza", criterios = criterios, subcriterios = subcriterios, imagens=[])
 
-@app.route('/your_url', methods=["POST", "GET", "PUT"])
-def your_url():
+@app.route('/your_url/<index_no>', methods=["GET", "POST", "PUT"])
+def your_url(index_no):
     #criterio = {"nome":"Preço", "nota":"Médio"}
     #req = request.div["div3"]
     #print(req.name)
-
-
+    #data = request.get_json()
+    """if request.method == "POST":
+       print(request)
     print('foi ate aqui')
-    #print(req)
+    print(request)
+    #print(req)"""
+    print("passou")
     criterio = {"nome":"Preço", "nota":"Médio"}
-    return render_template('index.html', nome="foi", criterio=criterio)
+    print(jsonify(criterio))
+    return jsonify(criterio)
+    
      
