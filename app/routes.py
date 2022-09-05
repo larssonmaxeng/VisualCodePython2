@@ -186,6 +186,8 @@ def your_url():
     #print(req.name)
     req = request.get_json()
     print(req)
+    for song in req:
+        print(song, ":", req[song])
     """if request.method == "POST":
        print(request)
     print('foi ate aqui')

@@ -8,12 +8,14 @@ function obterDados(){
     subcriterios.push('CustoPreco')
     subcriterios.push('CustoPgto')
     subcriterios.push('CustoReajuste')
+    var jsonData = {};
     for (let i = 0; i < subcriterios.length; i++) {
         var ele  = document.getElementById(subcriterios[i]);
-        alert(ele.value)
-        // more statements
-      }
-    var your_data =  JSON.stringify(subcriterios)
+        //alert(ele.value)
+        jsonData[subcriterios[i]] = ele.value;
+    }
+
+    var your_data =  jsonData
    
     var index = 33;
     fetch(`${window.origin}/your_url`, {
