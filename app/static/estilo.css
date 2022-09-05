@@ -19,12 +19,12 @@
 .tituloColuna{
   text-align: left;
 
-  font-size: 20px;
+  font-size: 14px;
 }
 .tituloSubcriterio{
   padding: 8px;
   text-align: left;
-  font-size: 20px;
+  font-size: 14px;
 }
 .botao {
   font-size: 1.2em;
@@ -114,6 +114,6 @@
   border: 1px solid #ddd;
   color: black;
   font-family: Arial, Helvetica, sans-serif;
-  font-size: 20px;
+  font-size: 14px;
 
 }

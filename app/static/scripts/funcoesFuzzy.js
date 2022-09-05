@@ -1,27 +1,38 @@
 function mostrarValor() {
     alert("texto");
 }
-function calcular() {
-    let criterios = [];
-    criterios.push(['01- Custo', 'crisp']);
-    criterios.push(['02- Qualidade','fuzzy']);
-    criterios.push(['03- Prazo','fuzzy' ]);
-    criterios.push(['04- Gestão', 'fuzzy']);
-    criterios.push(['05- Geral', 'fuzzy']);
-    //alert(criterios.length);
-    console.log(criterios.length);
-    //ele = document.getElementById("gdgdgdg");
-    //alert(ele.name);
-
-    //alert(ele.tag);
-    //ele.style.color = "blue";
-       /*for (i = 0; i < criterios.length; i++) {
-        alert(criterios[i]);
+function obterDados(){
+    var ele  = document.getElementById("1000114");
+    alert(ele.title)
+    let subcriterios = []
+    subcriterios.push('CustoPreco')
+    subcriterios.push('CustoPgto')
+    subcriterios.push('CustoReajuste')
+    for (let i = 0; i < subcriterios.length; i++) {
+        var ele  = document.getElementById(subcriterios[i]);
+        alert(ele.value)
+        // more statements
+      }
+    var your_data =  JSON.stringify(subcriterios)
+   
+    var index = 33;
+    fetch(`${window.origin}/your_url`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(your_data),
+        cache: "no-cache",
+        headers: new Headers({
+            "content-type": "application/json"
+        })
+        }).then(response => response.json())
+        .then(function(data){         
+        data.forEach(function(data1, index) {
+            alert(data1["nome"]);
+            });
+            //return data;
+        });
     }
-    alert("texto1");/*/
-    var your_data = {
-        teste : 'teste'
-        }   
+    
     /*$.ajax({
         url: 'http://127.0.0.1:5000/your_url',
         type: "PUT",
@@ -105,13 +116,8 @@ function calcular() {
         alert(data)
         // data is a parsed JSON object
     })*/
-    var index = 33;
-    fetch(`${window.origin}/your_url/10`, {
-        method: 'GET',
-        mode:'no-cors',
-        dataType: 'json'
-      })
-        .then(r => r.json())
+   
+        /*.then(r => r.json())
         .then(r => {
           console.log(r)
           this.setState({
@@ -119,7 +125,7 @@ function calcular() {
           })
         })
         .catch(err => console.log(err))
-    
+    */
      
     /*fetch(`${window.origin}/your_url/10`, {
         "method": "POST",
@@ -141,4 +147,9 @@ function calcular() {
         alert('GET response:');
         alert(text); 
       });*/
+
+function calcular() {
+   
+
+    j = obterDados()
 }

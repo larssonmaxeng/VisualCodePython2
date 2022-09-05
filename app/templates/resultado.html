@@ -3,7 +3,7 @@
 <h1 class="tituloPagina textoCentralizado">Definição dos critérios</h1>
 <div class="divFundoBotao">
        <form action = "/your_url" onSubmit="calcular()" method="PUT">
-        <button name = "hhhhh" type="submit">Teste</button>
+        <button  name = "hhhhh" type="submit">Teste</button>
        </form>
         <table class="tabelaSemBorda">
                 <th>
@@ -48,9 +48,9 @@
                                 </td>
                                 <td>
                                         {% if subCrit[2]=='crisp'%}
-                                             <input type="number" placeholder ="Digite a nota"></input>                                        
+                                             <input type="number" placeholder ="Digite a nota" id={{subCrit[4]}}></input>                                        
                                         {% else %}
-                                        <select class="selectNotas" name="cars" id="cars">
+                                        <select class="selectNotas" name="cars" id={{subCrit[4]}}>
                                                 {% for opcao in subCrit[3] %}      
                                                         <option value={{opcao}}>{{opcao}}</option>
                                                 {% endfor %}

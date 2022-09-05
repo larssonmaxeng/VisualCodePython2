@@ -1,5 +1,7 @@
 import base64
+import json
 from json import *
+from urllib import response
 from app import app
 from flask import render_template, redirect, jsonify, make_response
 import matplotlib.pyplot as mlt
@@ -169,28 +171,36 @@ def limpar():
     criterios.append(['05- Geral', 'fuzzy'])
     variavelLinguistica3Opcoes = ['Selecionar', 'Ruim', 'Medio', 'Bom']
     subcriterios = [] 
-    subcriterios.append(['01- Custo', 'Preço', 'crisp', []])
-    subcriterios.append(['01- Custo', 'Condições de pagamento', 'fuzzy', variavelLinguistica3Opcoes ])
-    subcriterios.append(['01- Custo', 'Modelo de reajuste','fuzzy', variavelLinguistica3Opcoes])
+    subcriterios.append(['01- Custo', 'Preço', 'crisp', [], 'CustoPreco'])
+    subcriterios.append(['01- Custo', 'Condições de pagamento', 'fuzzy', variavelLinguistica3Opcoes, 'CustoPgto'])
+    subcriterios.append(['01- Custo', 'Modelo de reajuste','fuzzy', variavelLinguistica3Opcoes, 'CustoReajuste'])
     
     
     
     return render_template('resultado.html', modo="Limpeza", criterios = criterios, subcriterios = subcriterios, imagens=[])
 
-@app.route('/your_url/<index_no>', methods=["GET", "POST", "PUT"])
-def your_url(index_no):
+@app.route('/your_url', methods=["GET", "POST", "PUT"])
+def your_url():
     #criterio = {"nome":"Preço", "nota":"Médio"}
     #req = request.div["div3"]
     #print(req.name)
-    #data = request.get_json()
+    req = request.get_json()
+    print(req)
     """if request.method == "POST":
        print(request)
     print('foi ate aqui')
     print(request)
     #print(req)"""
     print("passou")
-    criterio = {"nome":"Preço", "nota":"Médio"}
-    print(jsonify(criterio))
-    return jsonify(criterio)
+    criterios = []
+    criterios.append({"nome":"Preço", "nota":"Médio"})
+    criterios.append({"nome":"Preço1", "nota":"Médio1"})
+    criterio = json.dumps(criterios)
+    print(criterio)
+    
+    res = make_response(criterio)
+    print(res)
+    
+    return res
     
      
