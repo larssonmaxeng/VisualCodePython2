@@ -66,9 +66,14 @@
                 <tr>
                         <td class="tituloSubcriterio" >Resultado</td>
                         {% if modo=='Limpeza' %}
-                        <td class="tituloSubcriterio" >Aguardando cálculo</td>
+                        <td class="tituloSubcriterio">
+                               <h style="text-align:center" id="crisp{{crit[2]}}"> Aguardando cálculo</h></br>
+                               <img class='imagem300' id="imagem{{crit[2]}}" src="">
+                        </td>
                         {% else %}        
-                        <td class="tituloSubcriterio" >Falta programar</td>
+                        <td class="tituloSubcriterio" >
+                                <img class='imagem300' id="imagem{{crit[2]}}" src="{{url_for('static', filename = 'Grafico.jpg')}}">
+                        </td>
                         {% endif %}
                         
                 </tr>

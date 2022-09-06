@@ -1,4 +1,5 @@
 import base64
+from email.encoders import encode_base64
 import json
 from json import *
 from urllib import response
@@ -17,7 +18,67 @@ import io
 def index():
     nome = "dissertação2"
     criterio = {"nome":"Preço", "nota":"Médio"}
-    return render_template('index.html', nome=nome, criterio=criterio)
+    
+    medio = 'médio'
+    muitoAlto = 'muito alto'
+    alto = 'alto'
+    baixo = 'baixo'
+    muitoBaixo ='muito baixo'
+    vePreco = 'Preço'
+    vePagamento='Pagamento'
+    veReajuste = 'Reajuste'
+    vsCusto = 'Custo'
+    
+    # Cria as variáveis do problema
+    preco = ctrl.Antecedent(np.arange(0, 11, 0.5), vePreco)
+    pagamento = ctrl.Antecedent(np.arange(0, 11, .5), vePagamento)
+    reajuste = ctrl.Antecedent(np.arange(0, 11, 0.5), veReajuste)
+    custo = ctrl.Consequent(np.arange(0, 11, 0.1), vsCusto)
+   
+    namesPreco = [muitoAlto, alto, medio, baixo, muitoBaixo]
+    preco.automf(5, names =  namesPreco)
+    pagamento.automf(5, names =  namesPreco)
+    reajuste.automf(5, names =  namesPreco)
+    custo.automf(5, names =  namesPreco)
+   
+    r1 = ctrl.Rule((preco[muitoAlto] | preco[alto]) & 
+                   (pagamento[muitoAlto] | 
+                    pagamento[alto] |
+                    pagamento[baixo] |
+                    pagamento[medio] |
+                    pagamento[muitoBaixo] )
+                   & ( reajuste[muitoAlto] | 
+                    reajuste[alto] |
+                    reajuste[baixo] |
+                    reajuste[medio] |
+                    reajuste[muitoBaixo]
+                       ),custo[muitoAlto])
+    r2 = ctrl.Rule(preco[medio] ,custo[medio])
+    r3 = ctrl.Rule(preco[baixo] ,custo[baixo])
+    r4 = ctrl.Rule(preco[muitoBaixo] ,custo[muitoBaixo])
+         
+    custo_ctrl = ctrl.ControlSystem([r1, r2, r3, r4])
+    print('leu regras')
+    custo_simulador = ctrl.ControlSystemSimulation(custo_ctrl)
+    print('simulou')
+    custo_simulador.input[vePreco] =8# notasCusto[nota]
+    custo_simulador.input[vePagamento] = 2;#notasCusto[nota]
+    custo_simulador.input[veReajuste] = 2;#notasCusto[nota]
+            
+    
+
+    custo_simulador.compute()
+
+    v = fuzz.control.visualization.FuzzyVariableVisualizer(custo)
+    imagem, b = v.view()
+    data = io.BytesIO()
+    imagem.savefig(data, format="PNG")
+    encodes_img_data = base64.b64encode(data.getbuffer()).decode('ascii')
+    figura = []
+    figura.append(encodes_img_data)
+    print(nome)
+    return render_template('index.html', nome=nome, criterio=criterio, fig = figura )
+
 @app.route('/login')
 def login():
     return render_template('login.html')
@@ -164,11 +225,11 @@ def resultado():
 def limpar():
     #criterio = {"nome":"Preço", "nota":"Médio"}
     criterios = []
-    criterios.append(['01- Custo', 'crisp'])
-    criterios.append(['02- Qualidade','fuzzy'])
-    criterios.append(['03- Prazo','fuzzy' ])
-    criterios.append(['04- Gestão', 'fuzzy'])
-    criterios.append(['05- Geral', 'fuzzy'])
+    criterios.append(['01- Custo', 'crisp', 'Custo'])
+    criterios.append(['02- Qualidade','fuzzy', 'Qualidade'])
+    criterios.append(['03- Prazo','fuzzy', 'Prazo' ])
+    criterios.append(['04- Gestão', 'fuzzy', 'Gestao'])
+    criterios.append(['05- Geral', 'fuzzy', 'Geral'])
     variavelLinguistica3Opcoes = ['Selecionar', 'Ruim', 'Medio', 'Bom']
     subcriterios = [] 
     subcriterios.append(['01- Custo', 'Preço', 'crisp', [], 'CustoPreco'])
@@ -194,15 +255,84 @@ def your_url():
     print(request)
     #print(req)"""
     print("passou")
+    #criterios = []
+    #criterios.append({"nome":"Preço", "nota":"Médio"})
+    #criterios.append({"nome":"Preço1", "nota":"Médio1"})
+    custo, imagemCusto = CalcularCriterioPreco(notasCusto = req)   
     criterios = []
-    criterios.append({"nome":"Preço", "nota":"Médio"})
-    criterios.append({"nome":"Preço1", "nota":"Médio1"})
+    criterios.append({"idHtml":"imagemCusto", "valor":str(imagemCusto)})
+    criterios.append({"idHtml":"crispCusto", "valor":str(round(custo*1, 2))})
     criterio = json.dumps(criterios)
-    print(criterio)
+    #print(criterio)
     
     res = make_response(criterio)
-    print(res)
+    #print(res)
     
     return res
+  
+def CalcularCriterioPreco(notasCusto):
+    medio = 'médio'
+    muitoAlto = 'muito alto'
+    alto = 'alto'
+    baixo = 'baixo'
+    muitoBaixo ='muito baixo'
+    vePreco = 'Preço'
+    vePagamento='Pagamento'
+    veReajuste = 'Reajuste'
+    vsCusto = 'Custo'
+    ruim = 'ruim'
+    bom = 'bom'
+    # Cria as variáveis do problema
+    preco = ctrl.Antecedent(np.arange(0, 11, 0.5), vePreco)
+    pagamento = ctrl.Antecedent(np.arange(0, 11, .5), vePagamento)
+    reajuste = ctrl.Antecedent(np.arange(0, 11, 0.5), veReajuste)
+    custo = ctrl.Consequent(np.arange(0, 11, 0.1), vsCusto)
+   
+    namesPreco = [muitoAlto, alto, medio, baixo, muitoBaixo]
+    names = [ruim, bom, medio]
+    preco.automf(5, names =  namesPreco)
+    pagamento.automf(3, names =  names)
+    reajuste.automf(3, names =  names)
+    custo.automf(5, names =  namesPreco)
+   
+    r1 = ctrl.Rule((preco[muitoAlto] | preco[alto]) & 
+                   (pagamento[ruim] | 
+                    pagamento[bom] |
+                    pagamento[medio] )
+                   & ( reajuste[ruim] | 
+                    reajuste[bom] |
+                    reajuste[medio] 
+                       ),custo[muitoAlto])
+    r2 = ctrl.Rule(preco[medio] ,custo[medio])
+    r3 = ctrl.Rule(preco[baixo] ,custo[baixo])
+    r4 = ctrl.Rule(preco[muitoBaixo] ,custo[muitoBaixo])
+    r5 = ctrl.Rule(preco[muitoAlto] ,custo[alto])
+         
+    custo_ctrl = ctrl.ControlSystem([r1, r2, r3, r4, r5])
+    print('leu regras')
+    custo_simulador = ctrl.ControlSystemSimulation(custo_ctrl)
+    print('simulou')
+
+    for nota in notasCusto:
+        match nota:
+            case "CustoPreco":
+                custo_simulador.input[vePreco] =8# notasCusto[nota]
+            case "CustoPgto":
+                custo_simulador.input[vePagamento] = 2;#notasCusto[nota]
+            case "CustoReajuste":
+                custo_simulador.input[veReajuste] = 2;#notasCusto[nota]
+            
     
+
+    custo_simulador.compute()
+
+    v = fuzz.control.visualization.FuzzyVariableVisualizer(custo)
+    imagem, b = v.view(sim=custo_simulador)
+    data = io.BytesIO()
+    imagem.savefig(data, format="PNG")
+    encodes_img_data = base64.b64encode(data.getbuffer()).decode('ascii')
+    #print(custo_simulador.output[vsCusto])
+    #print(encodes_img_data)
+    return custo_simulador.output[vsCusto] , encodes_img_data
+
      

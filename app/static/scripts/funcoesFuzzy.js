@@ -2,8 +2,6 @@ function mostrarValor() {
     alert("texto");
 }
 function obterDados(){
-    var ele  = document.getElementById("1000114");
-    alert(ele.title)
     let subcriterios = []
     subcriterios.push('CustoPreco')
     subcriterios.push('CustoPgto')
@@ -11,14 +9,10 @@ function obterDados(){
     var jsonData = {};
     for (let i = 0; i < subcriterios.length; i++) {
         var ele  = document.getElementById(subcriterios[i]);
-        //alert(ele.value)
         jsonData[subcriterios[i]] = ele.value;
     }
-
     var your_data =  jsonData
-   
-    var index = 33;
-    fetch(`${window.origin}/your_url`, {
+    return  fetch(`${window.origin}/your_url`, {
         method: "POST",
         credentials: "include",
         body: JSON.stringify(your_data),
@@ -29,12 +23,23 @@ function obterDados(){
         }).then(response => response.json())
         .then(function(data){         
         data.forEach(function(data1, index) {
-            alert(data1["nome"]);
-            });
-            //return data;
+            
+            if(data1["idHtml"].includes('imagem')){
+               
+                var imagem = 'data:image/png;base64,'+ data1["valor"];
+                document.getElementById(data1["idHtml"]).src = imagem;
+            }
+            else{
+
+                document.getElementById(data1["idHtml"]).innerHTML = "Média da nota custo: "+ data1["valor"];
+            }
+           
+            
+            //ele.src =  'data:image/png;base64,'+ data1["valor"];
+            
+            }); 
         });
     }
-    
     /*$.ajax({
         url: 'http://127.0.0.1:5000/your_url',
         type: "PUT",
@@ -151,7 +156,6 @@ function obterDados(){
       });*/
 
 function calcular() {
-   
+    obterDados();
 
-    j = obterDados()
 }
