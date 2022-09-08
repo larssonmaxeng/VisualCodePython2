@@ -324,10 +324,16 @@ def your_url():
                                                    inomeDaVariavelDeSaida=variavelDeSaidaCusto,
                                                    iRegra = "Custo")   
    
+    variavelDeSaidaQualidade = {"nomeDaVariavel":"Qualidade",
+        "QtdeDeCasas":0,
+        "Opções": ["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],
+        "Criterio":"Qualidade",
+        "NotaCrisp": "",
+        "NotaFuzzy":""}
    
     qualidade, imagemQualidade =ConstruirControladorFuzzy(
-                                                   inomeDasVariaveisDeEntrada=criteriosCusto, 
-                                                   inomeDaVariavelDeSaida=variavelDeSaidaCusto,
+                                                   inomeDasVariaveisDeEntrada=GetCriteriosQualidade(req=req), 
+                                                   inomeDaVariavelDeSaida=variavelDeSaidaQualidade,
                                                    iRegra = "Qualidade")  
     #prazo, imagemPrazo = ConstruirControladorFuzzy(notasCusto = req)   
     #gestao, imagemGestao = ConstruirControladorFuzzy(notasCusto = req)   
@@ -336,6 +342,8 @@ def your_url():
     criterios = []
     criterios.append({"idHtml":"imagemCusto", "valor":str(imagemCusto)})
     criterios.append({"idHtml":"crispCusto", "valor":str(round(custo*1, 2))})
+    criterios.append({"idHtml":"imagemQualidade", "valor":str(imagemQualidade)})
+    criterios.append({"idHtml":"crispQualidade", "valor":str(round(qualidade*1, 2))})
     criterio = json.dumps(criterios)
     #print(criterio)
     
@@ -417,18 +425,7 @@ def CalcularCriterioQualidade(notasCusto, ):
 
         
 def ConstruirControladorFuzzy(inomeDasVariaveisDeEntrada, inomeDaVariavelDeSaida, iRegra):    
-    """medio = 'médio'
-    muitoAlto = 'muito alto'
-    alto = 'alto'
-    baixo = 'baixo'
-    muitoBaixo ='muito baixo'
-    vePreco = 'Preço'
-    vePagamento='Pagamento'
-    veReajuste = 'Reajuste'
-    vsCusto = 'Custo'
-    ruim = 'ruim'
-    bom = 'bom'"""
-   
+     
     variaveisFuzzy = []
     for nome in inomeDasVariaveisDeEntrada:
         variavelFuzzy = ctrl.Antecedent(np.arange(0, 11, 0.5), nome["nomeDaVariavel"])
@@ -491,7 +488,27 @@ def GerarRegras(variaveisDeEntrada, variavelDeSaida, nomeDaRegraDeCriterio):
         regras.append(r3)
         regras.append(r4)
         regras.append(r5)
-         
+    if nomeDaRegraDeCriterio=="Qualidade":
+        devolucao = variaveisDeEntrada[0]
+        dimensoes = variaveisDeEntrada[1]
+        equipe = variaveisDeEntrada[2]
+        qualidade = variavelDeSaida
+        
+        r1 = ctrl.Rule( devolucao["bom"] & dimensoes["bom"] & equipe["bom"],qualidade["muitoAlto"])
+        r2 = ctrl.Rule( devolucao["bom"] & ((dimensoes["bom"] | equipe["medio"]) |
+                                           (dimensoes["medio"] | equipe["bom"])),qualidade["alto"])
+        
+        r3 = ctrl.Rule( (devolucao["bom"] | devolucao["medio"]) & dimensoes["medio"] & equipe["medio"],qualidade["medio"])
+        r4 = ctrl.Rule( devolucao["bom"] & dimensoes["ruim"] & equipe["ruim"],qualidade["baixo"])
+        r5 = ctrl.Rule( devolucao["ruim"] ,qualidade["muitoBaixo"])
+    
+       
+        regras.append(r1)
+        regras.append(r2)
+        regras.append(r3)
+        regras.append(r4)
+        regras.append(r5)
+              
     return regras
 
 def GetCriteriosQualidade(req):
@@ -509,10 +526,10 @@ def GetCriteriosQualidade(req):
 def PreparaCriterios( listaDeCriterios, criterio):
     criterios = []
     for item in listaDeCriterios:
-        criterios.append({"nomeDaVariavel":item[""],
+        criterios.append({"nomeDaVariavel":item["nomeDaVariavel"],
             "QtdeDeCasas":3,
             "Opções": ["ruim", "medio", "bom"],
             "Criterio": criterio,
             "NotaCrisp": "",
-            "NotaFuzzy": item[""]})
+            "NotaFuzzy": item["NotaFuzzy"]})
     return criterios    
