@@ -11,7 +11,12 @@ import skfuzzy as fuzz
 from time import sleep
 from skfuzzy import control as ctrl
 from flask import request
+from app import funcoes
+
+
 import io
+
+from app import googleSheet
 
 @app.route('/')
 @app.route('/index')
@@ -235,8 +240,36 @@ def limpar():
     subcriterios.append(['01- Custo', 'Preço', 'crisp', [], 'CustoPreco'])
     subcriterios.append(['01- Custo', 'Condições de pagamento', 'fuzzy', variavelLinguistica3Opcoes, 'CustoPgto'])
     subcriterios.append(['01- Custo', 'Modelo de reajuste','fuzzy', variavelLinguistica3Opcoes, 'CustoReajuste'])
+    sheet = googleSheet.GoogleSheet()
+    print(sheet.GetParametros( SAMPLE_RANGE_NAME= 'DadosGerais!A2:A5', SAMPLE_SPREADSHEET_ID="1NLqJWL8LeRECbK04Bm41AYq0tu95VbYgsT6DTX6Sq1g"))
+    subcriterios.append(['02- Qualidade', 'Baixas taxas de devolução', 'fuzzy', variavelLinguistica3Opcoes, 'QualiDevolucao'])
+    subcriterios.append(['02- Qualidade', 'Precisão nas dimensões', 'fuzzy', variavelLinguistica3Opcoes, 'QualiDimensoes'])
+    subcriterios.append(['02- Qualidade', 'Equipe técnica capacitada','fuzzy', variavelLinguistica3Opcoes, 'QualiEquipe'])
+
+   
     
+    subcriterios.append(['03- Prazo', 'Prazo atender a obra', 'fuzzy', variavelLinguistica3Opcoes, 'PrazoPrazo'])
+    subcriterios.append(['03- Prazo', 'Capacidade de produção', 'fuzzy', variavelLinguistica3Opcoes, 'PrazoProducao'])
+    subcriterios.append(['03- Prazo', 'Capacidade de resposta','fuzzy', variavelLinguistica3Opcoes, 'PrazoResposta'])
+  
+   
     
+    subcriterios.append(['04- Gestão', 'Clareza nas informações da entrega do produto', 'fuzzy', variavelLinguistica3Opcoes, 'GestaoEntrega'])
+    subcriterios.append(['04- Gestão', 'Cooperação em situações adversas', 'fuzzy', variavelLinguistica3Opcoes, 'GestaoCooperacao'])
+    subcriterios.append(['04- Gestão', 'Mantêm parceria','fuzzy', variavelLinguistica3Opcoes, 'GestaoParceria'])
+    subcriterios.append(['04- Gestão', 'Traz informações transparentes','fuzzy', variavelLinguistica3Opcoes, 'GestaoTransparência'])
+    subcriterios.append(['04- Gestão', 'Ter boa comunicação','fuzzy', variavelLinguistica3Opcoes, 'GestaoComunicacao'])
+    
+
+
+    
+    subcriterios.append(['05- Geral', 'Cumpre leis trabalhistas', 'fuzzy', variavelLinguistica3Opcoes, 'GeralLeis'])
+    subcriterios.append(['05- Geral', 'Interesse em executar o serviço', 'fuzzy', variavelLinguistica3Opcoes, 'GeralInteresses'])
+    subcriterios.append(['05- Geral', 'Não usa substâncias tóxica', 'fuzzy', variavelLinguistica3Opcoes, 'GeralToxico'])
+    subcriterios.append(['05- Geral', 'Histórico de entregar no prazo', 'fuzzy', variavelLinguistica3Opcoes, 'GeralHistoricoPrazo'])
+    subcriterios.append(['05- Geral', 'Parceira de longo prazo', 'fuzzy', variavelLinguistica3Opcoes, 'GeralParceria'])
+    subcriterios.append(['05- Geral', 'Histórico de fornecimento', 'fuzzy', variavelLinguistica3Opcoes, 'GeralHistorico'])
+    subcriterios.append(['05- Geral', 'Proporciona saúde e seg do trab', 'fuzzy', variavelLinguistica3Opcoes, 'GeralSaudeESeguranca'])                        
     
     return render_template('resultado.html', modo="Limpeza", criterios = criterios, subcriterios = subcriterios, imagens=[])
 
@@ -247,18 +280,59 @@ def your_url():
     #print(req.name)
     req = request.get_json()
     print(req)
-    for song in req:
-        print(song, ":", req[song])
+    #for song in req:
+    #    print(song, ":", req[song])
     """if request.method == "POST":
        print(request)
     print('foi ate aqui')
     print(request)
     #print(req)"""
-    print("passou")
+    #print("passou")
     #criterios = []
     #criterios.append({"nome":"Preço", "nota":"Médio"})
     #criterios.append({"nome":"Preço1", "nota":"Médio1"})
-    custo, imagemCusto = CalcularCriterioPreco(notasCusto = req)   
+    
+    criteriosCusto = []
+    criteriosCusto.append({"nomeDaVariavel":"Preço",
+        "QtdeDeCasas":5,
+        "Opções": ["muitoAlto", "alto", "medio", "baixo", "muitoBaixo"],
+        "Criterio":"Custo",
+        "NotaCrisp": str(req["CustoPreco"]),
+        "NotaFuzzy":""})
+    criteriosCusto.append({"nomeDaVariavel":"Pagamento",
+        "QtdeDeCasas":3,
+        "Opções": ["ruim", "medio", "bom"],
+        "Criterio":"Custo",
+        "NotaCrisp": "",
+        "NotaFuzzy":str(req["CustoPgto"])})
+    criteriosCusto.append({"nomeDaVariavel":"Reajuste",
+        "QtdeDeCasas":3,
+        "Opções": ["ruim", "medio", "bom"],
+        "Criterio":"Custo",
+        "NotaCrisp": "",
+        "NotaFuzzy":str(req["CustoReajuste"])})
+     
+    variavelDeSaidaCusto = {"nomeDaVariavel":"Custo",
+        "QtdeDeCasas":0,
+        "Opções": ["muitoAlto", "alto", "medio", "baixo", "muitoBaixo"],
+        "Criterio":"Custo",
+        "NotaCrisp": "",
+        "NotaFuzzy":""}
+    print(criteriosCusto)   
+    custo, imagemCusto = ConstruirControladorFuzzy( 
+                                                   inomeDasVariaveisDeEntrada=criteriosCusto, 
+                                                   inomeDaVariavelDeSaida=variavelDeSaidaCusto,
+                                                   iRegra = "Custo")   
+   
+   
+    qualidade, imagemQualidade =ConstruirControladorFuzzy(
+                                                   inomeDasVariaveisDeEntrada=criteriosCusto, 
+                                                   inomeDaVariavelDeSaida=variavelDeSaidaCusto,
+                                                   iRegra = "Qualidade")  
+    #prazo, imagemPrazo = ConstruirControladorFuzzy(notasCusto = req)   
+    #gestao, imagemGestao = ConstruirControladorFuzzy(notasCusto = req)   
+    #geral, imagemGeral = ConstruirControladorFuzzy(notasCusto = req)   
+    
     criterios = []
     criterios.append({"idHtml":"imagemCusto", "valor":str(imagemCusto)})
     criterios.append({"idHtml":"crispCusto", "valor":str(round(custo*1, 2))})
@@ -269,8 +343,8 @@ def your_url():
     #print(res)
     
     return res
-  
-def CalcularCriterioPreco(notasCusto):
+   
+def CalcularCriterioQualidade(notasCusto, ):    
     medio = 'médio'
     muitoAlto = 'muito alto'
     alto = 'alto'
@@ -312,15 +386,21 @@ def CalcularCriterioPreco(notasCusto):
     print('leu regras')
     custo_simulador = ctrl.ControlSystemSimulation(custo_ctrl)
     print('simulou')
+    print(notasCusto) 
+    for nota1 in notasCusto:
 
-    for nota in notasCusto:
-        match nota:
+
+        match str(nota1):
             case "CustoPreco":
-                custo_simulador.input[vePreco] =8# notasCusto[nota]
+                print(str(notasCusto[nota1]))
+                print(float(str(notasCusto[nota1])))
+                custo_simulador.input[vePreco] = float(str(notasCusto[nota1]));
             case "CustoPgto":
-                custo_simulador.input[vePagamento] = 2;#notasCusto[nota]
+                print(str(notasCusto[nota1]))
+                custo_simulador.input[vePagamento] = funcoes.Desfuzzificar(nota=str(notasCusto[nota1]));
             case "CustoReajuste":
-                custo_simulador.input[veReajuste] = 2;#notasCusto[nota]
+                print(str(notasCusto[nota1]))
+                custo_simulador.input[veReajuste] =  funcoes.Desfuzzificar(nota=str(notasCusto[nota1]));
             
     
 
@@ -335,4 +415,104 @@ def CalcularCriterioPreco(notasCusto):
     #print(encodes_img_data)
     return custo_simulador.output[vsCusto] , encodes_img_data
 
-     
+        
+def ConstruirControladorFuzzy(inomeDasVariaveisDeEntrada, inomeDaVariavelDeSaida, iRegra):    
+    """medio = 'médio'
+    muitoAlto = 'muito alto'
+    alto = 'alto'
+    baixo = 'baixo'
+    muitoBaixo ='muito baixo'
+    vePreco = 'Preço'
+    vePagamento='Pagamento'
+    veReajuste = 'Reajuste'
+    vsCusto = 'Custo'
+    ruim = 'ruim'
+    bom = 'bom'"""
+   
+    variaveisFuzzy = []
+    for nome in inomeDasVariaveisDeEntrada:
+        variavelFuzzy = ctrl.Antecedent(np.arange(0, 11, 0.5), nome["nomeDaVariavel"])
+        variavelFuzzy.automf(nome["QtdeDeCasas"], names = nome["Opções"])
+        variaveisFuzzy.append(variavelFuzzy)
+   
+    variavelDeSaida = ctrl.Consequent(np.arange(0, 11, 0.1), inomeDaVariavelDeSaida["nomeDaVariavel"])
+    variavelDeSaida.automf(inomeDaVariavelDeSaida["QtdeDeCasas"], names = inomeDaVariavelDeSaida["Opções"])
+      
+    custo_ctrl = ctrl.ControlSystem(GerarRegras(variaveisDeEntrada=variaveisFuzzy, variavelDeSaida=variavelDeSaida, nomeDaRegraDeCriterio = iRegra))
+    print('leu regras')
+    custo_simulador = ctrl.ControlSystemSimulation(custo_ctrl)
+    print('simulou')
+    #print(inotasCusto) 
+    print(inomeDasVariaveisDeEntrada)
+
+    for nome in inomeDasVariaveisDeEntrada:
+        print(nome["nomeDaVariavel"])
+        print(nome["NotaCrisp"])
+        print(nome["NotaFuzzy"])
+        if nome["nomeDaVariavel"] == "Preço":
+           custo_simulador.input[nome["nomeDaVariavel"]] = float(str(nome["NotaCrisp"]))
+        else:
+           custo_simulador.input[nome["nomeDaVariavel"]] = funcoes.Desfuzzificar(nota=str(nome["NotaFuzzy"]));
+       
+               
+    custo_simulador.compute()
+
+    v = fuzz.control.visualization.FuzzyVariableVisualizer(variavelDeSaida)
+    imagem, b = v.view(sim=custo_simulador)
+    data = io.BytesIO()
+    imagem.savefig(data, format="PNG")
+    encodes_img_data = base64.b64encode(data.getbuffer()).decode('ascii')
+    #print(custo_simulador.output[vsCusto])
+    #print(encodes_img_data)
+    return custo_simulador.output[inomeDaVariavelDeSaida["nomeDaVariavel"]] , encodes_img_data
+
+def GerarRegras(variaveisDeEntrada, variavelDeSaida, nomeDaRegraDeCriterio):
+    regras = []
+    if nomeDaRegraDeCriterio=="Custo":
+        preco = variaveisDeEntrada[0]
+        pagamento = variaveisDeEntrada[1]
+        reajuste = variaveisDeEntrada[2]
+        custo = variavelDeSaida
+        
+        r1 = ctrl.Rule((preco["muitoAlto"] | preco["alto"]) & 
+                   (pagamento["ruim"] | 
+                    pagamento["bom"] |
+                    pagamento["medio"] )
+                   & ( reajuste["ruim"] | 
+                    reajuste["bom"] |
+                    reajuste["medio"] 
+                        ),custo["muitoAlto"])
+        r2 = ctrl.Rule(preco["medio"] ,custo["medio"])
+        r3 = ctrl.Rule(preco["baixo"] ,custo["baixo"])
+        r4 = ctrl.Rule(preco["muitoBaixo"] ,custo["muitoBaixo"])
+        r5 = ctrl.Rule(preco["muitoAlto"] ,custo["alto"])
+        regras.append(r1)
+        regras.append(r2)
+        regras.append(r3)
+        regras.append(r4)
+        regras.append(r5)
+         
+    return regras
+
+def GetCriteriosQualidade(req):
+    criterios = []
+    criterios.append({"nomeDaVariavel":"Devolução",
+                      "NotaFuzzy":req["QualiDevolucao"]})
+    criterios.append({"nomeDaVariavel":"Dimensões",
+                      "NotaFuzzy":req["QualiDimensoes"]})
+    criterios.append({"nomeDaVariavel":"Equipe",
+                      "NotaFuzzy":req["QualiEquipe"]})
+    
+    return PreparaCriterios(listaDeCriterios=criterios, criterio="Qualidade")
+    
+
+def PreparaCriterios( listaDeCriterios, criterio):
+    criterios = []
+    for item in listaDeCriterios:
+        criterios.append({"nomeDaVariavel":item[""],
+            "QtdeDeCasas":3,
+            "Opções": ["ruim", "medio", "bom"],
+            "Criterio": criterio,
+            "NotaCrisp": "",
+            "NotaFuzzy": item[""]})
+    return criterios    

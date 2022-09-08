@@ -6,6 +6,35 @@ function obterDados(){
     subcriterios.push('CustoPreco')
     subcriterios.push('CustoPgto')
     subcriterios.push('CustoReajuste')
+    subcriterios.push('QualiDevolucao')
+    subcriterios.push('QualiDimensoes')
+    subcriterios.push('QualiEquipe')
+
+   
+    
+    subcriterios.push('PrazoPrazo')
+    subcriterios.push('PrazoProducao')
+    subcriterios.push('PrazoResposta')
+  
+   
+    
+    subcriterios.push('GestaoEntrega')
+    subcriterios.push('GestaoCooperacao')
+    subcriterios.push('GestaoParceria')
+    subcriterios.push('GestaoTransparência')
+    subcriterios.push('GestaoComunicacao')
+    
+
+
+    
+    subcriterios.push('GeralLeis')
+    subcriterios.push('GeralInteresses')
+    subcriterios.push('GeralToxico')
+    subcriterios.push('GeralHistoricoPrazo')
+    subcriterios.push('GeralParceria')
+    subcriterios.push('GeralHistorico')
+    subcriterios.push('GeralSaudeESeguranca')
+
     var jsonData = {};
     for (let i = 0; i < subcriterios.length; i++) {
         var ele  = document.getElementById(subcriterios[i]);
@@ -24,8 +53,7 @@ function obterDados(){
         .then(function(data){         
         data.forEach(function(data1, index) {
             
-            if(data1["idHtml"].includes('imagem')){
-               
+            if(data1["idHtml"].includes('imagem')){    
                 var imagem = 'data:image/png;base64,'+ data1["valor"];
                 document.getElementById(data1["idHtml"]).src = imagem;
             }
