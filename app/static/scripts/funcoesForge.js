@@ -26,7 +26,9 @@ function onDocumentLoadSuccess(doc) {
         console.error('Document contains no viewables.');
         return;
     }
-
+    console.log("AQUIIIIIIIIIIIII");
+    
+    console.log(viewables);
     // Choose any of the avialble viewables
     var initialViewable = viewables[0];
     var svfUrl = doc.getViewablePath(initialViewable);
@@ -83,11 +85,11 @@ function Clicar(){
   });*/
   var documentId = 'urn:' + 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHVvd2NocWtncWJrZ3hzY212ajM4ZjhxcmhlamxjbG42Mzc5ODMwOTM4NTcwMTM5MDcvU09ZLUFSUS1NT0RFTE8tUlZUMjAyMC1SMDIlMjAtJTIwQ29waWEucnZ0';
   Autodesk.Viewing.Initializer(options, function onInitialized(){
-    Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
+  Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
 });
 }
 
-function obterDados1(){
+function AbrirModelo(urn){
     var jsonData = {};
    /*var jsonData = {};
     for (let i = 0; i < subcriterios.length; i++) {
@@ -114,9 +116,9 @@ function obterDados1(){
               };
               console.log(options);
                
-              var documentId = 'urn:' + 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHVvd2NocWtncWJrZ3hzY212ajM4ZjhxcmhlamxjbG42Mzc5ODMwOTM4NTcwMTM5MDcvU09ZLUFSUS1NT0RFTE8tUlZUMjAyMC1SMDIlMjAtJTIwQ29waWEucnZ0';
+              var documentId = 'urn:' + urn;//'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHVvd2NocWtncWJrZ3hzY212ajM4ZjhxcmhlamxjbG42Mzc5ODMwOTM4NTcwMTM5MDcvU09ZLUFSUS1NT0RFTE8tUlZUMjAyMC1SMDIlMjAtJTIwQ29waWEucnZ0';
               Autodesk.Viewing.Initializer(options, function onInitialized(){
-                Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
+              Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
             });
             data["access_token"]    
                 });
@@ -148,18 +150,90 @@ function getDataTreeViewModels(){
                 data.forEach(function(data1, index) { 
                     var bucket = {};     
                         
-                    bucket['text'] = data1["objectKey"];
+                    bucket['text'] = data1["bucketKey"].split("-")[1] ;
                     bucket['state'] = 'open';
-                    jsonFilhos = []
-                    bucket['objetos'].forEach(function(filho, index) {
-                        var jsonFilho = {};
-                        jsonFilho['text']= filho["objectKey"];
-                        jsonFilhos.push(jsonFilho);
-                    });
-                    bucket['children'] = jsonFilho;
-                    jsonData.push();
- 
-                });         
+                    jsonFilhos = [];
+                    console.log(data1['objetos']);
+                        if(data1['objetos']!=undefined){    
+                            data1['objetos'].forEach(function(filho, index) {
+                            var jsonFilho = {};
+                            jsonFilho['text']= filho["objectKey"];
+                            jsonFilho['data'] = filho;
+                            jsonFilhos.push(jsonFilho);
+                        });
+                        }
+                        bucket['children'] = jsonFilhos;
+                        
+                        jsonData.push(bucket);
+    
+                    });   
+                    $('#appBuckets').jstree({
+                        'core': {
+                            "themes": {
+                                "responsive": false
+                            },
+                            "check_callback": true,
+                            'data': []
+                        },
+                        "types": {
+                            "default": {
+                                "icon": "fa fa-folder icon-state-warning icon-lg"
+                            },
+                            "file": {
+                                "icon": "fa fa-file icon-state-warning icon-lg"
+                            }
+                        },
+                        "state": { "key": "demo2" },
+                        "plugins": ["state", "types", "unique", "json_data", "search"]
+                    }).bind("activate_node.jstree", function (evt, data) {
+                        console.log("Clicou");
+                        
+                       
+                        if (data != null && data.node != null && data.node.data != []) {
+                          //$("#forgeViewer").empty();
+                          console.log(data.node)
+                          console.log(btoa(data.node.data["objectId"]));
+                          var urn = btoa(data.node.data["objectId"]);
+                          console.log("tentarAbrir");
+                          AbrirModelo(urn);
+                          
+                            /*var options = {
+                                env: 'AutodeskProduction',
+                                getAccessToken: getForgeToken
+                            };
+
+                            Autodesk.Viewing.Initializer(options, () => {
+                                viewer = new Autodesk.Viewing.GuiViewer3D(document.getElementById('forgeViewer'));
+                                viewer.start();
+                                var documentId = 'urn:' + 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHVvd2NocWtncWJrZ3hzY212ajM4ZjhxcmhlamxjbG42Mzc5ODMwOTM4NTcwMTM5MDcvU09ZLUFSUS1NT0RFTE8tUlZUMjAyMC1SMDIlMjAtJTIwQ29waWEucnZ0';
+                                Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
+                            });*/
+                          
+                          //alert("Teste")
+                          //alert(urn)
+                          
+                          /*getForgeToken(function (access_token) {
+                            jQuery.ajax({
+                              url: 'https://developer.api.autodesk.com/modelderivative/v2/designdata/' + urn + '/manifest',
+                              headers: { 'Authorization': 'Bearer ' + access_token },
+                              success: function (res) {
+                                if (res.progress === 'success' || res.progress === 'complete') launchViewer(urn);
+                                else $("#forgeViewer").html('The translation job still running: ' + res.progress + '. Please try again in a moment.');
+                              },
+                              error: function (err) {
+                                var msgButton = 'This file is not translated yet! ' +
+                                  '<button class="btn btn-xs btn-info" onclick="translateObject()"><span class="glyphicon glyphicon-eye-open"></span> ' +
+                                  'Start translation</button>'
+                                $("#forgeViewer").html(msgButton);
+                              }
+                            });
+                          })*/
+                        }
+                      });
+                    $('#appBuckets').jstree(true).settings.core.data = jsonData;
+                    $('#appBuckets').jstree(true).refresh();
+                    $('#appBuckets').jstree("open_all");
+                    $('#appBuckets').jstree("deselect_all");
                 console.log(jsonData);
             }
                 //var jsonData = {};
@@ -168,6 +242,7 @@ function getDataTreeViewModels(){
         }
 function prepareAppBucketTreeFuzzy() {
             console.log("prepare")
+            getDataTreeViewModels()
             /*//*var v =  document.getElementById("appBuckets");
             //console.log(v.id)*/
             var  lsTreeData = [{
@@ -225,97 +300,7 @@ function prepareAppBucketTreeFuzzy() {
                     "text": "No child nodes"
                 }
             }];
-            $('#appBuckets').jstree({
-                'core': {
-                    "themes": {
-                        "responsive": false
-                    },
-                    "check_callback": true,
-                    'data': {
-                    "url": `${window.origin}/GetTreeViewModels`,
-                    "dataType": "json",
-                    'multiple': false,
-                    "data": function (node) {
-                      return { "id": node.id };
-                    
-                  }
-                }
-                },
-                "types": {
-                    "default": {
-                        "icon": "fa fa-folder icon-state-warning icon-lg"
-                    },
-                    "file": {
-                        "icon": "fa fa-file icon-state-warning icon-lg"
-                    }
-                },
-                "state": { "key": "demo2" },
-                "plugins": ["state", "types", "unique", "json_data", "search"]
-            });
-            /*
-            
-            
-            .jstree({
-              'core': {
-                'themes': { "icons": true },
-                'data': loDatas/*{/*
-                    "url": `${window.origin}/GetTreeViewModels`,
-                    "dataType": "json",
-                    'multiple': false,
-                    "data": function (node) {
-                      return { "id": node.id };
-                    
-                  }
-                }*/
-            /*  },
-              'types': {
-                'default': {
-                  'icon': 'glyphicon glyphicon-question-sign'
-                },
-                '#': {
-                  'icon': 'glyphicon glyphicon-cloud'
-                },
-                'bucket': {
-                  'icon': 'glyphicon glyphicon-folder-open'
-                },
-                'object': {
-                  'icon': 'glyphicon glyphicon-file'
-                }
-              },
-              "plugins": ["types", "state", "sort", "contextmenu"]
-            });/*.on('loaded.jstree', function () {
-              $('#appBuckets').jstree('open_all');
-            }).bind("activate_node.jstree", function (evt, data) {
-              if (data != null && data.node != null && data.node.type == 'object') {
-                /*$("#forgeViewer").empty();
-                var urn = data.node.id;
-                alert("Teste")
-                alert(urn)
-                
-                getForgeToken(function (access_token) {
-                  jQuery.ajax({
-                    url: 'https://developer.api.autodesk.com/modelderivative/v2/designdata/' + urn + '/manifest',
-                    headers: { 'Authorization': 'Bearer ' + access_token },
-                    success: function (res) {
-                      if (res.progress === 'success' || res.progress === 'complete') launchViewer(urn);
-                      else $("#forgeViewer").html('The translation job still running: ' + res.progress + '. Please try again in a moment.');
-                    },
-                    error: function (err) {
-                      var msgButton = 'This file is not translated yet! ' +
-                        '<button class="btn btn-xs btn-info" onclick="translateObject()"><span class="glyphicon glyphicon-eye-open"></span> ' +
-                        'Start translation</button>'
-                      $("#forgeViewer").html(msgButton);
-                    }
-                  });
-                })
-              }
-            });*/
-            
-            //$('#maintree').jstree(true).settings.core.data = lsTreeData;
-            $('#maintree').jstree(true).refresh();
-            $("#maintree").jstree("open_all");
-            $("#maintree").jstree("deselect_all");
-          }
+           }
 function autodeskCustomMenu1(autodeskNode) {
             var items;
           
@@ -347,4 +332,103 @@ function autodeskCustomMenu1(autodeskNode) {
           
             return items;
           }
+
           
+function GetAllIds(){
+
+    var instanceTree = viewer.model.getData().instanceTree;
+ 
+    var allDbIdsStr = Object.keys(instanceTree.nodeAccess.dbIdToIndex);
+ 
+    return allDbIdsStr.map(function(id) { return parseInt(id)});
+ }
+
+function GetPropriedadesTeste(){
+
+    console.log(GetAllIds());
+    viewer.hide(GetAllIds());
+  
+}
+function getSubset(dbIds, name, value, callback) {
+    console.log("getSubset, dbIds.length before = " + dbIds.length)
+    viewer.model.getBulkProperties(dbIds, {
+        propFilter: [name],
+        ignoreHidden: true
+    }, function(data) {
+        var newDbIds = []
+        for (var key in data) {
+            var item = data[key]
+            /*if (item.properties[0].displayValue === value) {*/
+                newDbIds.push(item.dbId)
+           /* }*/
+        }
+        console.log("getSubset, dbIds.length after = " + newDbIds.length)
+        callback(newDbIds)
+    }, function(error) {})
+}
+
+function SucessoAoFiltrar(dbIds) {
+    console.log(dbIds);
+    Autodesk.Viewing.Viewer3D.prototype.turnOff = dbIds;  
+    /*console.log(dbIds.length);
+    getSubset(dbIds, propertyName, 10, function(dbIds) {
+        viewer.isolate(dbIds)
+    })*/
+ 
+       /* console.log(dbIds);
+        viewer.hide(dbIds);
+        Autodesk.Viewing.Viewer3D.prototype.turnOff = dbIds; 
+        
+
+        viewer.model.getBulkProperties(dbIds,['Area'], 
+        function(elements){
+            var totalMass = 0;
+            for(var i=0; i<elements.length; i++){
+                
+            }
+            //console.log(totalMass);
+          })*/
+       
+}
+function SucessoGetBulk(){
+
+}
+function ErroGetBulk(){
+
+}
+function getBulkProperties(dbIds, options, SucessoGetBulk, ErroGetBulk){
+
+}
+
+function GetPropriedades(){
+   arraydb = [];
+   viewer.search('Floor',function(dbIds){
+    
+    viewer.model.getBulkProperties(dbIds, ['Area', 'Material estrutural'],
+    function(elements){
+        var v = [];
+      var totalMass = 0;
+      for(var i=0; i<elements.length; i++){
+        console.log(elements[i].properties);
+        
+        //v.push(elements[i].dbId);
+      try
+      {
+        if(elements[i].properties[1].displayValue=='.BLOCO'){
+           
+            v.push(elements[i].dbId);
+        }
+        }
+        catch(error){
+            console.log(error);
+        }
+        viewer.isolate(v);
+      }
+      
+      
+    });
+   
+ } , null, ['Material']);  
+   
+
+}

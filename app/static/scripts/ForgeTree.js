@@ -16,6 +16,10 @@
 // UNINTERRUPTED OR ERROR FREE.
 /////////////////////////////////////////////////////////////////////
 
+$(document).ready(function () {
+   getDataTreeViewModels();
+   
+});
 /*$(document).ready(function () {
   prepareAppBucketTree();
   $('#refreshBuckets').click(function () {

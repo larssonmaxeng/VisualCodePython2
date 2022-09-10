@@ -675,12 +675,16 @@ def GetHubs(token):
     data = res.json()
     print(data)
     return data
+@app.route("/CreateBucket/<nome>",  methods=["GET", "POST", "PUT"])
+def CreateBucket(nome):
 
-def CreateBucket(token):
-
-    header= { "Content-Type": "application/json", "Authorization": "Bearer "+token      }   
+    token = access_tokenTeste()
+    
+    jtoken = token["access_token"]
+    print("puowchhggffddaaaayyttrreehhhhggfgffn11111"+nome)
+    header= { "Content-Type": "application/json", "Authorization": "Bearer "+jtoken   }   
     body = {
-       "bucketKey":"puowchhggffddaaaayyttrreehhhhggfgffn11111" ,
+       "bucketKey":"puowchhggffddaaaayyttrreehhhhggfgffn11111"+nome,
        "policyKey":"transient"}
     h = json.dumps(header, indent = 4) 
     b = json.dumps(body, indent = 4)
@@ -732,7 +736,7 @@ def GetTreeViewModels():
         #print(itens)
         modelos = []
         for item in itens["items"]:
-            modelos.append({"bucketKey":bucket, "objectId":item["objectId"], "objectKey":item["objectId"], "Nivel":1})
+            modelos.append({"bucketKey":bucket, "objectId":item["objectId"], "objectKey":item["objectKey"], "Nivel":1})
         treeViewModels.append({"bucketKey":bucket, "Nivel":0, "objetos":modelos })    
     criterio = json.dumps(treeViewModels)
     res = make_response(criterio)
