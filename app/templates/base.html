@@ -8,6 +8,7 @@
     <link rel="stylesheet" type="text/css" href="/static/content/site.css" />
     <title>Document</title>
     <link rel="stylesheet" href={{url_for('static',filename='estilo.css')}}
+    {% block links %}{% endblock %}
 </head>
 <body>
     <div class="navbar navbar-inverse navbar-fixed-top">
@@ -25,6 +26,7 @@
                     <li><a href="{{ url_for('index') }}">Critério</a></li>
                     <li><a href="{{ url_for('limpar') }}">Calcular</a></li>
                     <li><a href="{{ url_for('login') }}">Login</a></li>
+                    <li><a href="{{ url_for('forge') }}">BIM</a></li>
                 </ul>
             </div>
         </div>
@@ -37,6 +39,7 @@
     <script src="/static/scripts/bootstrap.js"></script>
     <script src="/static/scripts/respond.js"></script>
     <script src="/static/scripts/funcoesFuzzy.js"></script>
+
     {% block scripts %}{% endblock %}
 </body>
 </html>

@@ -1,0 +1,49 @@
+{% extends 'base.html' %}
+{% block links %}
+<meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no" />
+<meta charset="utf-8">
+
+    <!-- The Viewer CSS -->
+    
+{% endblock %}
+{% block conteudo %}
+    <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/2.*/style.min.css" type="text/css">
+    <!-- The Viewer will be instantiated here -->
+    <div class="container-fluid fill">
+        <div class="row fill">
+          <div class="col-sm-4 fill">
+            <div class="panel panel-default fill">
+              <div class="panel-heading" data-toggle="tooltip">
+                Buckets &amp; Objects
+                <span id="refreshBuckets" class="glyphicon glyphicon-refresh" style="cursor: pointer"></span>
+                <button class="btn btn-xs btn-info" style="float: right" id="showFormCreateBucket" data-toggle="modal" data-target="#createBucketModal">
+                  <span class="glyphicon glyphicon-folder-close"></span> New bucket
+                </button>
+              </div>
+              <div id="appBuckets">
+                tree here
+              </div>
+            </div>
+          </div>
+          <div class="col-sm-8 fill">
+            <div class = "MyViewerDiv" id="MyViewerDiv"></div>
+          </div>
+          
+        </div>
+       
+      </div>
+  
+    
+    <button class = "MyNextButto" id="MyNextButton" onClick=prepareAppBucketTreeFuzzy()>Next!!!</button>
+
+{% endblock %}
+{% block scripts%}
+<script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/2.*/three.min.js"></script>
+<script src="https://developer.api.autodesk.com/modelderivative/v2/viewers/2.*/viewer3D.min.js"></script>
+<script src="/static/scripts/funcoesForge.js"></script>
+<script src="/static/scripts/ForgeTree.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.7/jstree.min.js"></script>
+ 
+{% endblock %}

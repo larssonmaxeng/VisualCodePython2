@@ -21,6 +21,12 @@
                          <button class="botaoSelecionar" id="1000114" type="submit" title="Importar dados do excel">Importar dados</button>
                         </form>
                 </th>
+                <th>
+                        <form  action="/GetTreeViewModels">
+                         <button class="botaoSelecionar" id="1000115" type="submit" title="GetToken">Testar forge</button>
+                        </form>
+                        <button class="botaoSelecionar" id="1000117" type="submit" onclick=getDataTreeViewModels() >Testar forge 2</button>
+                </th>
                 <th>                    
                         <select name="cenario" id="cenario100" class="selectOpcoes">
                                 <option value="Material">Material</option>
@@ -86,4 +92,12 @@
 </div>
 
 
+{% endblock %}
+
+{% block scripts%}
+
+<script src="/static/scripts/funcoesForge.js"></script>
+
+
+ 
 {% endblock %}

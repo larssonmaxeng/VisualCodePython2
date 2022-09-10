@@ -12,6 +12,7 @@ from time import sleep
 from skfuzzy import control as ctrl
 from flask import request
 from app import funcoes
+import requests
 
 
 import io
@@ -87,6 +88,9 @@ def index():
 @app.route('/login')
 def login():
     return render_template('login.html')
+@app.route('/forge')
+def forge():
+    return render_template('forge.html')
 @app.route('/autenticar', methods=['GET'])
 def autenticar():
     usuario = request.args.get('usuario')
@@ -240,8 +244,8 @@ def limpar():
     subcriterios.append(['01- Custo', 'Preço', 'crisp', [], 'CustoPreco'])
     subcriterios.append(['01- Custo', 'Condições de pagamento', 'fuzzy', variavelLinguistica3Opcoes, 'CustoPgto'])
     subcriterios.append(['01- Custo', 'Modelo de reajuste','fuzzy', variavelLinguistica3Opcoes, 'CustoReajuste'])
-    sheet = googleSheet.GoogleSheet()
-    print(sheet.GetParametros( SAMPLE_RANGE_NAME= 'DadosGerais!A2:A5', SAMPLE_SPREADSHEET_ID="1NLqJWL8LeRECbK04Bm41AYq0tu95VbYgsT6DTX6Sq1g"))
+    #sheet = googleSheet.GoogleSheet()
+    #print(sheet.GetParametros( SAMPLE_RANGE_NAME= 'DadosGerais!A2:A5', SAMPLE_SPREADSHEET_ID="1NLqJWL8LeRECbK04Bm41AYq0tu95VbYgsT6DTX6Sq1g"))
     subcriterios.append(['02- Qualidade', 'Baixas taxas de devolução', 'fuzzy', variavelLinguistica3Opcoes, 'QualiDevolucao'])
     subcriterios.append(['02- Qualidade', 'Precisão nas dimensões', 'fuzzy', variavelLinguistica3Opcoes, 'QualiDimensoes'])
     subcriterios.append(['02- Qualidade', 'Equipe técnica capacitada','fuzzy', variavelLinguistica3Opcoes, 'QualiEquipe'])
@@ -324,26 +328,45 @@ def your_url():
                                                    inomeDaVariavelDeSaida=variavelDeSaidaCusto,
                                                    iRegra = "Custo")   
    
-    variavelDeSaidaQualidade = {"nomeDaVariavel":"Qualidade",
-        "QtdeDeCasas":0,
-        "Opções": ["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],
-        "Criterio":"Qualidade",
-        "NotaCrisp": "",
-        "NotaFuzzy":""}
-   
+    
+    variavelDeSaidaQualidade = GetVariavelDeSaida(nomeDaVariavel="Qualidade", opoces =["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],criterio= "Qualidade")
     qualidade, imagemQualidade =ConstruirControladorFuzzy(
                                                    inomeDasVariaveisDeEntrada=GetCriteriosQualidade(req=req), 
                                                    inomeDaVariavelDeSaida=variavelDeSaidaQualidade,
                                                    iRegra = "Qualidade")  
-    #prazo, imagemPrazo = ConstruirControladorFuzzy(notasCusto = req)   
-    #gestao, imagemGestao = ConstruirControladorFuzzy(notasCusto = req)   
-    #geral, imagemGeral = ConstruirControladorFuzzy(notasCusto = req)   
+    
+    variavelDeSaidaPrazo = GetVariavelDeSaida(nomeDaVariavel="PrazoSaida", opoces = ["ruim", "medio", "bom"],criterio= "Prazo")
+    prazo, imagemPrazo = ConstruirControladorFuzzy(
+                                                   inomeDasVariaveisDeEntrada=GetCriteriosPrazo(req=req), 
+                                                   inomeDaVariavelDeSaida=variavelDeSaidaPrazo,
+                                                   iRegra = "Prazo")  
+    
+    variavelDeSaidaGestao = GetVariavelDeSaida(nomeDaVariavel="Gestão", opoces = ["ruim", "medio", "bom"],criterio= "Gestao")
+    gestao, imagemGestao = ConstruirControladorFuzzy(
+                                                   inomeDasVariaveisDeEntrada=GetCriteriosGestao(req=req), 
+                                                   inomeDaVariavelDeSaida=variavelDeSaidaGestao,
+                                                   iRegra = "Prazo")  
+    variavelDeSaidaGeral = GetVariavelDeSaida(nomeDaVariavel="Geral", opoces = ["ruim", "medio", "bom"],criterio= "Geral")   
+    geral, imagemGeral = ConstruirControladorFuzzy(
+                                                   inomeDasVariaveisDeEntrada=GetCriteriosGeral(req=req), 
+                                                   inomeDaVariavelDeSaida=variavelDeSaidaGeral,
+                                                   iRegra = "Geral")     
     
     criterios = []
     criterios.append({"idHtml":"imagemCusto", "valor":str(imagemCusto)})
     criterios.append({"idHtml":"crispCusto", "valor":str(round(custo*1, 2))})
     criterios.append({"idHtml":"imagemQualidade", "valor":str(imagemQualidade)})
     criterios.append({"idHtml":"crispQualidade", "valor":str(round(qualidade*1, 2))})
+    
+    criterios.append({"idHtml":"imagemPrazo", "valor":str(imagemPrazo)})
+    criterios.append({"idHtml":"crispPrazo", "valor":str(round(prazo*1, 2))})
+    
+    criterios.append({"idHtml":"imagemGestao", "valor":str(imagemGestao)})
+    criterios.append({"idHtml":"crispGestao", "valor":str(round(gestao*1, 2))})
+    
+    criterios.append({"idHtml":"imagemGeral", "valor":str(imagemGeral)})
+    criterios.append({"idHtml":"crispGeral", "valor":str(round(geral*1, 2))})
+    
     criterio = json.dumps(criterios)
     #print(criterio)
     
@@ -501,13 +524,38 @@ def GerarRegras(variaveisDeEntrada, variavelDeSaida, nomeDaRegraDeCriterio):
         r3 = ctrl.Rule( (devolucao["bom"] | devolucao["medio"]) & dimensoes["medio"] & equipe["medio"],qualidade["medio"])
         r4 = ctrl.Rule( devolucao["bom"] & dimensoes["ruim"] & equipe["ruim"],qualidade["baixo"])
         r5 = ctrl.Rule( devolucao["ruim"] ,qualidade["muitoBaixo"])
-    
+    if nomeDaRegraDeCriterio=="Prazo":
+        prazo = variaveisDeEntrada[0]
+        producao = variaveisDeEntrada[1]
+        resposta = variaveisDeEntrada[2]
+        prazoGeral = variavelDeSaida
+        
+        r1 = ctrl.Rule( prazo["bom"] | producao["bom"] | resposta["bom"],prazoGeral["bom"])
+        r2 = ctrl.Rule( prazo["medio"] | producao["medio"] | resposta["medio"],prazoGeral["medio"])
+        r3 = ctrl.Rule( prazo["ruim"] | producao["ruim"] | resposta["ruim"],prazoGeral["ruim"])
+        
        
         regras.append(r1)
         regras.append(r2)
         regras.append(r3)
-        regras.append(r4)
-        regras.append(r5)
+    if nomeDaRegraDeCriterio=="Gestao":
+        entrega = variaveisDeEntrada[0]
+        cooperacao = variaveisDeEntrada[1]
+        parceria = variaveisDeEntrada[2]
+        transparencia = variaveisDeEntrada[3]
+        comunicacao = variaveisDeEntrada[4]
+        gestao = variavelDeSaida
+        
+        """r1 = ctrl.Rule( (entrega["bom"] | entrega[] ,gestao["bom"])
+        r1 = ctrl.Rule( prazo["bom"] | producao["bom"] | resposta["bom"],prazoGeral["bom"])
+        r1 = ctrl.Rule( prazo["bom"] | producao["bom"] | resposta["bom"],prazoGeral["bom"])
+        r1 = ctrl.Rule( prazo["bom"] | producao["bom"] | resposta["bom"],prazoGeral["bom"])
+        r1 = ctrl.Rule( prazo["bom"] | producao["bom"] | resposta["bom"],prazoGeral["bom"])
+        """
+       
+        regras.append(r1)
+        regras.append(r2)
+        regras.append(r3)
               
     return regras
 
@@ -522,6 +570,39 @@ def GetCriteriosQualidade(req):
     
     return PreparaCriterios(listaDeCriterios=criterios, criterio="Qualidade")
     
+def GetCriteriosPrazo(req):
+    criterios = []
+    criterios.append({"nomeDaVariavel":"Prazo",
+                      "NotaFuzzy":req["PrazoPrazo"]})
+    criterios.append({"nomeDaVariavel":"Produção",
+                      "NotaFuzzy":req["PrazoProducao"]})
+    criterios.append({"nomeDaVariavel":"Resposta",
+                      "NotaFuzzy":req["PrazoResposta"]})
+    
+    return PreparaCriterios(listaDeCriterios=criterios, criterio="Prazo")
+
+def GetCriteriosGestao(req):
+    criterios = []
+    criterios.append({"nomeDaVariavel":"Clareza",   "NotaFuzzy":req["GestaoEntrega"]})
+    criterios.append({"nomeDaVariavel":"Cooperação",   "NotaFuzzy":req["GestaoCooperacao"]})
+    criterios.append({"nomeDaVariavel":"Parceria",      "NotaFuzzy":req["GestaoParceria"]})
+    criterios.append({"nomeDaVariavel":"Transparência",      "NotaFuzzy":req["GestaoTransparência"]})
+    criterios.append({"nomeDaVariavel":"Boa comunicação",    "NotaFuzzy":req["GestaoComunicacao"]})
+    return PreparaCriterios(listaDeCriterios=criterios, criterio="Gestao")
+
+def GetCriteriosGeral(req):
+    criterios = []
+    criterios.append({"nomeDaVariavel":"Cumpre leis trabalhistas",     "NotaFuzzy":req["GeralLeis"]})
+    criterios.append({"nomeDaVariavel":"Interesse",       "NotaFuzzy":req["GeralInteresses"]})
+    criterios.append({"nomeDaVariavel":"Não usa substâncias tóxica",   "NotaFuzzy":req["GeralToxico"]})
+    
+    criterios.append({"nomeDaVariavel":"Histórico",     "NotaFuzzy":req["GeralHistoricoPrazo"]})
+    criterios.append({"nomeDaVariavel":"Parceira",       "NotaFuzzy":req["GeralParceria"]})
+    criterios.append({"nomeDaVariavel":"Histórico de fornecimento",   "NotaFuzzy":req["GeralHistorico"]})
+    criterios.append({"nomeDaVariavel":"SSEGT",   "NotaFuzzy":req["GeralSaudeESeguranca"]})  
+    
+    
+    return PreparaCriterios(listaDeCriterios=criterios, criterio="Geral")
 
 def PreparaCriterios( listaDeCriterios, criterio):
     criterios = []
@@ -533,3 +614,134 @@ def PreparaCriterios( listaDeCriterios, criterio):
             "NotaCrisp": "",
             "NotaFuzzy": item["NotaFuzzy"]})
     return criterios    
+
+def GetVariavelDeSaida(nomeDaVariavel, opcoes, criterio):
+    return {"nomeDaVariavel":nomeDaVariavel,
+        "QtdeDeCasas":0,
+        "Opções": opcoes,
+        "Criterio":criterio,
+        "NotaCrisp": "",
+        "NotaFuzzy":""}
+    
+#@app.route("/access_tokenTeste",  methods=["GET", "POST", "PUT"])
+def access_tokenTeste():
+   
+    print("fsde")
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    body = (
+        f"client_id=puOWchQKGqbKGXsCmvJ38F8qRhEJlCln"
+        f"&client_secret=o1IVbhcn3eVxfmg2"
+        "&grant_type=client_credentials"
+        "&scope=bucket:create bucket:read data:read bucket:update bucket:delete account:write user:write data:create data:write viewables:read"
+    )
+    #print(body)
+    res =  requests.post("https://developer.api.autodesk.com/authentication/v1/authenticate", data=body, headers=headers)
+    data = res.json()
+    #print(data)
+    
+    #GetItens(data["access_token"])
+   #j = GetBucketRota(token=data["access_token"])
+   # print(j)
+    
+    """Esse funciona 
+         res = make_response(data)
+    """
+
+    return data    
+@app.route("/access_token",  methods=["GET", "POST", "PUT"])
+def access_token():
+    print("fsde")
+    headers = {"Content-Type": "application/x-www-form-urlencoded"}
+    body = (
+        f"client_id=puOWchQKGqbKGXsCmvJ38F8qRhEJlCln"
+        f"&client_secret=o1IVbhcn3eVxfmg2"
+        "&grant_type=client_credentials"
+        "&scope=bucket:create bucket:read data:read bucket:update bucket:delete account:write user:write data:create data:write viewables:read"
+    )
+    #print(body)
+    res =  requests.post("https://developer.api.autodesk.com/authentication/v1/authenticate", data=body, headers=headers)
+    data = res.json()
+
+    res = make_response(data)
+
+    return res
+
+#viewables:read data:read
+
+def GetHubs(token):
+    headers = {"Authorization": "Bearer "+token+"\""}#application/x-www-form-urlencoded"}
+    
+    res = requests.get("https://developer.api.autodesk.com/project/v1/hubs",  headers=headers)
+    data = res.json()
+    print(data)
+    return data
+
+def CreateBucket(token):
+
+    header= { "Content-Type": "application/json", "Authorization": "Bearer "+token      }   
+    body = {
+       "bucketKey":"puowchhggffddaaaayyttrreehhhhggfgffn11111" ,
+       "policyKey":"transient"}
+    h = json.dumps(header, indent = 4) 
+    b = json.dumps(body, indent = 4)
+    res = requests.post("https://developer.api.autodesk.com/oss/v2/buckets", json= body  , headers=header)
+
+    data = res.json()
+    print(data)
+    return data
+
+@app.route("/GetBucketRot/<token>",  methods=["GET", "POST", "PUT"])
+def GetBucketRota(token):
+    header= {"Authorization": "Bearer "+token}     
+    res = requests.get("https://developer.api.autodesk.com/oss/v2/buckets",  headers=header)
+    buckets = res.json()
+    print(buckets)
+    return buckets
+@app.route("/GetItensRota",  methods=["GET", "POST", "PUT"])
+def GetItensRota():
+    req = request.get_json()
+    print(req)
+    token = req["token_acess"]
+    bucket = req["bucket"]    
+    header= {"Authorization": "Bearer "+token}   
+    res = requests.get("https://developer.api.autodesk.com/oss/v2/buckets/"+bucket+"/objects",  headers=header)
+    itens = res.json()
+    print(itens)
+    return itens
+@app.route("/GetTreeViewModels",  methods=["GET", "POST", "PUT"])
+def GetTreeViewModels():
+    treeViewModels = []
+    
+    token = access_tokenTeste()
+    
+    jtoken = token["access_token"]
+    #print(jtoken["access_token"])
+
+   
+    buketsItem = GetBucket(jtoken)
+    #print(buketsItem["items"])
+    #for buketItem in buketsItem:
+
+    for bucket in buketsItem["items"]:
+        
+        #print(bucket["bucketKey"])
+        bucket = bucket["bucketKey"]   
+        header= {"Authorization": "Bearer "+jtoken}   
+        res = requests.get("https://developer.api.autodesk.com/oss/v2/buckets/"+bucket+"/objects",  headers=header)
+        itens = res.json()
+        #print(itens)
+        modelos = []
+        for item in itens["items"]:
+            modelos.append({"bucketKey":bucket, "objectId":item["objectId"], "objectKey":item["objectId"], "Nivel":1})
+        treeViewModels.append({"bucketKey":bucket, "Nivel":0, "objetos":modelos })    
+    criterio = json.dumps(treeViewModels)
+    res = make_response(criterio)
+    print(criterio)
+    
+    return res
+
+def GetBucket(token):
+    header= {"Authorization": "Bearer "+token}     
+    res = requests.get("https://developer.api.autodesk.com/oss/v2/buckets",  headers=header)
+    buckets = res.json()
+    return buckets
