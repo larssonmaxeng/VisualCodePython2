@@ -1,3 +1,4 @@
+from sklearn.datasets import load_iris
 import base64
 from email.encoders import encode_base64
 import json
@@ -13,6 +14,7 @@ from skfuzzy import control as ctrl
 from flask import request
 from app import funcoes
 import requests
+import pandas as pd
 
 
 import io
@@ -693,7 +695,18 @@ def CreateBucket(nome):
     data = res.json()
     print(data)
     return data
-
+@app.route("/DeleteBucket/<buketKey>",  methods=["GET", "POST", "PUT"])
+def DeleteBucket(buketKey):
+    token = access_tokenTeste()   
+    jtoken = token["access_token"]
+    header= { "Content-Type": "application/json", "Authorization": "Bearer "+jtoken   }   
+    """body = {
+       "bucketKey":"puowchhggffddaaaayyttrreehhhhggfgffn11111"+nome,
+       "policyKey":"transient"}
+    h = json.dumps(header, indent = 4) 
+    b = json.dumps(body, indent = 4)"""
+    res = requests.post("https://developer.api.autodesk.com/oss/v2/buckets",  headers=header)
+    return  res 
 @app.route("/GetBucketRot/<token>",  methods=["GET", "POST", "PUT"])
 def GetBucketRota(token):
     header= {"Authorization": "Bearer "+token}     
@@ -743,9 +756,30 @@ def GetTreeViewModels():
     print(criterio)
     
     return res
-
 def GetBucket(token):
     header= {"Authorization": "Bearer "+token}     
     res = requests.get("https://developer.api.autodesk.com/oss/v2/buckets",  headers=header)
     buckets = res.json()
     return buckets
+@app.route("/GetListBOM",  methods=["GET", "POST", "PUT"])
+def GetListBOM():
+    sheet = googleSheet.GoogleSheet()
+    planilha = sheet.GetDados(SAMPLE_RANGE_NAME='dados!A2:d10', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    index = sheet.GetDados(SAMPLE_RANGE_NAME='dados!A2:a10', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    colunas = sheet.GetDados(SAMPLE_RANGE_NAME='dados!A1:d1', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    
+    
+    dataFrame = pd.DataFrame(planilha, columns=colunas[0] )
+    print(dataFrame)
+   
+    df = dataFrame.groupby(["MODELO", "NIVEL01"])
+    print(df.first())
+    dfModelos = dataFrame.filter(items=["MODELO"])
+    print(dfModelos)
+    print(dfModelos.groupby(["MODELO"]).first())
+    m = dataFrame.loc[dataFrame["MODELO"]=="modelo 01"]
+    print(m)
+    return 'foi'
+    
+    
+    

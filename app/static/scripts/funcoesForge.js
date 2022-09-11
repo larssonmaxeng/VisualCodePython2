@@ -432,3 +432,34 @@ function GetPropriedades(){
    
 
 }
+function GetEelemnets(){
+     
+     viewer.search('Floor',function(dbIds){
+     viewer.model.getBulkProperties(dbIds, ['Area', 'Material estrutural'],
+     function(elements){
+         var v = [];
+       var totalMass = 0;
+       for(var i=0; i<elements.length; i++){
+         console.log(elements[i].properties);
+         
+         //v.push(elements[i].dbId);
+       try
+       {
+         if(elements[i].properties[1].displayValue=='.BLOCO'){
+            
+             v.push(elements[i].dbId);
+         }
+         }
+         catch(error){
+             console.log(error);
+         }
+         viewer.isolate(v);
+       }
+       
+       
+     });
+    
+  } , null, ['Material']);  
+    
+ 
+ }

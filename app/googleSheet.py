@@ -5,7 +5,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
-from flask import send_from_directory
+
 from urllib import response
 class GoogleSheet:
     def __init__(self):
@@ -64,7 +64,7 @@ class GoogleSheet:
                 token.write(self.creds.to_json())"""
     def GetCred(self):
         return self.creds                
-    def GetParametros(self, SAMPLE_SPREADSHEET_ID, SAMPLE_RANGE_NAME):
+    def GetDados(self, SAMPLE_SPREADSHEET_ID, SAMPLE_RANGE_NAME):
                
         service = build('sheets', 'v4', credentials=self.creds)
         sheet = service.spreadsheets()
