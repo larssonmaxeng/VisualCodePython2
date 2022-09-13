@@ -18,7 +18,8 @@
 
 $(document).ready(function () {
    getDataTreeViewModels();
-   
+   console.log("teste")
+
 });
 /*$(document).ready(function () {
   prepareAppBucketTree();
