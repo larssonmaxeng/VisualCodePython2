@@ -20,6 +20,18 @@ textarea {
 .field-validation-error {
     color: #b94a48;
 }
+.headerFuzzy {
+    height: 70px;
+    width: 100%;
+    margin-top: -10px;
+    margin-bottom: 5px;
+    margin-right: 50px;
+    margin-left: 50px;
+    background-color: gray;
+    border-radius: 0px 0px 10px 10px;
+    position: fixed;
+    z-index: 1;
+}
 
 .field-validation-valid {
     display: none;

@@ -687,7 +687,7 @@ def CreateBucket(nome):
     header= { "Content-Type": "application/json", "Authorization": "Bearer "+jtoken   }   
     body = {
        "bucketKey":"puowchhggffddaaaayyttrreehhhhggfgffn11111"+nome,
-       "policyKey":"transient"}
+       "policyKey":"persistent"}
     h = json.dumps(header, indent = 4) 
     b = json.dumps(body, indent = 4)
     res = requests.post("https://developer.api.autodesk.com/oss/v2/buckets", json= body  , headers=header)
@@ -695,18 +695,18 @@ def CreateBucket(nome):
     data = res.json()
     print(data)
     return data
-@app.route("/DeleteBucket/<buketKey>",  methods=["GET", "POST", "PUT"])
-def DeleteBucket(buketKey):
+@app.route("/DeleteBucket/<bucketKey>",  methods=["GET", "POST", "PUT","DELETE"])
+def DeleteBucket(bucketKey):
     token = access_tokenTeste()   
     jtoken = token["access_token"]
-    header= { "Content-Type": "application/json", "Authorization": "Bearer "+jtoken   }   
+    header= { "Authorization": "Bearer "+jtoken   }   
     """body = {
        "bucketKey":"puowchhggffddaaaayyttrreehhhhggfgffn11111"+nome,
        "policyKey":"transient"}
     h = json.dumps(header, indent = 4) 
     b = json.dumps(body, indent = 4)"""
-    res = requests.post("https://developer.api.autodesk.com/oss/v2/buckets",  headers=header)
-    return  res 
+    res = requests.delete("https://developer.api.autodesk.com/oss/v2/buckets/"+bucketKey,  headers=header)
+    return res.json()
 @app.route("/GetBucketRot/<token>",  methods=["GET", "POST", "PUT"])
 def GetBucketRota(token):
     header= {"Authorization": "Bearer "+token}     
@@ -738,7 +738,7 @@ def GetTreeViewModels():
     buketsItem = GetBucket(jtoken)
     #print(buketsItem["items"])
     #for buketItem in buketsItem:
-
+    modelosBom = GetListBOM()
     for bucket in buketsItem["items"]:
         
         #print(bucket["bucketKey"])
@@ -748,12 +748,22 @@ def GetTreeViewModels():
         itens = res.json()
         #print(itens)
         modelos = []
+        i = 0
         for item in itens["items"]:
-            modelos.append({"bucketKey":bucket, "objectId":item["objectId"], "objectKey":item["objectKey"], "Nivel":1})
+            listBom = []
+            for itemBom in modelosBom:
+                print(type(itemBom).__name__)
+                print(str(i)+'********************Item bOM*******************')
+                print(itemBom)
+                print(itemBom["MODELO"]) 
+                i=i+1
+                if(itemBom["MODELO"]==item["objectKey"]):
+                    listBom.append({"bucketKey":bucket, "objectId":item["objectId"], "objectKey":item["objectKey"], "Nivel":2, "bom":itemBom})
+            modelos.append({"bucketKey":bucket, "objectId":item["objectId"], "objectKey":item["objectKey"], "Nivel":1, "ListBom": listBom})           
         treeViewModels.append({"bucketKey":bucket, "Nivel":0, "objetos":modelos })    
     criterio = json.dumps(treeViewModels)
     res = make_response(criterio)
-    print(criterio)
+    #print(criterio)
     
     return res
 def GetBucket(token):
@@ -764,22 +774,49 @@ def GetBucket(token):
 @app.route("/GetListBOM",  methods=["GET", "POST", "PUT"])
 def GetListBOM():
     sheet = googleSheet.GoogleSheet()
-    planilha = sheet.GetDados(SAMPLE_RANGE_NAME='dados!A2:d10', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
-    index = sheet.GetDados(SAMPLE_RANGE_NAME='dados!A2:a10', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
-    colunas = sheet.GetDados(SAMPLE_RANGE_NAME='dados!A1:d1', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    planilha = sheet.GetDados(SAMPLE_RANGE_NAME='Nivel2!b2:d10', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    index = sheet.GetDados(SAMPLE_RANGE_NAME='Nivel2!A2:a10', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    colunas = sheet.GetDados(SAMPLE_RANGE_NAME='Nivel2!b1:d1', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    #print(index)
     
-    
-    dataFrame = pd.DataFrame(planilha, columns=colunas[0] )
-    print(dataFrame)
+    dataFrame = pd.DataFrame(planilha, columns=colunas[0])
+    #print(dataFrame)
    
     df = dataFrame.groupby(["MODELO", "NIVEL01"])
-    print(df.first())
-    dfModelos = dataFrame.filter(items=["MODELO"])
-    print(dfModelos)
-    print(dfModelos.groupby(["MODELO"]).first())
-    m = dataFrame.loc[dataFrame["MODELO"]=="modelo 01"]
-    print(m)
-    return 'foi'
+    #print(df.first())
+    Modelos = GetModelos(dataFrame=dataFrame)
+    #print(Modelos)
+
+    vetorModelos = []
+    vetorNiveis1 = []
+    for modelo in Modelos.index:
+        m = dataFrame.loc[dataFrame["MODELO"]==modelo]
+        #print('***************Modelo filtrado**************************')
+       # print(m)
+        niveis1 = GetNivel01(dataFrame=m, modelo=modelo)
+        
+        for nivel1 in niveis1.index:
+            #print('***************Modelo filtrado nivel 1**************************')
+            dfNivel1 = m.loc[m["NIVEL01"]==nivel1]
+            ##print(dfNivel1)
+            niveis2 = (dfNivel1.loc[dataFrame["NIVEL01"]==nivel1]).groupby("NIVEL02").first()
+           # print('***************Modelo filtrado nivel 2**************************')
+            #print(niveis2) 
+            vetorNiveis2 = []
+            for nivel2 in niveis2.index:
+                vetorNiveis2.append({"MODELO":modelo, "NIVEL01":nivel1, "NIVEL02":nivel2})
+            vetorNiveis1.append({"MODELO":modelo, "NIVEL01":nivel1, "NIVEL02":vetorNiveis2})
+        vetorModelos.append({"MODELO":modelo, "NIVEL01":vetorNiveis1})
+    print(vetorNiveis1)        
     
+    return vetorNiveis1
     
+def GetModelos(dataFrame):
+    df = (dataFrame.filter(items=["MODELO"])).groupby(["MODELO"]).first()
+    return df
     
+def GetNivel01(dataFrame, modelo):
+    df = (dataFrame.loc[dataFrame["MODELO"]==modelo]).groupby("NIVEL01").first()
+   # print('******************GetMNivel01*********************')
+    #print(df)
+    return df    

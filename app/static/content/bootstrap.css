@@ -756,11 +756,17 @@ pre code {
   overflow-y: scroll;
 }
 
-.container {
-  padding-right: 15px;
-  padding-left: 15px;
-  margin-right: auto;
-  margin-left: auto;
+.container1 {
+  height: 70px;
+  width: 100%;
+  margin-top: -10px;
+  margin-bottom: 5px;
+  margin-right: 50px;
+  margin-left: 0px;
+  
+  border-radius: 0px 0px 10px 10px;
+
+  z-index: 1;
 }
 
 .container:before,

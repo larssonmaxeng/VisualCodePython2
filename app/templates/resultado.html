@@ -1,11 +1,18 @@
 {% extends 'base.html' %}
 {% block conteudo %}
 <h1 class="tituloPagina textoCentralizado">Definição dos critérios</h1>
-<div class="divFundoBotao">
+<div class="divFundoBotao row">
        <!--<form action = "/your_url" onSubmit="calcular()" method="PUT">-->
         <!--<button  name = "hhhhh" type="submit">Teste</button>-->
        <!--</form>-->
         <table class="tabelaSemBorda">
+        <th>
+                <th>  
+                        <button class="botaoSelecionar" type="submit" title="Atualiza o treeview">Atualizar</button>
+                </th>
+                <th>
+                        <button class="botaoSelecionar" type="submit" title="Salva as informações">Salvar</button>
+                </th>
                 <th>
                 <form action="/limpar">
                         <button class="botaoSelecionar" type="submit" title="Limpar os dados do fornecedor">Limpar</button>
@@ -21,11 +28,19 @@
                          <button class="botaoSelecionar" id="1000114" type="submit" title="Importar dados do excel">Importar dados</button>
                         </form>
                 </th>
-                <th>
+               <!-- <th>
                         <form  action="/GetTreeViewModels">
                          <button class="botaoSelecionar" id="1000115" type="submit" title="GetToken">Testar forge</button>
                         </form>
                         <button class="botaoSelecionar" id="1000117" type="submit" onclick=getDataTreeViewModels() >Testar forge 2</button>
+                </th>-->
+                <th>                    
+                        <select name="cenario" id="cenario100" class="selectOpcoes">
+                                <option value="Fornecedor">Material</option>
+                                <option value="Mdo">Mão de obra</option>
+                                <option value="Material/Mdo">Material e mão de obra</option>
+                                >
+                        </select>
                 </th>
                 <th>                    
                         <select name="cenario" id="cenario100" class="selectOpcoes">
@@ -39,56 +54,58 @@
 
 </div>
 
-<div name="div3">
-        <table class="tabelaAlterada">
-       
-           {% for crit in criterios %}
-           <tr>    
-                <th width="100px" class="tituloColuna" name={{crit[0]}}>{{crit[0]}}</th>
-                <th width="80px" class="tituloColuna">Notas</th>                
-                {% for subCrit in subcriterios %}
-                        {% if subCrit[0]==crit[0] %}
-                        <tr>
-                                <td class="tituloSubcriterio" >{{subCrit[1]}}
-                                </td>
-                                <td>
-                                        {% if subCrit[2]=='crisp'%}
-                                             <input type="number" placeholder ="Digite a nota" id={{subCrit[4]}}></input>                                        
-                                        {% else %}
-                                        <select class="selectNotas" name="cars" id={{subCrit[4]}}>
-                                                {% for opcao in subCrit[3] %}      
-                                                        <option value={{opcao}}>{{opcao}}</option>
-                                                {% endfor %}
-                                        </select>
-                                        {% endif %}
-
-                                </td>
-                        </tr>
-                        {% endif %}
-
-                {% endfor %}
- 
-                <tr>
-                        <td class="tituloSubcriterio" >Resultado</td>
-                        {% if modo=='Limpeza' %}
-                        <td class="tituloSubcriterio">
-                               <h style="text-align:center" id="crisp{{crit[2]}}"> Aguardando cálculo</h></br>
-                               <img class='imagem300' id="imagem{{crit[2]}}" src="">
-                        </td>
-                        {% else %}        
-                        <td class="tituloSubcriterio" >
-                                <img class='imagem300' id="imagem{{crit[2]}}" src="{{url_for('static', filename = 'Grafico.jpg')}}">
-                        </td>
-                        {% endif %}
-                        
-                </tr>
-           </tr>
-           {% endfor %}   
+<div class="wrapperFuzzy row">
+        <div class="box"  id="comprasId"> teste </div>
+        <div  class="box1">
+                <table class="tabelaAlterada">
         
-        </table>
+                {% for crit in criterios %}
+                <tr>    
+                        <th width="400px" class="tituloColuna" name={{crit[0]}}>{{crit[0]}}</th>
+                        <th width="80px" class="tituloColuna">Notas</th>                
+                        {% for subCrit in subcriterios %}
+                                {% if subCrit[0]==crit[0] %}
+                                <tr>
+                                        <td class="tituloSubcriterio" >{{subCrit[1]}}
+                                        </td>
+                                        <td>
+                                                {% if subCrit[2]=='crisp'%}
+                                                <input type="number" placeholder ="Digite a nota" id={{subCrit[4]}}></input>                                        
+                                                {% else %}
+                                                <select class="selectNotas" name="cars" id={{subCrit[4]}}>
+                                                        {% for opcao in subCrit[3] %}      
+                                                                <option value={{opcao}}>{{opcao}}</option>
+                                                        {% endfor %}
+                                                </select>
+                                                {% endif %}
 
-        <!--<button id="gdgdgdg" onclick="calcular()" name="bsdfbse" tag="sjdbnjseb">Teste</button>-->
+                                        </td>
+                                </tr>
+                                {% endif %}
 
+                        {% endfor %}
+        
+                        <tr>
+                                <td class="tituloSubcriterio" >Resultado</td>
+                                {% if modo=='Limpeza' %}
+                                <td class="tituloSubcriterio">
+                                <h style="text-align:center" id="crisp{{crit[2]}}"> Aguardando cálculo</h></br>
+                                <img class='imagem300' id="imagem{{crit[2]}}" src="">
+                                </td>
+                                {% else %}        
+                                <td class="tituloSubcriterio" >
+                                        <img class='imagem300' id="imagem{{crit[2]}}" src="{{url_for('static', filename = 'Grafico.jpg')}}">
+                                </td>
+                                {% endif %}
+                                
+                        </tr>
+                </tr>
+                {% endfor %}   
+                
+                </table>
+
+                <!--<button id="gdgdgdg" onclick="calcular()" name="bsdfbse" tag="sjdbnjseb">Teste</button>-->
+        </div>
 </div>
 
 
@@ -97,7 +114,18 @@
 {% block scripts%}
 
 <script src="/static/scripts/funcoesForge.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
+<script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.7/jstree.min.js"></script>
 
 
- 
+<script>
+        $(document).ready(function () {
+                getDataTreeViewAquisicoes() ;    
+                
+        });
+        
+</script>
 {% endblock %}
+
+
