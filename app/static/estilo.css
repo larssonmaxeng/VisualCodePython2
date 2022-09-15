@@ -158,7 +158,7 @@
       box-sizing: border-box;
       padding: 1rem;
       margin: 1rem;
-      width: calc((100% / 7) - 2rem); /* calco para descontar a margem da largura do box se aumenta a marge tem que ajustar aqui tb */
+      width: calc((100% / 5) - 2rem); /* calco para descontar a margem da largura do box se aumenta a marge tem que ajustar aqui tb */
       font-family: Arial, Helvetica, sans-serif;
       font-size: 14px;
   }
@@ -167,4 +167,10 @@
     padding: 1rem;
     margin: 1rem;
     
+}
+.cabecalho{
+  
+  width: 600px;
+  padding: 40px 2%;
+  text-align: left;
 }

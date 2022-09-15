@@ -5,7 +5,8 @@
        <!--<form action = "/your_url" onSubmit="calcular()" method="PUT">-->
         <!--<button  name = "hhhhh" type="submit">Teste</button>-->
        <!--</form>-->
-        <table class="tabelaSemBorda">
+
+       <table class="tabelaSemBorda" position: absolute>
         <th>
                 <th>  
                         <button class="botaoSelecionar" type="submit" title="Atualiza o treeview">Atualizar</button>
@@ -55,7 +56,9 @@
 </div>
 
 <div class="wrapperFuzzy row">
-        <div class="box"  id="comprasId"> teste </div>
+        <div  class="box" >Pedidos
+                <div  width=200px  id="comprasId"> Pedidos </div>
+        </div>
         <div  class="box1">
                 <table class="tabelaAlterada">
         
@@ -112,7 +115,7 @@
 {% endblock %}
 
 {% block scripts%}
-
+<script src="/static/scripts/funcoesFuzzy.js"></script>
 <script src="/static/scripts/funcoesForge.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>

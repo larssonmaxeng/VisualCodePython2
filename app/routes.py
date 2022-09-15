@@ -20,6 +20,7 @@ import pandas as pd
 import io
 
 from app import googleSheet
+from app import bancoDeDados
 
 @app.route('/')
 @app.route('/index')
@@ -820,3 +821,71 @@ def GetNivel01(dataFrame, modelo):
    # print('******************GetMNivel01*********************')
     #print(df)
     return df    
+@app.route("/GetTreeViewPedidos",  methods=["GET", "POST", "PUT"])
+def GetTreeViewPedidos():
+
+   
+    sheet = googleSheet.GoogleSheet()
+    dfPedido = bancoDeDados.GetPedidos(sheet=sheet)
+    #print("**********************************")
+    #print(dfPedido)
+    dfPedidoFornecedor = bancoDeDados.GetPedidoFornecedor(sheet=sheet)
+    #print("**********************************")
+    #print(dfPedidoFornecedor)
+    
+    #dfFornecedor = bancoDeDados.GetFornecedores(sheet=sheet)
+    #print("**********************************")
+    #print(dfFornecedor)
+    treeViewPedidos=[]
+    for i in dfPedido.index:
+        dfFiltroFornecedor = dfPedidoFornecedor.loc[dfPedidoFornecedor["pedidoId"]==dfPedido["pedidoId"][i]]
+        fornecedoresPedido = []
+        for j in dfFiltroFornecedor.index:
+            fornecedorPedido = {'text':dfFiltroFornecedor["fornecedorId"][j]+'-'+dfFiltroFornecedor["fornecedor"][j],
+                                'data':{'fornecedorId':dfFiltroFornecedor["fornecedorId"][j], 'pedidoId':dfFiltroFornecedor["pedidoId"][j]}}
+            fornecedoresPedido.append(fornecedorPedido)
+        treeViewPedidos.append({'text':dfPedido["pedidoId"][i]+'-'+dfPedido["pedido"][i],
+                       'children':fornecedoresPedido, 
+                       'data':{'pedidoId':dfPedido["pedidoId"][i], 'pedido':dfPedido["pedido"][i]}})    
+    criterio = json.dumps(treeViewPedidos)
+    res = make_response(criterio)
+    #print(criterio)
+    
+    return res
+   
+@app.route("/GetNotaPedidos",  methods=["GET", "POST", "PUT"])
+def GetNotaPedidos():
+
+    req = request.get_json()
+    print(req)
+   
+    sheet = googleSheet.GoogleSheet()
+    dfnotaPedido = bancoDeDados.GetNotaPedidoFornecedor(sheet=sheet)
+    dfFiltroNotaPedido = dfnotaPedido.loc[(dfnotaPedido["pedidoId"]==req["pedidoId"])&(dfnotaPedido["fornecedorId"]==req["fornecedorId"])]
+    return dfFiltroNotaPedido.to_json(orient="records")
+    
+    #print("**********************************")
+    #print(dfPedido)
+    dfPedidoFornecedor = bancoDeDados.GetPedidoFornecedor(sheet=sheet)
+    #print("**********************************")
+    #print(dfPedidoFornecedor)
+    
+    #dfFornecedor = bancoDeDados.GetFornecedores(sheet=sheet)
+    #print("**********************************")
+    #print(dfFornecedor)
+    treeViewPedidos=[]
+    for i in dfPedido.index:
+        dfFiltroFornecedor = dfPedidoFornecedor.loc[dfPedidoFornecedor["pedidoId"]==dfPedido["pedidoId"][i]]
+        fornecedoresPedido = []
+        for j in dfFiltroFornecedor.index:
+            fornecedorPedido = {'text':dfFiltroFornecedor["fornecedorId"][j]+'-'+dfFiltroFornecedor["fornecedor"][j],
+                                'data':{'fornecedorId':dfFiltroFornecedor["fornecedorId"][j], 'pedidoId':dfFiltroFornecedor["pedidoId"][j]}}
+            fornecedoresPedido.append(fornecedorPedido)
+        treeViewPedidos.append({'text':dfPedido["pedidoId"][i]+'-'+dfPedido["pedido"][i],
+                       'children':fornecedoresPedido, 
+                       'data':{'pedidoId':dfPedido["pedidoId"][i], 'pedido':dfPedido["pedido"][i]}})    
+    criterio = json.dumps(treeViewPedidos)
+    res = make_response(criterio)
+    #print(criterio)
+    
+    return res

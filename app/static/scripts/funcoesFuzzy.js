@@ -187,3 +187,145 @@ function calcular() {
     obterDados();
 
 }
+
+
+function getDataTreeViewAquisicoes(){
+    var jsonData = {};
+   /*var jsonData = {};
+    for (let i = 0; i < subcriterios.length; i++) {
+        var ele  = document.getElementById(subcriterios[i]);
+        jsonData[subcriterios[i]] = ele.value;
+    }*/
+    jsonData["Teste"] = "Teste";
+    var your_data =  jsonData
+
+    fetch(`${window.origin}/GetTreeViewPedidos`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(your_data),
+        cache: "no-cache",
+        headers: new Headers({
+            "content-type": "application/json"
+        })
+        }).then(response => response.json())
+        .then(function(data){ 
+            var jsonData = [];         
+            console.log(data);
+             
+           /* data.forEach(function(data1, index) { 
+                var bucket = {};     
+                    
+                bucket['text'] = data1["text"];
+                bucket['state'] = 'open';
+                jsonObjetos = [];
+                //console.log(data1['objetos']);
+                    if(data1['objetos']!=undefined){    
+                        data1['objetos'].forEach(function(objeto, index) {
+                        var jsonObjeto = {};
+                        jsonObjeto['text']= objeto["objectKey"];
+                        jsonObjeto['data'] = objeto;
+                        jsonNiveis01 = []
+                        if(objeto['ListBom']!=undefined){    
+                           
+                            objeto['ListBom'].forEach(function(nivel01, index) {
+                            //for aqui nivel 01
+                            var  jsonNivel1 = {}
+                            jsonNivel1['text']=(nivel01['bom'])["NIVEL01"]
+                            jsonNivel1['data']=nivel01
+                            
+                            var jsonNiveis2=[]
+                            if(nivel01['bom']!=undefined){    
+                                console.log(nivel01['bom'])
+                                var nivel02 = (nivel01['bom'])["NIVEL02"];
+                                //console.log('***********************')    
+                                //console.log(nivel02)
+                                //console.log((nivel01['bom'])["NIVEL01"])
+                                nivel02.forEach(function(nivel2, index) {
+                                //console.log('//for aqui nivel 02');
+                                //console.log(nivel2)
+
+                                var  jsonNivel2 = {}
+                                jsonNivel2['text']=nivel2['NIVEL02']
+                                jsonNivel2['data']=nivel2
+                                jsonNiveis2.push(jsonNivel2)
+
+                                });
+
+                                jsonNivel1['children'] = jsonNiveis2
+                                
+                            }          
+                            jsonNiveis01.push(jsonNivel1);
+                            console.log('***Inserir jsonNivel01***')
+                            console.log(jsonNivel1);
+                            }
+                           
+                            );
+
+                        }
+                        jsonObjeto['children'] = jsonNiveis01
+                       
+                        jsonObjetos.push(jsonObjeto);
+                    });
+                    }
+                    bucket['children'] = jsonObjetos;
+                    
+                    jsonData.push(bucket);
+
+                });   */
+                $('#comprasId').jstree({
+                    'core': {
+                        "themes": {
+                            "responsive": false
+                        },
+                        "check_callback": true,
+                        'data': data
+                    },
+                    "types": {
+                        "default": {
+                            "icon": "fa fa-folder icon-state-warning icon-lg"
+                        },
+                        "file": {
+                            "icon": "fa fa-file icon-state-warning icon-lg"
+                        }
+                    },
+                    "state": { "key": "demo2" },
+                    "plugins": ["state", "types", "unique", "json_data", "search"]
+                }).bind("activate_node.jstree", function (evt, data) {
+                    console.log("Clicou");
+                    
+                   
+                 if (data != null && data.node != null && data.node.data != []) {
+                      //$("#forgeViewer").empty();
+                      
+                      fetch(`${window.origin}/GetTreeViewPedidos`, {
+                        method: "POST",
+                        credentials: "include",
+                        body: JSON.stringify(your_data),
+                        cache: "no-cache",
+                        headers: new Headers({
+                            "content-type": "application/json"
+                        })
+                        }).then(response => response.json())
+                        .then(function(data){ 
+                            var jsonData = [];         
+                            console.log(data);
+                      
+                      console.log(data.node)
+                      console.log(btoa(data.node.data["objectId"]));
+                      var urn = btoa(data.node.data["objectId"]);
+                      console.log("tentarAbrir");
+                      AbrirModelo(urn);
+                      
+                        
+                    }
+                  });
+                //$('#comprasId').jstree(true).settings.core.data = data;
+                $('#comprasId').jstree(true).refresh();
+                $('#comprasId').jstree("open_all");
+                $('#comprasId').jstree("deselect_all");
+            console.log(jsonData);
+        }
+            //var jsonData = {};
+            );
+            
+    }
