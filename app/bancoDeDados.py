@@ -22,10 +22,11 @@ def GetPedidos(sheet):
     planilha = sheet.GetDados(SAMPLE_RANGE_NAME='pedido!A3:B'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
     df = pd.DataFrame(planilha, columns=['pedidoId','pedido'])
     return df
-def GetNotaPedidoFornecedor(sheet, pedidoId, fornecedorId):
+def GetNotaPedidoFornecedor(sheet):
     linha = GetLinhaMaxima(nome="notaPedidoFornecedor", sheet=sheet)+1
-    planilha = sheet.GetDados(SAMPLE_RANGE_NAME='notaPedidoFornecedor!A3:E'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
-    df = pd.DataFrame(planilha, columns=['notaPedidoForncedorId',	'pedidoFornecedorId'	,'Criterio',	'Subcriterio',	'Nota'])   
+    planilha = sheet.GetDados(SAMPLE_RANGE_NAME='notaPedidoFornecedor!A3:H'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    df = pd.DataFrame(planilha, columns=['notaPedidoForncedorId', 'pedidoId',	'fornecedorId'	,'criterio',	'subcriterio',	'nota', 'htmlId', 'ativo'])   
+    #print(df)
     return df
     dfFiltropedido = df.loc[df["pedidoId"]==pedidoId]
     dfFiltroFornecedor = dfFiltropedido.loc[dfFiltropedido["pedidoId"]==fornecedorId]
@@ -48,4 +49,13 @@ def GetLinhaMaxima(nome, sheet):
         return int(dfFiltro["numeroRegistro"][f])
     return []
 
-   
+def GetCriterios(sheet):
+    linha = 7#GetLinhaMaxima(nome="pedido", sheet=sheet)+1
+    planilha = sheet.GetDados(SAMPLE_RANGE_NAME='criterio!A3:D'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    df = pd.DataFrame(planilha, columns=['criterioId','criterio','tipo','htmlId'])
+    return df
+def GetSubCriterios(sheet):
+    linha = 23#GetLinhaMaxima(nome="pedido", sheet=sheet)+1
+    planilha = sheet.GetDados(SAMPLE_RANGE_NAME='subcriterio!A3:G'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    df = pd.DataFrame(planilha, columns=['subcriterioId',	'criterioId',	'subcriterio',	'tipo',	'variavelLinguistica',	'htmlId',	'criterio'])
+    return df

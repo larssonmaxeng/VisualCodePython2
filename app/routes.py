@@ -862,7 +862,36 @@ def GetNotaPedidos():
     sheet = googleSheet.GoogleSheet()
     dfnotaPedido = bancoDeDados.GetNotaPedidoFornecedor(sheet=sheet)
     dfFiltroNotaPedido = dfnotaPedido.loc[(dfnotaPedido["pedidoId"]==req["pedidoId"])&(dfnotaPedido["fornecedorId"]==req["fornecedorId"])]
-    return dfFiltroNotaPedido.to_json(orient="records")
+    
+    dfCriterios = bancoDeDados.GetCriterios(sheet=sheet)
+    
+    dfSubCriterios = bancoDeDados.GetSubCriterios(sheet=sheet)
+    print(dfSubCriterios)
+    notas = []
+    
+    for i in dfSubCriterios.index:
+        dfNotaSubCriterio = dfFiltroNotaPedido.loc[(dfFiltroNotaPedido["htmlId"]==dfSubCriterios["htmlId"][i]) & 
+                                                   (dfFiltroNotaPedido["ativo"]==1)]
+        if(dfNotaSubCriterio.shape[0]>0):
+            for j in dfNotaSubCriterio.index:
+                nota={'htmlId':dfSubCriterios["htmlId"][i], 'nota':dfNotaSubCriterio["nota"][j]}
+                notas.append(nota)
+                exit()
+        else:
+            if(dfSubCriterios["htmlId"][i]=='CustoPreco'):
+                
+                nota={'htmlId':dfSubCriterios["htmlId"][i], 'nota':0}    
+                notas.append(nota)
+            else:
+                nota={'htmlId':dfSubCriterios["htmlId"][i], 'nota':'Selecionar'}    
+                notas.append(nota)
+         
+    print(notas)
+    criterio = json.dumps(notas)
+    res = make_response(criterio)
+    #print(criterio)
+    
+    return res
     
     #print("**********************************")
     #print(dfPedido)

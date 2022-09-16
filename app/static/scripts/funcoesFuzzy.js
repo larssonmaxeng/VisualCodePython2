@@ -297,7 +297,15 @@ function getDataTreeViewAquisicoes(){
                  if (data != null && data.node != null && data.node.data != []) {
                       //$("#forgeViewer").empty();
                       
-                      fetch(`${window.origin}/GetTreeViewPedidos`, {
+                      /*var jsonData = {};
+                      
+                      jsonData['pedidoId'] = data["pedidoId"];
+                      jsonData['fornecedorId'] = data["fornecedorId"];
+                      
+                      */
+                      var your_data =  data.node.data;
+                      console.log(your_data)
+                      fetch(`${window.origin}/GetNotaPedidos`, {
                         method: "POST",
                         credentials: "include",
                         body: JSON.stringify(your_data),
@@ -306,17 +314,10 @@ function getDataTreeViewAquisicoes(){
                             "content-type": "application/json"
                         })
                         }).then(response => response.json())
-                        .then(function(data){ 
-                            var jsonData = [];         
-                            console.log(data);
-                      
-                      console.log(data.node)
-                      console.log(btoa(data.node.data["objectId"]));
-                      var urn = btoa(data.node.data["objectId"]);
-                      console.log("tentarAbrir");
-                      AbrirModelo(urn);
-                      
-                        
+                        .then(function(dataPedido){ 
+                            console.log(dataPedido);
+                            
+                        })
                     }
                   });
                 //$('#comprasId').jstree(true).settings.core.data = data;
