@@ -1157,13 +1157,19 @@ def ConstruirRegrasFuncao(colunas, opcoesPorColuna, nomeDaPlanilha,idDaPlanilha 
                                    (dfRegrasBase[colunas[3]]==dfRegrasBase[colunas[3]][i])&
                                    (dfRegrasBase[colunas[4]]==dfRegrasBase[colunas[4]][i])&
                                    (dfRegrasBase[colunas[5]]==dfRegrasBase[colunas[5]][i])&
-                              
+                             
                                    (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
                                    (dfRegrasBase["Formula"]=='Indefinido')
                                 ]
             dff7Colunas = dff[[colunas[0], colunas[1],  colunas[2], colunas[3], colunas[4],colunas[5], 'Resultado', 'Formula']]
-            if(len(dff7Colunas.index)>=opcoesPorColuna[5]):
-                dfRegrasBase["Formula"][i]=7
+            #print(dff7Colunas)
+    
+            if(len(dff7Colunas.index)<=opcoesPorColuna[6]):
+                print("Qtde dff7: "+ str(len(dff7Colunas.index)))
+                print("Qtde opções: "+ str(opcoesPorColuna[6]))
+                for k in dff7Colunas.index:
+                    print(k)
+                    dfRegrasBase["Formula"][k]=7
             
            
     v = dfRegrasBase.values.tolist()       
