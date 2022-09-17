@@ -72,6 +72,9 @@ class GoogleSheet:
         result = sheet.values().get(spreadsheetId=SAMPLE_SPREADSHEET_ID,
                                     range=SAMPLE_RANGE_NAME).execute()
         return result.get('values', [])  
+    def GetService(self):
+        service = build('sheets', 'v4', credentials=self.creds)
+        return service.spreadsheets()
 
 """   def inseriSheet(numeroLinhaInicial, numeroLinhaFinal, planilha):
           linhasNovas = []

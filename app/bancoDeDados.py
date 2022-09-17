@@ -43,7 +43,7 @@ def GetLinhaMaxima(nome, sheet):
     planilha = sheet.GetDados(SAMPLE_RANGE_NAME='NumeroRegistros!A2:B10', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
     df = pd.DataFrame(planilha, columns=['tabela','numeroRegistro'])
     dfFiltro = df.loc[df['tabela']==nome]
-    print(dfFiltro)
+    #print(dfFiltro)
     for f in dfFiltro.index:
         #print(dfFiltro["numeroRegistro"][f])
         return int(dfFiltro["numeroRegistro"][f])
@@ -59,3 +59,37 @@ def GetSubCriterios(sheet):
     planilha = sheet.GetDados(SAMPLE_RANGE_NAME='subcriterio!A3:G'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
     df = pd.DataFrame(planilha, columns=['subcriterioId',	'criterioId',	'subcriterio',	'tipo',	'variavelLinguistica',	'htmlId',	'criterio'])
     return df
+def SetSubCriterios(sheet, valores, listaParaLimpar):
+    linha =GetLinhaMaxima(nome="notaPedidoFornecedor", sheet=googleSheet.GoogleSheet())+1+1
+    zerar = []
+    zerar.append([0])
+    for l in listaParaLimpar:
+        sheet.values().update(spreadsheetId= "13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig", 
+                              range="notaPedidoFornecedor!C"+str(l)+":C"+str(l) , 
+                              valueInputOption="RAW",
+                              body={"values":zerar}).execute()
+        print("Excluído:"+str(l))
+        
+    print(linha)
+    print(str(linha + len(valores)))
+    
+    response = sheet.values().update(spreadsheetId= "13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig", 
+                          range="notaPedidoFornecedor!B"+str(linha)+":H"+str(linha + len(valores)) , 
+                          valueInputOption="RAW",
+                          body={"values":valores}).execute()
+    print(response)
+    
+def GetBaseRegras(sheet, sampleRange, idDaPlanilha, colunas ):
+
+    planilha = sheet.GetDados(SAMPLE_RANGE_NAME=sampleRange, SAMPLE_SPREADSHEET_ID=idDaPlanilha)
+    df = pd.DataFrame(planilha, columns=colunas)
+    return df    
+def SetBaseRegras(sheet, valores, nomeDaPlanilha, idDaPlanilha, coluna ):
+    linha =len(valores)+1
+    
+    response = sheet.values().update(spreadsheetId= idDaPlanilha, 
+                          range=nomeDaPlanilha+"!B2:"+coluna+str(linha) , 
+                          valueInputOption="RAW",
+                          body={"values":valores}).execute()
+    print(response)
+    

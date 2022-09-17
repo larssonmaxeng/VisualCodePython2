@@ -15,6 +15,7 @@ from flask import request
 from app import funcoes
 import requests
 import pandas as pd
+import string
 
 
 import io
@@ -298,7 +299,7 @@ def your_url():
     #criterios = []
     #criterios.append({"nome":"Preço", "nota":"Médio"})
     #criterios.append({"nome":"Preço1", "nota":"Médio1"})
-    
+    planilha= googleSheet.GoogleSheet()
     criteriosCusto = []
     criteriosCusto.append({"nomeDaVariavel":"Preço",
         "QtdeDeCasas":5,
@@ -325,35 +326,53 @@ def your_url():
         "Criterio":"Custo",
         "NotaCrisp": "",
         "NotaFuzzy":""}
-    print(criteriosCusto)   
+     
     custo, imagemCusto = ConstruirControladorFuzzy( 
                                                    inomeDasVariaveisDeEntrada=criteriosCusto, 
                                                    inomeDaVariavelDeSaida=variavelDeSaidaCusto,
-                                                   iRegra = "Custo")   
+                                                   iRegra = "Custo",
+                                                   idDaPlanilha="1dBgZ4Zzl0B4esOjsSy5h0YeYD_XaqftJzqQPithL524", 
+                                                   planilha=planilha, 
+                                                   nomeDaAba="RegrasCriterioCusto"
+                                                   )   
    
     
     variavelDeSaidaQualidade = GetVariavelDeSaida(nomeDaVariavel="Qualidade", opoces =["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],criterio= "Qualidade")
     qualidade, imagemQualidade =ConstruirControladorFuzzy(
                                                    inomeDasVariaveisDeEntrada=GetCriteriosQualidade(req=req), 
                                                    inomeDaVariavelDeSaida=variavelDeSaidaQualidade,
-                                                   iRegra = "Qualidade")  
+                                                   iRegra = "Qualidade",
+                                                   idDaPlanilha="1dBgZ4Zzl0B4esOjsSy5h0YeYD_XaqftJzqQPithL524", 
+                                                   planilha=planilha, 
+                                                   nomeDaAba="RegrasCriterioQualidade")  
     
-    variavelDeSaidaPrazo = GetVariavelDeSaida(nomeDaVariavel="PrazoSaida", opoces = ["ruim", "medio", "bom"],criterio= "Prazo")
+    variavelDeSaidaPrazo = GetVariavelDeSaida(nomeDaVariavel="PrazoSaida", opoces = ["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],criterio= "Prazo")
     prazo, imagemPrazo = ConstruirControladorFuzzy(
                                                    inomeDasVariaveisDeEntrada=GetCriteriosPrazo(req=req), 
                                                    inomeDaVariavelDeSaida=variavelDeSaidaPrazo,
-                                                   iRegra = "Prazo")  
+                                                   iRegra = "Prazo",
+                                                   idDaPlanilha="1dBgZ4Zzl0B4esOjsSy5h0YeYD_XaqftJzqQPithL524", 
+                                                   planilha=planilha, 
+                                                   nomeDaAba="regrasCriterioPrazo")  
     
-    variavelDeSaidaGestao = GetVariavelDeSaida(nomeDaVariavel="Gestão", opoces = ["ruim", "medio", "bom"],criterio= "Gestao")
+    variavelDeSaidaGestao = GetVariavelDeSaida(nomeDaVariavel="Gestão", opoces =["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],criterio= "Gestao")
     gestao, imagemGestao = ConstruirControladorFuzzy(
                                                    inomeDasVariaveisDeEntrada=GetCriteriosGestao(req=req), 
                                                    inomeDaVariavelDeSaida=variavelDeSaidaGestao,
-                                                   iRegra = "Prazo")  
-    variavelDeSaidaGeral = GetVariavelDeSaida(nomeDaVariavel="Geral", opoces = ["ruim", "medio", "bom"],criterio= "Geral")   
+                                                   iRegra = "Prazo",
+                                                    idDaPlanilha="1dBgZ4Zzl0B4esOjsSy5h0YeYD_XaqftJzqQPithL524", 
+                                                   planilha=planilha, 
+                                                   nomeDaAba="regrasCriterioGestao"
+                                                   )  
+    variavelDeSaidaGeral = GetVariavelDeSaida(nomeDaVariavel="Geral", opoces =["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],criterio= "Geral")   
     geral, imagemGeral = ConstruirControladorFuzzy(
                                                    inomeDasVariaveisDeEntrada=GetCriteriosGeral(req=req), 
                                                    inomeDaVariavelDeSaida=variavelDeSaidaGeral,
-                                                   iRegra = "Geral")     
+                                                   iRegra = "Geral",
+                                                   idDaPlanilha="1dBgZ4Zzl0B4esOjsSy5h0YeYD_XaqftJzqQPithL524", 
+                                                   planilha=planilha, 
+                                                   nomeDaAba="regrasCriterioGeral"
+                                                   )     
     
     criterios = []
     criterios.append({"idHtml":"imagemCusto", "valor":str(imagemCusto)})
@@ -364,11 +383,11 @@ def your_url():
     criterios.append({"idHtml":"imagemPrazo", "valor":str(imagemPrazo)})
     criterios.append({"idHtml":"crispPrazo", "valor":str(round(prazo*1, 2))})
     
-    criterios.append({"idHtml":"imagemGestao", "valor":str(imagemGestao)})
+    """criterios.append({"idHtml":"imagemGestao", "valor":str(imagemGestao)})
     criterios.append({"idHtml":"crispGestao", "valor":str(round(gestao*1, 2))})
     
     criterios.append({"idHtml":"imagemGeral", "valor":str(imagemGeral)})
-    criterios.append({"idHtml":"crispGeral", "valor":str(round(geral*1, 2))})
+    criterios.append({"idHtml":"crispGeral", "valor":str(round(geral*1, 2))})"""
     
     criterio = json.dumps(criterios)
     #print(criterio)
@@ -377,6 +396,48 @@ def your_url():
     #print(res)
     
     return res
+
+@app.route('/salvarDados', methods=["GET", "POST", "PUT"])
+def salvarDados():
+    
+    req = request.get_json()
+    print(req)
+    
+    dados = []
+    #notaPedidoForncedorId	pedidoId	fornecedorId	criterio	subcriterio	nota	htmlId	ativo
+    for song in req:
+        dados.append([(req["dadosArvore"])["pedidoId"],
+                      (req["dadosArvore"])["fornecedorId"],
+                      "", 
+                      "",
+                      req[song],
+                      song,
+                      1])
+    dados = dados[:-1]    
+    print("**************************************")
+    print(dados)
+    dfnota =  bancoDeDados.GetNotaPedidoFornecedor(sheet=googleSheet.GoogleSheet())
+    dfnotaPedido = dfnota.loc[dfnota["fornecedorId"]!=0]
+    j = 3;
+    listaParaLimpar = []
+    for i in dfnotaPedido.index:
+        if ((dfnotaPedido["pedidoId"][i]==(req["dadosArvore"])["pedidoId"])&
+            (dfnotaPedido["fornecedorId"][i]==(req["dadosArvore"])["fornecedorId"])):
+            listaParaLimpar.append(j)  
+        j = j+1     
+    print(listaParaLimpar)
+    sheet = googleSheet.GoogleSheet().GetService()
+    bancoDeDados.SetSubCriterios(sheet=sheet, valores=dados, listaParaLimpar=listaParaLimpar)
+    #print(criterio)
+    #bancoDeDados.SetSubCriterios(sheet=sheet,valores=dados)
+    criterios = []
+    criterios.append({"Resultado":"Foi"})
+    criterio = json.dumps(criterios)
+    res = make_response(criterio)
+    #print(res)
+    
+    return res
+    
    
 def CalcularCriterioQualidade(notasCusto, ):    
     medio = 'médio'
@@ -450,22 +511,23 @@ def CalcularCriterioQualidade(notasCusto, ):
     return custo_simulador.output[vsCusto] , encodes_img_data
 
         
-def ConstruirControladorFuzzy(inomeDasVariaveisDeEntrada, inomeDaVariavelDeSaida, iRegra):    
+def ConstruirControladorFuzzy(inomeDasVariaveisDeEntrada, inomeDaVariavelDeSaida, iRegra, idDaPlanilha, planilha, nomeDaAba):    
      
     variaveisFuzzy = []
     for nome in inomeDasVariaveisDeEntrada:
         variavelFuzzy = ctrl.Antecedent(np.arange(0, 11, 0.5), nome["nomeDaVariavel"])
         variavelFuzzy.automf(nome["QtdeDeCasas"], names = nome["Opções"])
         variaveisFuzzy.append(variavelFuzzy)
+        print(variavelFuzzy.label)
    
     variavelDeSaida = ctrl.Consequent(np.arange(0, 11, 0.1), inomeDaVariavelDeSaida["nomeDaVariavel"])
     variavelDeSaida.automf(inomeDaVariavelDeSaida["QtdeDeCasas"], names = inomeDaVariavelDeSaida["Opções"])
       
-    custo_ctrl = ctrl.ControlSystem(GerarRegras(variaveisDeEntrada=variaveisFuzzy, variavelDeSaida=variavelDeSaida, nomeDaRegraDeCriterio = iRegra))
-    print('leu regras')
+    custo_ctrl = ctrl.ControlSystem(GerarRegras(variaveisDeEntrada=variaveisFuzzy, variavelDeSaida=variavelDeSaida, nomeDaRegraDeCriterio = iRegra,
+                                                idDaPlanilha=idDaPlanilha,planilha=planilha, nomeDaAba=nomeDaAba))
+    print('leu regras:'+iRegra)
     custo_simulador = ctrl.ControlSystemSimulation(custo_ctrl)
-    print('simulou')
-    #print(inotasCusto) 
+    print('simulou:'+iRegra)
     print(inomeDasVariaveisDeEntrada)
 
     for nome in inomeDasVariaveisDeEntrada:
@@ -475,9 +537,7 @@ def ConstruirControladorFuzzy(inomeDasVariaveisDeEntrada, inomeDaVariavelDeSaida
         if nome["nomeDaVariavel"] == "Preço":
            custo_simulador.input[nome["nomeDaVariavel"]] = float(str(nome["NotaCrisp"]))
         else:
-           custo_simulador.input[nome["nomeDaVariavel"]] = funcoes.Desfuzzificar(nota=str(nome["NotaFuzzy"]));
-       
-               
+           custo_simulador.input[nome["nomeDaVariavel"]] = funcoes.Desfuzzificar(nota=str(nome["NotaFuzzy"]));           
     custo_simulador.compute()
 
     v = fuzz.control.visualization.FuzzyVariableVisualizer(variavelDeSaida)
@@ -489,8 +549,108 @@ def ConstruirControladorFuzzy(inomeDasVariaveisDeEntrada, inomeDaVariavelDeSaida
     #print(encodes_img_data)
     return custo_simulador.output[inomeDaVariavelDeSaida["nomeDaVariavel"]] , encodes_img_data
 
-def GerarRegras(variaveisDeEntrada, variavelDeSaida, nomeDaRegraDeCriterio):
+def GerarRegras(variaveisDeEntrada, variavelDeSaida, nomeDaRegraDeCriterio, idDaPlanilha, planilha, nomeDaAba):
+    colunas = []
+    
+    for i in variaveisDeEntrada:
+        colunas.append(i.label)
+    colunas.append('Resultado')
+    colunas.append('FORMULA')	
+    colunas.append('Regra')
+  
+    a = list(string.ascii_uppercase)
+    colunaFim=a[len(colunas)]
+  
+    dfRegrasBase = bancoDeDados.GetBaseRegras(sheet=planilha, sampleRange=nomeDaAba+"!B2:"+colunaFim+"15000", idDaPlanilha=idDaPlanilha, colunas=colunas )
+    dfRegras = dfRegrasBase["Regra"]
+    dfRegras = dfRegras.drop_duplicates()
+    print(dfRegras)
     regras = []
+
+    for i in dfRegras.index:
+        entradas = dfRegras[i].split('|')[0]
+        resultado = dfRegras[i].split('|')[1]
+        regrasAntecedentes = entradas.split(';')
+        qtde = len(regrasAntecedentes)
+        """print("Entradas:" + entradas)
+        print("resultdos:" + resultado)
+        print("regrasAntecedentes:")
+        print(regrasAntecedentes)
+        print("qtde:" + str(qtde))"""
+        if(qtde==7): 
+            r = ctrl.Rule(variaveisDeEntrada[0][regrasAntecedentes[0]]&
+                          variaveisDeEntrada[1][regrasAntecedentes[1]]& 
+                          variaveisDeEntrada[2][regrasAntecedentes[2]]&
+                          variaveisDeEntrada[3][regrasAntecedentes[3]]&
+                          variaveisDeEntrada[4][regrasAntecedentes[4]]&
+                          variaveisDeEntrada[5][regrasAntecedentes[5]]&
+                          variaveisDeEntrada[6][regrasAntecedentes[6]],
+                          variavelDeSaida[resultado])
+            regras.append(r)
+        if(qtde==6): 
+            r = ctrl.Rule(variaveisDeEntrada[0][regrasAntecedentes[0]]&
+                          variaveisDeEntrada[1][regrasAntecedentes[1]]& 
+                          variaveisDeEntrada[2][regrasAntecedentes[2]]&
+                          variaveisDeEntrada[3][regrasAntecedentes[3]]&
+                          variaveisDeEntrada[4][regrasAntecedentes[4]]&
+                          variaveisDeEntrada[5][regrasAntecedentes[5]],
+                          variavelDeSaida[resultado])
+            regras.append(r)    
+        if(qtde==5): 
+            r = ctrl.Rule(variaveisDeEntrada[0][regrasAntecedentes[0]]&
+                          variaveisDeEntrada[1][regrasAntecedentes[1]]& 
+                          variaveisDeEntrada[2][regrasAntecedentes[2]]&
+                          variaveisDeEntrada[3][regrasAntecedentes[3]]&
+                          variaveisDeEntrada[4][regrasAntecedentes[4]],
+                          variavelDeSaida[resultado])
+            regras.append(r)    
+        if(qtde==4): 
+            r = ctrl.Rule(variaveisDeEntrada[0][regrasAntecedentes[0]]&
+                          variaveisDeEntrada[1][regrasAntecedentes[1]]& 
+                          variaveisDeEntrada[2][regrasAntecedentes[2]]&
+                          variaveisDeEntrada[3][regrasAntecedentes[3]],
+                          variavelDeSaida[resultado])
+            regras.append(r)  
+        if(qtde==3): 
+            print('*****************Vaqriavel de entrada****************')
+            print(variaveisDeEntrada[0].label)
+            print(variaveisDeEntrada[1].label)
+            print(variaveisDeEntrada[2].label)
+ 
+            print('*****************Varivel Linguistica****************')
+            print(regrasAntecedentes[0])
+            print(regrasAntecedentes[1])
+            print(regrasAntecedentes[2])
+
+            r = ctrl.Rule(variaveisDeEntrada[0][regrasAntecedentes[0]]&
+                          variaveisDeEntrada[1][regrasAntecedentes[1]]& 
+                          variaveisDeEntrada[2][regrasAntecedentes[2]],
+                          variavelDeSaida[resultado])
+            regras.append(r)   
+        if(qtde==2): 
+            print('*****************Vaqriavel de entrada****************')
+            print(variaveisDeEntrada[0].label)
+            print(variaveisDeEntrada[1].label)
+            print('*****************Varivel Linguistica****************')
+            print(regrasAntecedentes[0])
+            print(regrasAntecedentes[1])
+
+            r = ctrl.Rule(variaveisDeEntrada[0][regrasAntecedentes[0]]&
+                          variaveisDeEntrada[1][regrasAntecedentes[1]],
+                          variavelDeSaida[resultado])
+            regras.append(r) 
+        if(qtde==1): 
+            print('*****************Vaqriavel de entrada****************')
+            print(variaveisDeEntrada[0].label)
+            print('*****************Varivel Linguistica****************')
+            print(regrasAntecedentes[0])
+            
+            r = ctrl.Rule(variaveisDeEntrada[0][regrasAntecedentes[0]],
+                          variavelDeSaida[resultado])
+            regras.append(r)                                  
+        print('/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/')
+    return regras
+    
     if nomeDaRegraDeCriterio=="Custo":
         preco = variaveisDeEntrada[0]
         pagamento = variaveisDeEntrada[1]
@@ -857,26 +1017,30 @@ def GetTreeViewPedidos():
 def GetNotaPedidos():
 
     req = request.get_json()
+    print("**************************Req************")
     print(req)
    
     sheet = googleSheet.GoogleSheet()
     dfnotaPedido = bancoDeDados.GetNotaPedidoFornecedor(sheet=sheet)
     dfFiltroNotaPedido = dfnotaPedido.loc[(dfnotaPedido["pedidoId"]==req["pedidoId"])&(dfnotaPedido["fornecedorId"]==req["fornecedorId"])]
-    
+    print("**************FiltroNotaPedido****************")
+    print(dfFiltroNotaPedido)
     dfCriterios = bancoDeDados.GetCriterios(sheet=sheet)
     
     dfSubCriterios = bancoDeDados.GetSubCriterios(sheet=sheet)
-    print(dfSubCriterios)
+    #print(dfSubCriterios)
     notas = []
     
     for i in dfSubCriterios.index:
-        dfNotaSubCriterio = dfFiltroNotaPedido.loc[(dfFiltroNotaPedido["htmlId"]==dfSubCriterios["htmlId"][i]) & 
-                                                   (dfFiltroNotaPedido["ativo"]==1)]
+        dfNotaSubCriterio = dfFiltroNotaPedido.loc[(dfFiltroNotaPedido["htmlId"]==dfSubCriterios["htmlId"][i])&
+                                                   (dfFiltroNotaPedido["ativo"]=="1")]
+        print("**************NotaSubCriterio****************")
+        print(dfNotaSubCriterio )
         if(dfNotaSubCriterio.shape[0]>0):
             for j in dfNotaSubCriterio.index:
                 nota={'htmlId':dfSubCriterios["htmlId"][i], 'nota':dfNotaSubCriterio["nota"][j]}
                 notas.append(nota)
-                exit()
+               
         else:
             if(dfSubCriterios["htmlId"][i]=='CustoPreco'):
                 
@@ -886,35 +1050,209 @@ def GetNotaPedidos():
                 nota={'htmlId':dfSubCriterios["htmlId"][i], 'nota':'Selecionar'}    
                 notas.append(nota)
          
-    print(notas)
+    # print(notas)
     criterio = json.dumps(notas)
     res = make_response(criterio)
     #print(criterio)
     
     return res
     
-    #print("**********************************")
-    #print(dfPedido)
-    dfPedidoFornecedor = bancoDeDados.GetPedidoFornecedor(sheet=sheet)
-    #print("**********************************")
-    #print(dfPedidoFornecedor)
     
-    #dfFornecedor = bancoDeDados.GetFornecedores(sheet=sheet)
-    #print("**********************************")
-    #print(dfFornecedor)
-    treeViewPedidos=[]
-    for i in dfPedido.index:
-        dfFiltroFornecedor = dfPedidoFornecedor.loc[dfPedidoFornecedor["pedidoId"]==dfPedido["pedidoId"][i]]
-        fornecedoresPedido = []
-        for j in dfFiltroFornecedor.index:
-            fornecedorPedido = {'text':dfFiltroFornecedor["fornecedorId"][j]+'-'+dfFiltroFornecedor["fornecedor"][j],
-                                'data':{'fornecedorId':dfFiltroFornecedor["fornecedorId"][j], 'pedidoId':dfFiltroFornecedor["pedidoId"][j]}}
-            fornecedoresPedido.append(fornecedorPedido)
-        treeViewPedidos.append({'text':dfPedido["pedidoId"][i]+'-'+dfPedido["pedido"][i],
-                       'children':fornecedoresPedido, 
-                       'data':{'pedidoId':dfPedido["pedidoId"][i], 'pedido':dfPedido["pedido"][i]}})    
-    criterio = json.dumps(treeViewPedidos)
-    res = make_response(criterio)
-    #print(criterio)
-    
+@app.route("/GetSubCriterios",  methods=["GET", "POST", "PUT"])
+def GetSubCriterios():
+
+    #req = request.get_json()
+    #print(req)  
+    sheet = googleSheet.GoogleSheet()   
+    dfSubCriterios = bancoDeDados.GetSubCriterios(sheet=sheet)
+    #criterio = json.dumps(dfSubCriterios.to_json(orient="records"))
+    criterio = dfSubCriterios.to_json(orient="records")
+    res = make_response(criterio) 
     return res
+@app.route("/GeraCombinacoes",  methods=["GET", "POST", "PUT"])
+def GeraCombinacoes():
+
+    #vetor = [["muitoAlto", "alto", "medio", "baixo", "muitoBaixo"],["ruim", "medio", "bom"], ["ruim", "medio", "bom"] ]
+    
+  
+
+    
+    
+    vetor = [["ruim", "medio", "bom"],["ruim", "medio", "bom"],["ruim", "medio", "bom"],["ruim", "medio", "bom"],["ruim", "medio", "bom"],["ruim", "medio", "bom"], ["ruim", "medio", "bom"] ]
+    #colunas = ['Clareza','Cooperação','Parceria','Transparência','Boa comunicação']
+    colunas = ['Cumpre leis trabalhistas','Interesse','Não usa substâncias tóxica','Histórico','Parceira','Histórico de fornecimento','SSEGT']
+    combinacoes=[]
+    if(len(colunas)==7):
+        for i in vetor[0]:
+            for j in vetor[1]:
+                for u in vetor[2]:
+                    for z in vetor[3]:
+                        for x in vetor[4]:
+                            for p in vetor[5]:
+                                for l in vetor[6]:
+                                    combinacoes.append([i, j, u, z, x, p, l])
+   
+    if(len(colunas)==5):
+        for i in vetor[0]:
+            for j in vetor[1]:
+                for u in vetor[2]:
+                    for z in vetor[3]:
+                        for x in vetor[4]:
+                            combinacoes.append([i, j, u, z, x])
+    
+
+   
+    df = pd.DataFrame(data=combinacoes, columns=colunas)
+    
+    #df = pd.DataFrame(data=combinacoes, columns=['Devolução', 'Dimensões','Equipe'])
+    df.to_clipboard()
+    criterio = df.to_json(orient="records")
+    res = make_response(criterio) 
+    return res
+@app.route("/ConstruirRegrasRota/<colunas>/<opcoes>/<nomeDaPlanilha>",  methods=["GET", "POST", "PUT"])
+def ConstruirRegrasRota(colunas, opcoes, nomeDaPlanilha):
+    colunas1 =[]
+    for i in colunas.split(','):
+        colunas1.append(i)
+    opcoesPorColuna1 = [] 
+    for i in opcoes.split(','):
+        opcoesPorColuna1.append(int(i))
+       
+    print(opcoesPorColuna1)
+    print(colunas1)
+    #colunas = ['Preco', 'Pagamento', 'Reajuste', 'Resultado', 'Formula', 'Regra']
+    #opcoesPorColuna = [5,3,3]
+    return ConstruirRegrasFuncao(colunas=colunas1, opcoesPorColuna=opcoesPorColuna1, nomeDaPlanilha=nomeDaPlanilha,idDaPlanilha= "1dBgZ4Zzl0B4esOjsSy5h0YeYD_XaqftJzqQPithL524")
+    
+
+def ConstruirRegrasFuncao(colunas, opcoesPorColuna, nomeDaPlanilha,idDaPlanilha ):
+    planilha = googleSheet.GoogleSheet()
+    #colunas = ['Preco', 'Pagamento', 'Reajuste', 'Resultado', 'Formula', 'Regra']
+    #opcoesPorColuna = [5,3,3]
+    #print(colunas[0])
+
+    a = list(string.ascii_uppercase)
+    colunaFim=a[len(colunas)]#o primeiro  +1 é da formula e o segundo +1 é a Regra
+    print(a)
+    print("*******************COLUNA FIM******************")
+    print(colunaFim)
+    print(nomeDaPlanilha+"!B2:"+colunaFim+"15000")
+   
+     
+    dfRegrasBase = bancoDeDados.GetBaseRegras(sheet=planilha, 
+                                              sampleRange=nomeDaPlanilha+"!B2:"+colunaFim+"15000", 
+                                              idDaPlanilha=idDaPlanilha,
+                                              colunas=colunas)
+    
+    for i in dfRegrasBase.index:
+        dfRegrasBase["Formula"][i]="Indefinido"
+    print(dfRegrasBase)
+    qtdeDeCriterios = len(colunas)-3
+    ff = 0
+    if(qtdeDeCriterios>=7):
+        for i in dfRegrasBase.index:
+            dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
+                                   (dfRegrasBase[colunas[1]]==dfRegrasBase[colunas[1]][i])&
+                                   (dfRegrasBase[colunas[2]]==dfRegrasBase[colunas[2]][i])&
+                                   (dfRegrasBase[colunas[3]]==dfRegrasBase[colunas[3]][i])&
+                                   (dfRegrasBase[colunas[4]]==dfRegrasBase[colunas[4]][i])&
+                                   (dfRegrasBase[colunas[5]]==dfRegrasBase[colunas[5]][i])&
+                              
+                                   (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
+                                   (dfRegrasBase["Formula"]=='Indefinido')
+                                ]
+            dff7Colunas = dff[[colunas[0], colunas[1],  colunas[2], colunas[3], colunas[4],colunas[5], 'Resultado', 'Formula']]
+            if(len(dff7Colunas.index)>=opcoesPorColuna[5]):
+                dfRegrasBase["Formula"][i]=7
+            
+           
+    v = dfRegrasBase.values.tolist()       
+    sheet = planilha.GetService()
+    bancoDeDados.SetBaseRegras(sheet=sheet, valores=v, nomeDaPlanilha=nomeDaPlanilha, 
+                               idDaPlanilha="1dBgZ4Zzl0B4esOjsSy5h0YeYD_XaqftJzqQPithL524", 
+                               coluna= colunaFim)    
+   
+    return dfRegrasBase.to_json(orient='records')         
+   
+   
+    if(qtdeDeCriterios>=6):
+            for i in dfRegrasBase.index:
+                dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
+                                    (dfRegrasBase[colunas[1]]==dfRegrasBase[colunas[1]][i])&
+                                    (dfRegrasBase[colunas[2]]==dfRegrasBase[colunas[2]][i])&
+                                    (dfRegrasBase[colunas[3]]==dfRegrasBase[colunas[3]][i])&
+                                    (dfRegrasBase[colunas[4]]==dfRegrasBase[colunas[4]][i])&
+                            
+                                    (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
+                                    (dfRegrasBase["Formula"]=='Indefinido')
+                                    ]
+                dff6Colunas = (dff[[colunas[0], colunas[1],  colunas[2],colunas[3], colunas[4],colunas[5], 'Resultado', 'Formula']]).drop_duplicates()
+                if((len(dff6Colunas.index)<opcoesPorColuna[5])&(dfRegrasBase["Formula"][i]=='Indefinido')):
+                    dfRegrasBase["Formula"][i]=6
+        
+    if(qtdeDeCriterios>=5):
+        for i in dfRegrasBase.index:
+            dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
+                                (dfRegrasBase[colunas[1]]==dfRegrasBase[colunas[1]][i])&
+                                (dfRegrasBase[colunas[2]]==dfRegrasBase[colunas[2]][i])&
+                                (dfRegrasBase[colunas[3]]==dfRegrasBase[colunas[3]][i])&
+                               
+                                (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
+                                (dfRegrasBase["Formula"]=='Indefinido')
+                                ]
+            dff5Colunas = (dff[[colunas[0], colunas[1],  colunas[2],colunas[3], colunas[4], 'Resultado', 'Formula']]).drop_duplicates()
+            if((len(dff5Colunas.index)<opcoesPorColuna[4])&(dfRegrasBase["Formula"][i]=='Indefinido')):
+                dfRegrasBase["Formula"][i]=5          
+    if(qtdeDeCriterios>=4):
+        for i in dfRegrasBase.index:
+            dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
+                            (dfRegrasBase[colunas[1]]==dfRegrasBase[colunas[1]][i])&
+                            (dfRegrasBase[colunas[2]]==dfRegrasBase[colunas[2]][i])&                           
+                            (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
+                            (dfRegrasBase["Formula"]=='Indefinido')
+                            ]
+            dff4Colunas = (dff[[colunas[0], colunas[1],  colunas[2],colunas[3], 'Resultado', 'Formula']]).drop_duplicates()
+            if((len(dff4Colunas.index)<opcoesPorColuna[3])&(dfRegrasBase["Formula"][i]=='Indefinido')):
+                dfRegrasBase["Formula"][i]=4   
+    for i in dfRegrasBase.index:
+        dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
+                               (dfRegrasBase[colunas[1]]==dfRegrasBase[colunas[1]][i])&
+                               (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
+                               (dfRegrasBase["Formula"]=='Indefinido')
+                               ]
+        dff3Colunas = (dff[[colunas[0], colunas[1],  colunas[2], 'Resultado', 'Formula']]).drop_duplicates()
+        if((len(dff3Colunas.index)<opcoesPorColuna[2])&(dfRegrasBase["Formula"][i]=='Indefinido')):
+            dfRegrasBase["Formula"][i]=3
+    #print(dfRegrasBase)       
+    for i in dfRegrasBase.index:
+        dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
+                               (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
+                               (dfRegrasBase["Formula"]=='Indefinido')
+                               ]
+        dff2Colunas = (dff[[colunas[0], colunas[1], 'Resultado', 'Formula']]).drop_duplicates()
+        #print(dff2Colunas)
+        if((len(dff2Colunas.index)<opcoesPorColuna[1])&(dfRegrasBase["Formula"][i]=='Indefinido')):
+           dfRegrasBase["Formula"][i]=2 
+    for i in dfRegrasBase.index:
+        if(dfRegrasBase["Formula"][i]=='Indefinido'):        
+           dfRegrasBase["Formula"][i]=1 
+    #print(dfRegrasBase)
+    for i in dfRegrasBase.index:
+        regra = ""
+        #print(type().__name__)
+        j = 0
+        w = dfRegrasBase["Formula"][i]
+        while  j < w:
+            regra = regra+dfRegrasBase[colunas[j]][i]+";"
+            j = j+1
+        regra = regra[:-1] +'|'+dfRegrasBase["Resultado"][i]
+        dfRegrasBase["Regra"][i] = regra
+    v = dfRegrasBase.values.tolist()
+    sheet = planilha.GetService()
+    bancoDeDados.SetBaseRegras(sheet=sheet, valores=v, nomeDaPlanilha=nomeDaPlanilha, 
+                               idDaPlanilha="1dBgZ4Zzl0B4esOjsSy5h0YeYD_XaqftJzqQPithL524", 
+                               coluna= colunaFim)    
+   
+    return dfRegrasBase.to_json(orient='records')
+   
+   

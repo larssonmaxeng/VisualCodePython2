@@ -1,6 +1,6 @@
 {% extends 'base.html' %}
 {% block conteudo %}
-<h1 class="tituloPagina textoCentralizado">Definição dos critérios</h1>
+<h1 class="tituloPagina textoCentralizado" id="Titulo001">Definição dos critérios</h1>
 <div class="divFundoBotao row">
        <!--<form action = "/your_url" onSubmit="calcular()" method="PUT">-->
         <!--<button  name = "hhhhh" type="submit">Teste</button>-->
@@ -22,6 +22,11 @@
                 <th>  
 
                         <button class="botaoSelecionar" onclick="calcular()" type="submit" title="Enviar dados para controlador Fuzzy">Calcular</button>
+
+                </th>
+                <th>  
+
+                        <button class="botaoSelecionar" onclick="salvarDados()" type="submit" title="Salvar os dados">Salvar</button>
 
                 </th>
                 <th>
