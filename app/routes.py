@@ -337,7 +337,7 @@ def your_url():
                                                    )   
    
     
-    variavelDeSaidaQualidade = GetVariavelDeSaida(nomeDaVariavel="Qualidade", opoces =["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],criterio= "Qualidade")
+    variavelDeSaidaQualidade = GetVariavelDeSaida(nomeDaVariavel="Qualidade", opcoes=["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"], criterio= "Qualidade")
     qualidade, imagemQualidade =ConstruirControladorFuzzy(
                                                    inomeDasVariaveisDeEntrada=GetCriteriosQualidade(req=req), 
                                                    inomeDaVariavelDeSaida=variavelDeSaidaQualidade,
@@ -346,7 +346,7 @@ def your_url():
                                                    planilha=planilha, 
                                                    nomeDaAba="RegrasCriterioQualidade")  
     
-    variavelDeSaidaPrazo = GetVariavelDeSaida(nomeDaVariavel="PrazoSaida", opoces = ["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],criterio= "Prazo")
+    variavelDeSaidaPrazo = GetVariavelDeSaida(nomeDaVariavel="PrazoSaida", opcoes= ["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],criterio= "Prazo")
     prazo, imagemPrazo = ConstruirControladorFuzzy(
                                                    inomeDasVariaveisDeEntrada=GetCriteriosPrazo(req=req), 
                                                    inomeDaVariavelDeSaida=variavelDeSaidaPrazo,
@@ -355,7 +355,7 @@ def your_url():
                                                    planilha=planilha, 
                                                    nomeDaAba="regrasCriterioPrazo")  
     
-    variavelDeSaidaGestao = GetVariavelDeSaida(nomeDaVariavel="Gestão", opoces =["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],criterio= "Gestao")
+    variavelDeSaidaGestao = GetVariavelDeSaida(nomeDaVariavel="Gestão", opcoes=["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],criterio= "Gestao")
     gestao, imagemGestao = ConstruirControladorFuzzy(
                                                    inomeDasVariaveisDeEntrada=GetCriteriosGestao(req=req), 
                                                    inomeDaVariavelDeSaida=variavelDeSaidaGestao,
@@ -364,7 +364,7 @@ def your_url():
                                                    planilha=planilha, 
                                                    nomeDaAba="regrasCriterioGestao"
                                                    )  
-    variavelDeSaidaGeral = GetVariavelDeSaida(nomeDaVariavel="Geral", opoces =["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],criterio= "Geral")   
+    variavelDeSaidaGeral = GetVariavelDeSaida(nomeDaVariavel="Geral", opcoes=["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"],criterio= "Geral")   
     geral, imagemGeral = ConstruirControladorFuzzy(
                                                    inomeDasVariaveisDeEntrada=GetCriteriosGeral(req=req), 
                                                    inomeDaVariavelDeSaida=variavelDeSaidaGeral,
@@ -383,11 +383,11 @@ def your_url():
     criterios.append({"idHtml":"imagemPrazo", "valor":str(imagemPrazo)})
     criterios.append({"idHtml":"crispPrazo", "valor":str(round(prazo*1, 2))})
     
-    """criterios.append({"idHtml":"imagemGestao", "valor":str(imagemGestao)})
+    criterios.append({"idHtml":"imagemGestao", "valor":str(imagemGestao)})
     criterios.append({"idHtml":"crispGestao", "valor":str(round(gestao*1, 2))})
     
     criterios.append({"idHtml":"imagemGeral", "valor":str(imagemGeral)})
-    criterios.append({"idHtml":"crispGeral", "valor":str(round(geral*1, 2))})"""
+    criterios.append({"idHtml":"crispGeral", "valor":str(round(geral*1, 2))})
     
     criterio = json.dumps(criterios)
     #print(criterio)
@@ -518,11 +518,11 @@ def ConstruirControladorFuzzy(inomeDasVariaveisDeEntrada, inomeDaVariavelDeSaida
         variavelFuzzy = ctrl.Antecedent(np.arange(0, 11, 0.5), nome["nomeDaVariavel"])
         variavelFuzzy.automf(nome["QtdeDeCasas"], names = nome["Opções"])
         variaveisFuzzy.append(variavelFuzzy)
-        print(variavelFuzzy.label)
+        #print(variavelFuzzy.label)
    
     variavelDeSaida = ctrl.Consequent(np.arange(0, 11, 0.1), inomeDaVariavelDeSaida["nomeDaVariavel"])
     variavelDeSaida.automf(inomeDaVariavelDeSaida["QtdeDeCasas"], names = inomeDaVariavelDeSaida["Opções"])
-      
+    print('Gerando regras para :'+iRegra) 
     custo_ctrl = ctrl.ControlSystem(GerarRegras(variaveisDeEntrada=variaveisFuzzy, variavelDeSaida=variavelDeSaida, nomeDaRegraDeCriterio = iRegra,
                                                 idDaPlanilha=idDaPlanilha,planilha=planilha, nomeDaAba=nomeDaAba))
     print('leu regras:'+iRegra)
@@ -564,7 +564,7 @@ def GerarRegras(variaveisDeEntrada, variavelDeSaida, nomeDaRegraDeCriterio, idDa
     dfRegrasBase = bancoDeDados.GetBaseRegras(sheet=planilha, sampleRange=nomeDaAba+"!B2:"+colunaFim+"15000", idDaPlanilha=idDaPlanilha, colunas=colunas )
     dfRegras = dfRegrasBase["Regra"]
     dfRegras = dfRegras.drop_duplicates()
-    print(dfRegras)
+    #print(dfRegras)
     regras = []
 
     for i in dfRegras.index:
@@ -612,7 +612,7 @@ def GerarRegras(variaveisDeEntrada, variavelDeSaida, nomeDaRegraDeCriterio, idDa
                           variavelDeSaida[resultado])
             regras.append(r)  
         if(qtde==3): 
-            print('*****************Vaqriavel de entrada****************')
+            """print('*****************Vaqriavel de entrada****************')
             print(variaveisDeEntrada[0].label)
             print(variaveisDeEntrada[1].label)
             print(variaveisDeEntrada[2].label)
@@ -620,7 +620,7 @@ def GerarRegras(variaveisDeEntrada, variavelDeSaida, nomeDaRegraDeCriterio, idDa
             print('*****************Varivel Linguistica****************')
             print(regrasAntecedentes[0])
             print(regrasAntecedentes[1])
-            print(regrasAntecedentes[2])
+            print(regrasAntecedentes[2])"""
 
             r = ctrl.Rule(variaveisDeEntrada[0][regrasAntecedentes[0]]&
                           variaveisDeEntrada[1][regrasAntecedentes[1]]& 
@@ -628,27 +628,27 @@ def GerarRegras(variaveisDeEntrada, variavelDeSaida, nomeDaRegraDeCriterio, idDa
                           variavelDeSaida[resultado])
             regras.append(r)   
         if(qtde==2): 
-            print('*****************Vaqriavel de entrada****************')
+            """print('*****************Vaqriavel de entrada****************')
             print(variaveisDeEntrada[0].label)
             print(variaveisDeEntrada[1].label)
             print('*****************Varivel Linguistica****************')
             print(regrasAntecedentes[0])
-            print(regrasAntecedentes[1])
+            print(regrasAntecedentes[1])"""
 
             r = ctrl.Rule(variaveisDeEntrada[0][regrasAntecedentes[0]]&
                           variaveisDeEntrada[1][regrasAntecedentes[1]],
                           variavelDeSaida[resultado])
             regras.append(r) 
         if(qtde==1): 
-            print('*****************Vaqriavel de entrada****************')
+            """print('*****************Vaqriavel de entrada****************')
             print(variaveisDeEntrada[0].label)
             print('*****************Varivel Linguistica****************')
-            print(regrasAntecedentes[0])
+            print(regrasAntecedentes[0])"""
             
             r = ctrl.Rule(variaveisDeEntrada[0][regrasAntecedentes[0]],
                           variavelDeSaida[resultado])
             regras.append(r)                                  
-        print('/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/')
+        #print('/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/\/')
     return regras
     
     if nomeDaRegraDeCriterio=="Custo":
@@ -1078,10 +1078,18 @@ def GeraCombinacoes():
 
     
     
-    vetor = [["ruim", "medio", "bom"],["ruim", "medio", "bom"],["ruim", "medio", "bom"],["ruim", "medio", "bom"],["ruim", "medio", "bom"],["ruim", "medio", "bom"], ["ruim", "medio", "bom"] ]
+    #vetor = [["ruim", "medio", "bom"],["ruim", "medio", "bom"],["ruim", "medio", "bom"],["ruim", "medio", "bom"],["ruim", "medio", "bom"],["ruim", "medio", "bom"], ["ruim", "medio", "bom"] ]
     #colunas = ['Clareza','Cooperação','Parceria','Transparência','Boa comunicação']
-    colunas = ['Cumpre leis trabalhistas','Interesse','Não usa substâncias tóxica','Histórico','Parceira','Histórico de fornecimento','SSEGT']
+    #colunas = ['Cumpre leis trabalhistas','Interesse','Não usa substâncias tóxica','Histórico','Parceira','Histórico de fornecimento','SSEGT']
+    colunas = ['Preço',	'Pagamento',	'Reajuste']
+    
+    vetor = [["muitoAlto", "alto", "medio", "baixo", "muitoBaixo"], ["ruim", "medio", "bom"],["ruim", "medio", "bom"]]
     combinacoes=[]
+    if(len(colunas)==3):
+        for i in vetor[0]:
+            for j in vetor[1]:
+                for u in vetor[2]:                 
+                     combinacoes.append([i, j, u])
     if(len(colunas)==7):
         for i in vetor[0]:
             for j in vetor[1]:
@@ -1162,40 +1170,36 @@ def ConstruirRegrasFuncao(colunas, opcoesPorColuna, nomeDaPlanilha,idDaPlanilha 
                                    (dfRegrasBase["Formula"]=='Indefinido')
                                 ]
             dff7Colunas = dff[[colunas[0], colunas[1],  colunas[2], colunas[3], colunas[4],colunas[5], 'Resultado', 'Formula']]
+            #print('******************************************')
             #print(dff7Colunas)
-    
-            if(len(dff7Colunas.index)<=opcoesPorColuna[6]):
-                print("Qtde dff7: "+ str(len(dff7Colunas.index)))
-                print("Qtde opções: "+ str(opcoesPorColuna[6]))
-                for k in dff7Colunas.index:
-                    print(k)
-                    dfRegrasBase["Formula"][k]=7
+            #print(str(len(dff7Colunas.index)))
+            #print(str(opcoesPorColuna[6]))
             
-           
-    v = dfRegrasBase.values.tolist()       
-    sheet = planilha.GetService()
-    bancoDeDados.SetBaseRegras(sheet=sheet, valores=v, nomeDaPlanilha=nomeDaPlanilha, 
-                               idDaPlanilha="1dBgZ4Zzl0B4esOjsSy5h0YeYD_XaqftJzqQPithL524", 
-                               coluna= colunaFim)    
-   
-    return dfRegrasBase.to_json(orient='records')         
-   
+            if(len(dff7Colunas.index)<opcoesPorColuna[6]):              
+                for k in dff7Colunas.index:
+                    print("o "+str(k)+" foi definido como 7"+" Total index "+ str(len(dff7Colunas.index)))
+                    dfRegrasBase["Formula"][k]=7
+    print("Passou o 7")    
    
     if(qtdeDeCriterios>=6):
-            for i in dfRegrasBase.index:
-                dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
-                                    (dfRegrasBase[colunas[1]]==dfRegrasBase[colunas[1]][i])&
-                                    (dfRegrasBase[colunas[2]]==dfRegrasBase[colunas[2]][i])&
-                                    (dfRegrasBase[colunas[3]]==dfRegrasBase[colunas[3]][i])&
-                                    (dfRegrasBase[colunas[4]]==dfRegrasBase[colunas[4]][i])&
-                            
-                                    (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
-                                    (dfRegrasBase["Formula"]=='Indefinido')
-                                    ]
-                dff6Colunas = (dff[[colunas[0], colunas[1],  colunas[2],colunas[3], colunas[4],colunas[5], 'Resultado', 'Formula']]).drop_duplicates()
-                if((len(dff6Colunas.index)<opcoesPorColuna[5])&(dfRegrasBase["Formula"][i]=='Indefinido')):
-                    dfRegrasBase["Formula"][i]=6
-        
+        for i in dfRegrasBase.index:
+            dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
+                                (dfRegrasBase[colunas[1]]==dfRegrasBase[colunas[1]][i])&
+                                (dfRegrasBase[colunas[2]]==dfRegrasBase[colunas[2]][i])&
+                                (dfRegrasBase[colunas[3]]==dfRegrasBase[colunas[3]][i])&
+                                (dfRegrasBase[colunas[4]]==dfRegrasBase[colunas[4]][i])&
+                        
+                                (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
+                                (dfRegrasBase["Formula"]=='Indefinido')
+                                ]
+            dff6Colunas = dff[[colunas[0], colunas[1],  colunas[2],colunas[3], colunas[4], 'Resultado', 'Formula']]
+           # print(dff6Colunas)
+            if(len(dff6Colunas.index)<(opcoesPorColuna[5])):              
+                for k in dff6Colunas.index:
+                    print("o "+str(k)+" foi definido como 6")
+                    dfRegrasBase["Formula"][k]=6
+    print("Passou o 6")    
+       
     if(qtdeDeCriterios>=5):
         for i in dfRegrasBase.index:
             dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
@@ -1206,9 +1210,12 @@ def ConstruirRegrasFuncao(colunas, opcoesPorColuna, nomeDaPlanilha,idDaPlanilha 
                                 (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
                                 (dfRegrasBase["Formula"]=='Indefinido')
                                 ]
-            dff5Colunas = (dff[[colunas[0], colunas[1],  colunas[2],colunas[3], colunas[4], 'Resultado', 'Formula']]).drop_duplicates()
-            if((len(dff5Colunas.index)<opcoesPorColuna[4])&(dfRegrasBase["Formula"][i]=='Indefinido')):
-                dfRegrasBase["Formula"][i]=5          
+            dff5Colunas = dff[[colunas[0], colunas[1],  colunas[2],colunas[3],  'Resultado', 'Formula']]
+            if(len(dff5Colunas.index)<(opcoesPorColuna[4])):              
+                for k in dff5Colunas.index:
+                    print("o "+str(k)+" foi definido como 5")
+                    dfRegrasBase["Formula"][k]=5        
+    print("Passou o 5")  
     if(qtdeDeCriterios>=4):
         for i in dfRegrasBase.index:
             dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
@@ -1217,35 +1224,39 @@ def ConstruirRegrasFuncao(colunas, opcoesPorColuna, nomeDaPlanilha,idDaPlanilha 
                             (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
                             (dfRegrasBase["Formula"]=='Indefinido')
                             ]
-            dff4Colunas = (dff[[colunas[0], colunas[1],  colunas[2],colunas[3], 'Resultado', 'Formula']]).drop_duplicates()
-            if((len(dff4Colunas.index)<opcoesPorColuna[3])&(dfRegrasBase["Formula"][i]=='Indefinido')):
-                dfRegrasBase["Formula"][i]=4   
+            dff4Colunas = dff[[colunas[0], colunas[1],  colunas[2], 'Resultado', 'Formula']]
+            if(len(dff4Colunas.index)<(opcoesPorColuna[3])):              
+                for k in dff4Colunas.index:
+                    print("o "+str(k)+" foi definido como 5")
+                    dfRegrasBase["Formula"][k]=4  
     for i in dfRegrasBase.index:
         dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
                                (dfRegrasBase[colunas[1]]==dfRegrasBase[colunas[1]][i])&
                                (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
                                (dfRegrasBase["Formula"]=='Indefinido')
                                ]
-        dff3Colunas = (dff[[colunas[0], colunas[1],  colunas[2], 'Resultado', 'Formula']]).drop_duplicates()
-        if((len(dff3Colunas.index)<opcoesPorColuna[2])&(dfRegrasBase["Formula"][i]=='Indefinido')):
-            dfRegrasBase["Formula"][i]=3
-    #print(dfRegrasBase)       
+        dff3Colunas = dff[[colunas[0], colunas[1],  'Resultado', 'Formula']]
+        if(len(dff3Colunas.index)<(opcoesPorColuna[2])):              
+                for k in dff3Colunas.index:
+                    dfRegrasBase["Formula"][k]=3 
+      
     for i in dfRegrasBase.index:
         dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
                                (dfRegrasBase["Resultado"]==dfRegrasBase["Resultado"][i])&
                                (dfRegrasBase["Formula"]=='Indefinido')
                                ]
-        dff2Colunas = (dff[[colunas[0], colunas[1], 'Resultado', 'Formula']]).drop_duplicates()
-        #print(dff2Colunas)
-        if((len(dff2Colunas.index)<opcoesPorColuna[1])&(dfRegrasBase["Formula"][i]=='Indefinido')):
-           dfRegrasBase["Formula"][i]=2 
-    for i in dfRegrasBase.index:
+        dff2Colunas = dff[[colunas[0],  'Resultado', 'Formula']]
+
+        if(len(dff2Colunas.index)<opcoesPorColuna[1]):              
+                for k in dff2Colunas.index:
+                    dfRegrasBase["Formula"][k]=2 
+    for i in (dfRegrasBase.loc[dfRegrasBase["Formula"]=="Indefinido"]).index:
         if(dfRegrasBase["Formula"][i]=='Indefinido'):        
            dfRegrasBase["Formula"][i]=1 
-    #print(dfRegrasBase)
+
     for i in dfRegrasBase.index:
         regra = ""
-        #print(type().__name__)
+
         j = 0
         w = dfRegrasBase["Formula"][i]
         while  j < w:
