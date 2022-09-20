@@ -336,7 +336,6 @@ def your_url():
                                                    nomeDaAba="RegrasCriterioCusto"
                                                    )   
    
-    
     variavelDeSaidaQualidade = GetVariavelDeSaida(nomeDaVariavel="Qualidade", opcoes=["muitoBaixo", "baixo", "medio", "alto", "muitoAlto"], criterio= "Qualidade")
     qualidade, imagemQualidade =ConstruirControladorFuzzy(
                                                    inomeDasVariaveisDeEntrada=GetCriteriosQualidade(req=req), 
@@ -554,6 +553,7 @@ def GerarRegras(variaveisDeEntrada, variavelDeSaida, nomeDaRegraDeCriterio, idDa
     
     for i in variaveisDeEntrada:
         colunas.append(i.label)
+        
     colunas.append('Resultado')
     colunas.append('FORMULA')	
     colunas.append('Regra')
@@ -561,7 +561,67 @@ def GerarRegras(variaveisDeEntrada, variavelDeSaida, nomeDaRegraDeCriterio, idDa
     a = list(string.ascii_uppercase)
     colunaFim=a[len(colunas)]
   
+    resultados = []
+    
     dfRegrasBase = bancoDeDados.GetBaseRegras(sheet=planilha, sampleRange=nomeDaAba+"!B2:"+colunaFim+"15000", idDaPlanilha=idDaPlanilha, colunas=colunas )
+    for r in dfRegrasBase.index:
+        entradas = dfRegrasBase["Regra"][r].split('|')[0]
+        resultado = dfRegrasBase["Regra"][r].split('|')[1]    
+        v = [entradas, resultados]
+        resultados.append([str(dfRegrasBase["Regra"][r].split('|')[0]),  str(dfRegrasBase["Regra"][r].split('|')[1])])
+       
+    dfRegraSaida = pd.DataFrame(data=resultados, columns=['regra', 'saida'])
+    
+    dfSaidas = (dfRegraSaida["saida"]).drop_duplicates()
+    
+   # print(dfSaidas)
+    dfRegra = dfRegraSaida.drop_duplicates()
+   # print(dfRegra)
+   # print('************************************************')
+    regras = []   
+    ldict = {}
+    l = {'ctrl':ctrl,'variaveisDeEntrada':variaveisDeEntrada, 'variavelDeSaida':variavelDeSaida}
+    """r = ctrl.Rule((variaveisDeEntrada[0]['muitoAlto'] & variaveisDeEntrada[1]['bom'] & variaveisDeEntrada[2]['medio'] ) |
+                    (variaveisDeEntrada[0]['muitoAlto'] & variaveisDeEntrada[1]['bom'] & variaveisDeEntrada[2]['bom'] ) |
+                    (variaveisDeEntrada[0]['alto'] & variaveisDeEntrada[1]['ruim'] & variaveisDeEntrada[2]['bom'] ) |
+                    (variaveisDeEntrada[0]['alto'] & variaveisDeEntrada[1]['medio'] & variaveisDeEntrada[2]['bom'] ) |
+                    (variaveisDeEntrada[0]['alto'] & variaveisDeEntrada[1]['bom'] & variaveisDeEntrada[2]['bom'] ) |
+                    (variaveisDeEntrada[0]['medio'] & variaveisDeEntrada[1]['medio'] & variaveisDeEntrada[2]['bom'] ) |
+                    (variaveisDeEntrada[0]['medio'] & variaveisDeEntrada[1]['bom'] & variaveisDeEntrada[2]['medio'] ) ,variavelDeSaida['alto'])"""
+    for i in dfSaidas.index:
+        comando = "r = ctrl.Rule("
+        resultado = dfSaidas[i]
+        dfRegrasAtuais = dfRegra.loc[dfRegra["saida"]==dfSaidas[i]]
+        
+        
+        for k in dfRegrasAtuais.index:
+            entradas = dfRegrasAtuais["regra"][k]           
+            regrasAntecedentes = entradas.split(';')
+            qtde = len(regrasAntecedentes)
+            #print(qtde)
+            w=0
+            regraAdicional = "\n ("
+            while w < qtde:
+                
+                regraAdicional = regraAdicional+"variaveisDeEntrada["+str(w)+"]['"+regrasAntecedentes[w]+"'] & "
+                w = w+1
+            regraAdicional = regraAdicional[:-2]+')'    
+            
+            comando = comando+regraAdicional+' | '
+           
+           
+        comando = comando[:-2] +",variavelDeSaida['"+resultado+"'])" 
+        exec(comando, l, ldict)
+        regras.append(ldict['r'])
+        #print(comando)
+       #r = ctrl.Rule(((((variaveisDeEntrada[0][regrasAntecedentes[0]]) &variaveisDeEntrada[1][regrasAntecedentes[1]]) &variaveisDeEntrada[2][regrasAntecedentes[2]]) &) |((((variaveisDeEntrada[0][regrasAntecedentes[0]]) &variaveisDeEntrada[1][regrasAntecedentes[1]]) &variaveisDeEntrada[2][regrasAntecedentes[2]]) &) |((((variaveisDeEntrada[0][regrasAntecedentes[0]]) &variaveisDeEntrada[1][regrasAntecedentes[1]]) &variaveisDeEntrada[2][regrasAntecedentes[2]]) &) |((((variaveisDeEntrada[0][regrasAntecedentes[0]]) &variaveisDeEntrada[1][regrasAntecedentes[1]]) &variaveisDeEntrada[2][regrasAntecedentes[2]]) &) |((((variaveisDeEntrada[0][regrasAntecedentes[0]]) &variaveisDeEntrada[1][regrasAntecedentes[1]]) &variaveisDeEntrada[2][regrasAntecedentes[2]]) &) |((((variaveisDeEntrada[0][regrasAntecedentes[0]]) &variaveisDeEntrada[1][regrasAntecedentes[1]]) &variaveisDeEntrada[2][regrasAntecedentes[2]]) &) |((((variaveisDeEntrada[0][regrasAntecedentes[0]]) &variaveisDeEntrada[1][regrasAntecedentes[1]]) &variaveisDeEntrada[2][regrasAntecedentes[2]]) &) |((((variaveisDeEntrada[0][regrasAntecedentes[0]]) &variaveisDeEntrada[1][regrasAntecedentes[1]]) &variaveisDeEntrada[2][regrasAntecedentes[2]]) &) |((((variaveisDeEntrada[0][regrasAntecedentes[0]]) &variaveisDeEntrada[1][regrasAntecedentes[1]]) &variaveisDeEntrada[2][regrasAntecedentes[2]]) &) |((((variaveisDeEntrada[0][regrasAntecedentes[0]]) &variaveisDeEntrada[1][regrasAntecedentes[1]]) &variaveisDeEntrada[2][regrasAntecedentes[2]]) &) ,variavelDeSaida[medio])
+    return regras
+       
+    
+    #daqui para baixo deu certo
+    dfRegrasBase = bancoDeDados.GetBaseRegras(sheet=planilha, sampleRange=nomeDaAba+"!B2:"+colunaFim+"15000", idDaPlanilha=idDaPlanilha, colunas=colunas )
+    
+    
     dfRegras = dfRegrasBase["Regra"]
     dfRegras = dfRegras.drop_duplicates()
     #print(dfRegras)
