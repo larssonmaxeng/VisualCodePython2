@@ -61,6 +61,8 @@ function salvarDados(){
         });
     }
 function obterDados(){
+    
+    
     let subcriterios = []
     subcriterios.push('CustoPreco')
     subcriterios.push('CustoPgto')
@@ -118,13 +120,16 @@ function obterDados(){
             }
             else{
 
-                document.getElementById(data1["idHtml"]).innerHTML = "Média da nota custo: "+ data1["valor"];
+                document.getElementById(data1["idHtml"]).innerHTML = "Média classificação: "+ data1["valor"];
             }
            
             
             //ele.src =  'data:image/png;base64,'+ data1["valor"];
             
             }); 
+            $("#resumo").prepend("<h4 class=textoCentralizado id=1001111>Classificação final</h4>");
+            $("#resumo").animate({height:'150px'}, 500);            
+   
         });
     }
     /*$.ajax({
@@ -294,7 +299,14 @@ function getDataTreeViewAquisicoes(){
                     console.log(data.node.data);
                    
                  if (data != null && data.node != null && data.node.data != []) {
+                   
                     document.getElementById("Titulo001").textContent = "Critérios para o: "+ data.node["text"];
+                    if($("#resumo").height()=='72'){
+                        $("#1001111").remove();
+                        $("#resumo").animate({height:'1px'}, 500);
+                    }
+                    
+                    
                     if(data.node.data["fornecedorId"]!=undefined){
 
                       var your_data =  data.node.data;

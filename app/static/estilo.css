@@ -76,6 +76,9 @@
   background-color:  #222222;
   border: none;
  }
+ .divResultado{
+  height: 1px;
+ }
  .selectOpcoes {
   -webkit-appearance: none;
   /* Remove estilo padrão do Chrome */
