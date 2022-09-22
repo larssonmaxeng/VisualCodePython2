@@ -49,10 +49,10 @@ def GetLinhaMaxima(nome, sheet):
         return int(dfFiltro["numeroRegistro"][f])
     return []
 
-def GetCriterios(sheet):
-    linha = 7#GetLinhaMaxima(nome="pedido", sheet=sheet)+1
-    planilha = sheet.GetDados(SAMPLE_RANGE_NAME='criterio!A3:D'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
-    df = pd.DataFrame(planilha, columns=['criterioId','criterio','tipo','htmlId'])
+def GetCriterios(sheet, nomeDaAba):
+    linha = GetLinhaMaxima(nome="criterio", sheet=sheet)+1
+    planilha = sheet.GetDados(SAMPLE_RANGE_NAME=nomeDaAba+'!A3:F'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    df = pd.DataFrame(planilha, columns=['criterioId',	'criterio',	'tipo',	'htmlId',	'variaveisDeEntrada',	'variavelDeSaida'])
     return df
 def GetSubCriterios(sheet):
     linha = 23#GetLinhaMaxima(nome="pedido", sheet=sheet)+1

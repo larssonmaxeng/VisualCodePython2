@@ -373,6 +373,32 @@ def your_url():
                                                    nomeDaAba="regrasCriterioGeral"
                                                    )     
     
+    df = bancoDeDados.GetCriterios(sheet=planilha, nomeDaAba="criterio")
+    opcoes = []
+    
+    for k in str(df["variavelDeSaida"][0]).split(','):  
+        opcoes.append(str(k))
+    print(opcoes)    
+    nomeDoCriterio = "Critério de seleção"    
+    variavelDeSaidaCriterioSelecao = GetVariavelDeSaida(nomeDaVariavel=nomeDoCriterio, opcoes=opcoes,criterio= nomeDoCriterio)
+    #***************Definição das notas**********************
+    notas ={'01- Custo':custo,
+            '02- Qualidade':qualidade,
+            '03- Prazo':prazo,
+            '04- Gestão':gestao,
+            '05- Geral':geral}
+    
+    
+    criterioDeSelecao, imagemCriterioDeSelecao = ConstruirControladorFuzzy(
+                                                   inomeDasVariaveisDeEntrada=GetCriteriosGeralDoGoogleSheet(notas=notas,
+                                                                                                             nomeDoCriterio=nomeDoCriterio,
+                                                                                                             df=df), 
+                                                   inomeDaVariavelDeSaida=variavelDeSaidaCriterioSelecao,
+                                                   iRegra = nomeDoCriterio,
+                                                   idDaPlanilha="1dBgZ4Zzl0B4esOjsSy5h0YeYD_XaqftJzqQPithL524", 
+                                                   planilha=planilha, 
+                                                   nomeDaAba="RegrasCriteriosGerais"
+                                                   )     
     criterios = []
     criterios.append({"idHtml":"imagemCusto", "valor":str(imagemCusto)})
     criterios.append({"idHtml":"crispCusto", "valor":str(round(custo*1, 2))})
@@ -387,6 +413,9 @@ def your_url():
     
     criterios.append({"idHtml":"imagemGeral", "valor":str(imagemGeral)})
     criterios.append({"idHtml":"crispGeral", "valor":str(round(geral*1, 2))})
+    
+    criterios.append({"idHtml":"imagemCriterioDeSelecao", "valor":str(imagemCriterioDeSelecao)})
+    criterios.append({"idHtml":"crispCriterioDeSelecao", "valor":str(round(criterioDeSelecao*1, 2))})
     
     criterio = json.dumps(criterios)
     #print(criterio)
@@ -533,7 +562,7 @@ def ConstruirControladorFuzzy(inomeDasVariaveisDeEntrada, inomeDaVariavelDeSaida
         print(nome["nomeDaVariavel"])
         print(nome["NotaCrisp"])
         print(nome["NotaFuzzy"])
-        if nome["nomeDaVariavel"] == "Preço":
+        if (nome["nomeDaVariavel"] == "Preço") | (iRegra=="Critério de seleção"):
            custo_simulador.input[nome["nomeDaVariavel"]] = float(str(nome["NotaCrisp"]))
         else:
            custo_simulador.input[nome["nomeDaVariavel"]] = funcoes.Desfuzzificar(nota=str(nome["NotaFuzzy"]));           
@@ -564,7 +593,9 @@ def GerarRegras(variaveisDeEntrada, variavelDeSaida, nomeDaRegraDeCriterio, idDa
     resultados = []
     
     dfRegrasBase = bancoDeDados.GetBaseRegras(sheet=planilha, sampleRange=nomeDaAba+"!B2:"+colunaFim+"15000", idDaPlanilha=idDaPlanilha, colunas=colunas )
+    print(dfRegrasBase)
     for r in dfRegrasBase.index:
+        
         entradas = dfRegrasBase["Regra"][r].split('|')[0]
         resultado = dfRegrasBase["Regra"][r].split('|')[1]    
         v = [entradas, resultados]
@@ -827,6 +858,25 @@ def GetCriteriosGeral(req):
     
     return PreparaCriterios(listaDeCriterios=criterios, criterio="Geral")
 
+def GetCriteriosGeralDoGoogleSheet(notas, df, nomeDoCriterio):
+    
+    
+    criterios = []
+    for registro in df.index:
+        opcoes = []
+        for k in str(df["variaveisDeEntrada"][registro]).split(','):
+            opcoes.append(str(k))
+        if(df["tipo"][registro]=="crisp"):
+            crisp = notas[df["criterio"][registro]] 
+            notaFuzzy = ""     
+        criterios.append({"nomeDaVariavel":df["criterio"][registro],
+                          "QtdeDeCasas":len(str(df["variaveisDeEntrada"][registro]).split(',')),
+                          "Opções": opcoes,
+                          "Criterio": nomeDoCriterio,
+                          "NotaCrisp": crisp,
+                          "NotaFuzzy": notaFuzzy})    
+    return criterios
+
 def PreparaCriterios( listaDeCriterios, criterio):
     criterios = []
     for item in listaDeCriterios:
@@ -1077,15 +1127,15 @@ def GetTreeViewPedidos():
 def GetNotaPedidos():
 
     req = request.get_json()
-    print("**************************Req************")
-    print(req)
+    #print("**************************Req************")
+    #print(req)
    
     sheet = googleSheet.GoogleSheet()
     dfnotaPedido = bancoDeDados.GetNotaPedidoFornecedor(sheet=sheet)
     dfFiltroNotaPedido = dfnotaPedido.loc[(dfnotaPedido["pedidoId"]==req["pedidoId"])&(dfnotaPedido["fornecedorId"]==req["fornecedorId"])]
-    print("**************FiltroNotaPedido****************")
-    print(dfFiltroNotaPedido)
-    dfCriterios = bancoDeDados.GetCriterios(sheet=sheet)
+    #print("**************FiltroNotaPedido****************")
+    #print(dfFiltroNotaPedido)
+    dfCriterios = bancoDeDados.GetCriterios(sheet=sheet, nomeDaAba='subcriterio')
     
     dfSubCriterios = bancoDeDados.GetSubCriterios(sheet=sheet)
     #print(dfSubCriterios)
@@ -1094,8 +1144,8 @@ def GetNotaPedidos():
     for i in dfSubCriterios.index:
         dfNotaSubCriterio = dfFiltroNotaPedido.loc[(dfFiltroNotaPedido["htmlId"]==dfSubCriterios["htmlId"][i])&
                                                    (dfFiltroNotaPedido["ativo"]=="1")]
-        print("**************NotaSubCriterio****************")
-        print(dfNotaSubCriterio )
+        #print("**************NotaSubCriterio****************")
+        #print(dfNotaSubCriterio )
         if(dfNotaSubCriterio.shape[0]>0):
             for j in dfNotaSubCriterio.index:
                 nota={'htmlId':dfSubCriterios["htmlId"][i], 'nota':dfNotaSubCriterio["nota"][j]}

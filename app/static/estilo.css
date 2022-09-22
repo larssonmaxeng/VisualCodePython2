@@ -4,6 +4,10 @@
 .imagem300{
     height: 300px;
 }
+.imagem300c{
+  height: 300px;
+  text-align: center;
+}
 .textoCentralizado{
     text-align: center;
 }

@@ -62,7 +62,11 @@ function salvarDados(){
     }
 function obterDados(){
     
-    
+    $("#crispCriterioDeSelecao").remove();
+    $("#imagemCriterioDeSelecao").remove();
+    if($("#resumo").height()=='350'){
+        $("#resumo").animate({height:'1px'}, 500);
+    }
     let subcriterios = []
     subcriterios.push('CustoPreco')
     subcriterios.push('CustoPgto')
@@ -112,23 +116,37 @@ function obterDados(){
         })
         }).then(response => response.json())
         .then(function(data){         
-        data.forEach(function(data1, index) {
+            
+            $("#resumo").prepend('<img class=\"imagem300c\" id=imagemCriterioDeSelecao src=\"\"><br/>');
+            $("#resumo").prepend("<h4 class=textoCentralizado id=crispCriterioDeSelecao>Classificação final</h4>");
+            imagemCriterioDeSelecao = 'data:image/png;base64,';
+           
+            data.forEach(function(data1, index) {
             
             if(data1["idHtml"].includes('imagem')){    
                 var imagem = 'data:image/png;base64,'+ data1["valor"];
                 document.getElementById(data1["idHtml"]).src = imagem;
             }
             else{
-
-                document.getElementById(data1["idHtml"]).innerHTML = "Média classificação: "+ data1["valor"];
+                if(data1["idHtml"]=="crispCriterioDeSelecao")   {
+                    console.log(data1["idHtml"])
+                    document.getElementById(data1["idHtml"]).textContent = "Média classificação: " +data1["valor"];
+                }
+                else{
+                    document.getElementById(data1["idHtml"]).innerHTML = "Média classificação: "+ data1["valor"];    
+                }     
+               
+                
             }
            
             
             //ele.src =  'data:image/png;base64,'+ data1["valor"];
             
             }); 
-            $("#resumo").prepend("<h4 class=textoCentralizado id=1001111>Classificação final</h4>");
-            $("#resumo").animate({height:'150px'}, 500);            
+            
+            //$("#resumo").prepend("<img class='imagem300' id=imagemCriterioDeSelecao src=''>");
+
+            $("#resumo").animate({height:'350px'}, 500);            
    
         });
     }
@@ -301,7 +319,7 @@ function getDataTreeViewAquisicoes(){
                  if (data != null && data.node != null && data.node.data != []) {
                    
                     document.getElementById("Titulo001").textContent = "Critérios para o: "+ data.node["text"];
-                    if($("#resumo").height()=='72'){
+                    if($("#resumo").height()=='350'){
                         $("#1001111").remove();
                         $("#resumo").animate({height:'1px'}, 500);
                     }
