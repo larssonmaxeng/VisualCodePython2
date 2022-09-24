@@ -116,7 +116,7 @@ function obterDados(){
         })
         }).then(response => response.json())
         .then(function(data){         
-            
+     
             $("#resumo").prepend('<img class=\"imagem300c\" id=imagemCriterioDeSelecao src=\"\"><br/>');
             $("#resumo").prepend("<h4 class=textoCentralizado id=crispCriterioDeSelecao>Classificação final</h4>");
             imagemCriterioDeSelecao = 'data:image/png;base64,';
@@ -311,10 +311,10 @@ function getDataTreeViewAquisicoes(){
                     "state": { "key": "demo2" },
                     "plugins": ["state", "types", "unique", "json_data", "search"]
                 }).bind("activate_node.jstree", function (evt, data) {
-                    console.log("Clicou");
+                    /*console.log("Clicou");
                     console.log(data);
                     console.log(data.node);
-                    console.log(data.node.data);
+                    console.log(data.node.data);*/
                    
                  if (data != null && data.node != null && data.node.data != []) {
                    

@@ -1010,6 +1010,7 @@ def GetTreeViewModels():
     #print(buketsItem["items"])
     #for buketItem in buketsItem:
     modelosBom = GetListBOM()
+    print(modelosBom)
     for bucket in buketsItem["items"]:
         
         #print(bucket["bucketKey"])
@@ -1023,10 +1024,10 @@ def GetTreeViewModels():
         for item in itens["items"]:
             listBom = []
             for itemBom in modelosBom:
-                print(type(itemBom).__name__)
+                """print(type(itemBom).__name__)
                 print(str(i)+'********************Item bOM*******************')
                 print(itemBom)
-                print(itemBom["MODELO"]) 
+                print(itemBom["MODELO"]) """
                 i=i+1
                 if(itemBom["MODELO"]==item["objectKey"]):
                     listBom.append({"bucketKey":bucket, "objectId":item["objectId"], "objectKey":item["objectKey"], "Nivel":2, "bom":itemBom})
@@ -1045,12 +1046,9 @@ def GetBucket(token):
 @app.route("/GetListBOM",  methods=["GET", "POST", "PUT"])
 def GetListBOM():
     sheet = googleSheet.GoogleSheet()
-    planilha = sheet.GetDados(SAMPLE_RANGE_NAME='Nivel2!b2:d10', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
-    index = sheet.GetDados(SAMPLE_RANGE_NAME='Nivel2!A2:a10', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
-    colunas = sheet.GetDados(SAMPLE_RANGE_NAME='Nivel2!b1:d1', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
-    #print(index)
+
     
-    dataFrame = pd.DataFrame(planilha, columns=colunas[0])
+    dataFrame = bancoDeDados.GetListBOM(nomeDaAba="EstruturaBOM",sheet=sheet)
     #print(dataFrame)
    
     df = dataFrame.groupby(["MODELO", "NIVEL01"])

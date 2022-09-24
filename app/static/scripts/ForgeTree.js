@@ -18,8 +18,8 @@
 
 $(document).ready(function () {
   console.log("foi?")
-    "use strict";
-    $("#grid").jqGrid({
+   // "use strict";
+    /*$("#grid").jqGrid({
         colModel: [
             { name: "name", label: "Client", width: 53 },
             { name: "invdate", label: "Date", width: 90, align: "center", sorttype: "date",
@@ -74,7 +74,7 @@ $(document).ready(function () {
     }).jqGrid("filterToolbar").jqGrid("navGrid", { view: true })
 		.jqGrid("inlineNav")
 		
-		.jqGrid("gridResize");
+		.jqGrid("gridResize");*/
 
   getDataTreeViewModels();
    //console.log("teste")

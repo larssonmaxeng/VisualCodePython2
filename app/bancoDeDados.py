@@ -40,7 +40,7 @@ def GetPedidoFornecedor(sheet):
     dfFiltroFornecedor = dfFiltropedido.loc[dfFiltropedido["pedidoId"]==fornecedorId]
     return dfFiltroFornecedor"""
 def GetLinhaMaxima(nome, sheet):
-    planilha = sheet.GetDados(SAMPLE_RANGE_NAME='NumeroRegistros!A2:B10', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    planilha = sheet.GetDados(SAMPLE_RANGE_NAME='NumeroRegistros!A2:B90', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
     df = pd.DataFrame(planilha, columns=['tabela','numeroRegistro'])
     dfFiltro = df.loc[df['tabela']==nome]
     #print(dfFiltro)
@@ -54,6 +54,13 @@ def GetCriterios(sheet, nomeDaAba):
     planilha = sheet.GetDados(SAMPLE_RANGE_NAME=nomeDaAba+'!A3:F'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
     df = pd.DataFrame(planilha, columns=['criterioId',	'criterio',	'tipo',	'htmlId',	'variaveisDeEntrada',	'variavelDeSaida'])
     return df
+
+def GetListBOM(sheet, nomeDaAba):
+    linha = GetLinhaMaxima(nome=nomeDaAba, sheet=sheet)+1
+    planilha = sheet.GetDados(SAMPLE_RANGE_NAME=nomeDaAba+'!b1:D'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    df = pd.DataFrame(planilha, columns=[	'MODELO',	'NIVEL01',	'NIVEL02'])
+    return df
+
 def GetSubCriterios(sheet):
     linha = 23#GetLinhaMaxima(nome="pedido", sheet=sheet)+1
     planilha = sheet.GetDados(SAMPLE_RANGE_NAME='subcriterio!A3:G'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')

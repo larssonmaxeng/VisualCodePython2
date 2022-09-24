@@ -17,7 +17,8 @@
 /////////////////////////////////////////////////////////////////////
 
 var viewer;
-
+var noArvoreSelecionado;
+var dadosModelo;
 function onDocumentLoadSuccess(doc) {
 
     // A document contains references to 3D and 2D viewables.
@@ -229,9 +230,10 @@ function getDataTreeViewModels(){
                     }).bind("activate_node.jstree", function (evt, data) {
                         console.log("Clicou");
                         
-                       
+                        noArvoreSelecionado = undefined;
                         if (data != null && data.node != null && data.node.data != []) {
                           //$("#forgeViewer").empty();
+                          noArvoreSelecionado = data.node.data;
                           console.log(data.node)
                           console.log(btoa(data.node.data["objectId"]));
                           var urn = btoa(data.node.data["objectId"]);
@@ -441,27 +443,134 @@ function getBulkProperties(dbIds, options, SucessoGetBulk, ErroGetBulk){
 
 }
 
+function GetIdProp(objeto, campoProcurado){
+    //console.log(objeto)
+    registrosEsperados = 5
+    for(var i=0; i<registrosEsperados; i++){
+        //console.log(objeto.properties[i].displayName)
+        try
+        {
+            if(objeto.properties[i].displayName==campoProcurado){
+                //console.log("Código: "+i);
+                return i;    
+            }
+        }
+        catch(error){
+            //console.log(error);
+        }
+    }
+    return undefined;
+
+}
+
 function GetPropriedadesVisiveis(){
     arraydb = [];
-    viewer.search('Floor',function(dbIds){
-     
-     viewer.model.getBulkProperties(dbIds, ['Area', 'Material estrutural', 'Comprimento'],
-     function(elements){
-        console.log(elements)
-       
-       
-     });
-    
-  } , null, ['Material']);  
-    
- 
- }
+    if(noArvoreSelecionado!=undefined){
+        viewer.search('Floor',function(dbIds){
+        
+            viewer.model.getBulkProperties(dbIds, ['Pavimento', 'Localizacao','Comentários', 'HID-Descrição',  'Comprimento'],
+            function(elements){
+                var v = [];
+                dadosModelo = []
+                for(var i=0; i<elements.length; i++){
+                    //console.log(elements[i].properties);
+                    /*try
+                    {*/
+                        if(noArvoreSelecionado["NIVEL02"]!=undefined){
+                            localizacaoId = GetIdProp(elements[i],'Localizacao');
+                            unidId = GetIdProp(elements[i],'Comentários');
+                            pavimentoId = GetIdProp(elements[i],'Pavimento');
+                            comprimentoId = GetIdProp(elements[i],'Comprimento');
+                            hidDescricao = GetIdProp(elements[i],'HID-Descrição');
 
+                            if((localizacaoId!=undefined)&
+                               (unidId!=undefined)&
+                               (pavimentoId!=undefined)&
+                               (hidDescricao!=undefined)){
+                                if((elements[i].properties[localizacaoId].displayValue==noArvoreSelecionado["NIVEL02"])&
+                                (elements[i].properties[pavimentoId].displayValue==noArvoreSelecionado["NIVEL01"])){
+                                    console.log(noArvoreSelecionado["NIVEL02"]);
+                                    console.log(noArvoreSelecionado["NIVEL01"]);
+                                    
+                                    v.push(elements[i].dbId);
+                                    var dadoModelo = {};
+                                    dadoModelo['descricao'] = elements[i].properties[hidDescricao].displayValue;
+                                    dadoModelo['unid'] = elements[i].properties[unidId].displayValue;
+                                    if(elements[i].properties[unidId].displayValue=='m'){
+                                        dadoModelo['qtde'] = elements[i].properties[comprimentoId].displayValue;
+                                    } else{
+                                        dadoModelo['qtde'] = 1;        
+                                    }
+                                    dadosModelo.push(dadoModelo);
+                                    v.push(elements[i].dbId);     
+
+                                }
+                            }
+                        }
+
+                    /*}
+                        catch(error){
+                            //console.log(error);
+                    }*/
+                };
+                viewer.isolate(v);    
+                console.log('*******************************************')
+                
+                console.log(dadosModelo);
+                "use strict";
+                $("#grid").remove();
+                
+                $("#divGridMaterial").prepend('<table id="grid"></table>');
+                $("#grid").jqGrid({
+                    colModel: [
+                        { name: "descricao", label: "Descrição", width: 250 },
+                        { name: "unid", label: "Unidade", width: 100, align: "center"},
+                        { name: "qtde", label: "Quantidade", width: 110, template: "number" }
+                    ],
+                    data: dadosModelo,
+                    iconSet: "fontAwesome",
+                    idPrefix: "g5_",
+                    rownumbers: true,
+                    sortorder: "desc",
+                    threeStateSort: true,
+                    sortable: true,
+                    guiStyle: "bootstrap",  
+                    sortIconsBeforeText: true,
+                    headertitles: true,
+                    toppager: true,
+                    navOptions: { add: false, edit: false, del: false, search: false },
+                    multiselect: true,
+                    pager: true,
+                    rowNum: 60,
+                    viewrecords: true,
+                    searching: {
+                        defaultSearch: "cn"
+                    },
+                    caption: "Quantidades para o modelo selecionado"
+                }).jqGrid("filterToolbar").jqGrid("navGrid", { view: true })
+                    .jqGrid("inlineNav")
+                    
+                    .jqGrid("gridResize");
+            
+
+
+
+            });
+        
+         } , null, ['Material']);  
+    }
+    else{
+        console.log("No arvore vazio")
+    }
+
+    
+ }
+/*esse deu certo*/
 function GetPropriedades(){
    arraydb = [];
    viewer.search('Floor',function(dbIds){
     
-    viewer.model.getBulkProperties(dbIds, ['Area', 'Material estrutural'],
+    viewer.model.getBulkProperties(dbIds, ['Pavimento', 'Localização', 'HID-Descrição'],
     function(elements){
         var v = [];
       var totalMass = 0;
