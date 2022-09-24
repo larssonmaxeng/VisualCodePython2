@@ -17,8 +17,69 @@
 /////////////////////////////////////////////////////////////////////
 
 $(document).ready(function () {
-   getDataTreeViewModels();
-   console.log("teste")
+  console.log("foi?")
+    "use strict";
+    $("#grid").jqGrid({
+        colModel: [
+            { name: "name", label: "Client", width: 53 },
+            { name: "invdate", label: "Date", width: 90, align: "center", sorttype: "date",
+                formatter: "date", formatoptions: { newformat: "d-M-Y" },
+                searchoptions: { sopt: ["eq"] } },
+            { name: "amount", label: "Amount", width: 165, template: "number" },
+            { name: "tax", label: "Tax", width: 41, template: "number" },
+            { name: "total", label: "Total", width: 51, template: "number" },
+            { name: "closed", label: "Closed", width: 59, template: "booleanCheckbox", firstsortorder: "desc" },
+            { name: "ship_via", label: "Shipped via", width: 87, align: "center",
+                formatter: "select",
+                formatoptions: { value: "FE:FedEx;TN:TNT;DH:DHL", defaultValue: "DH" },
+                stype: "select",
+                searchoptions: { value: ":Any;FE:FedEx;TN:TNT;DH:DHL" } }
+        ],
+        data: [
+            { id: "10",  invdate: "2015-10-01", name: "test",   amount: "" },
+            { id: "20",  invdate: "2015-09-01", name: "test2",  amount: "300.00", tax: "20.00", closed: false, ship_via: "DH", total: "320.00" },
+            { id: "30",  invdate: "2015-09-01", name: "test3",  amount: "400.00", tax: "30.00", closed: false, ship_via: "FE", total: "430.00" },
+            { id: "40",  invdate: "2015-10-04", name: "test4",  amount: "200.00", tax: "10.00", closed: true,  ship_via: "TN", total: "210.00" },
+            { id: "50",  invdate: "2015-10-31", name: "test5",  amount: "300.00", tax: "20.00", closed: false, ship_via: "FE", total: "320.00" },
+            { id: "60",  invdate: "2015-09-06", name: "test6",  amount: "400.00", tax: "30.00", closed: false, ship_via: "FE", total: "430.00" },
+            { id: "70",  invdate: "2015-10-04", name: "test7",  amount: "200.00", tax: "10.00", closed: true,  ship_via: "TN", total: "210.00" },
+            { id: "80",  invdate: "2015-10-03", name: "test8",  amount: "300.00", tax: "20.00", closed: false, ship_via: "FE", total: "320.00" },
+            { id: "90",  invdate: "2015-09-01", name: "test9",  amount: "400.00", tax: "30.00", closed: false, ship_via: "TN", total: "430.00" },
+            { id: "100", invdate: "2015-09-08", name: "test10", amount: "500.00", tax: "30.00", closed: true,  ship_via: "TN", total: "530.00" },
+            { id: "110", invdate: "2015-09-08", name: "test11", amount: "500.00", tax: "30.00", closed: false, ship_via: "FE", total: "530.00" },
+            { id: "120", invdate: "2015-09-10", name: "test12", amount: "500.00", tax: "30.00", closed: false, ship_via: "FE", total: "530.00" }
+        ],
+        iconSet: "fontAwesome",
+        idPrefix: "g5_",
+        rownumbers: true,
+        sortname: "invdate",
+        sortorder: "desc",
+        threeStateSort: true,
+        sortable: true,
+        guiStyle: "bootstrap",
+        
+        
+        sortIconsBeforeText: true,
+        headertitles: true,
+        toppager: true,
+        navOptions: { add: false, edit: false, del: false, search: false },
+        multiselect: true,
+        pager: true,
+        rowNum: 60,
+        viewrecords: true,
+        searching: {
+            defaultSearch: "cn"
+        },
+        caption: "The grid, which demonstrates formatters, templates and the pager"
+    }).jqGrid("filterToolbar").jqGrid("navGrid", { view: true })
+		.jqGrid("inlineNav")
+		
+		.jqGrid("gridResize");
+
+  getDataTreeViewModels();
+   //console.log("teste")
+
+
 
 });
 /*$(document).ready(function () {

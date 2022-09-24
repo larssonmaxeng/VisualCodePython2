@@ -2,14 +2,20 @@
 {% block links %}
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no" />
 <meta charset="utf-8">
-
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
+<link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+<link rel="stylesheet" href="https://rawgit.com/free-jqgrid/jqGrid/master/css/ui.jqgrid.css">
     <!-- The Viewer CSS -->
     
 {% endblock %}
 {% block conteudo %}
     <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/2.*/style.min.css" type="text/css">
     <!-- The Viewer will be instantiated here -->
-    <div class="container-fluid fill">
+    
+
+    
+    <div class="containerFluid fill">
         <div class="row fill">
           <div class="col-sm-4 fill">
             <div class="panel panel-default fill">
@@ -32,9 +38,12 @@
         </div>
        
       </div>
-  
+    <div class="divbaixo">
+      <table id="grid"></table> 
+      <button class = "MyNextButto" id="MyNextButton" onClick=GetPropriedadesVisiveis()>Next!!!</button>
+    </div>
     
-    <button class = "MyNextButto" id="MyNextButton" onClick=GetPropriedades()>Next!!!</button>
+    
 
 {% endblock %}
 {% block scripts%}
@@ -45,5 +54,9 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.7/jstree.min.js"></script>
- 
-{% endblock %}
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/free-jqgrid/4.15.5/jquery.jqgrid.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/free-jqgrid/4.15.5/i18n/min/grid.locale-de.js"></script>
+<script src="https://rawgit.com/free-jqgrid/jqGrid/master/js/jquery.jqgrid.src.js"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+{% endblock %} 

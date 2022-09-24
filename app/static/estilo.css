@@ -14,10 +14,36 @@
 .tituloPagina{
 
 }
+.divmain {
+  height: 65vh;
+  border: 1px solid black;
+  font-size: 20px;
+  font-weight: bold;
+  color: white;
+}
+.divleft {
+  float: left;
+  width: 180px;
+  height: 100%;
+  background-color: green;
+}
+.divright {
+  width: 100%;
+  height: 100%;
+  background-color: blue;
+}
+.divbaixo {
+  width: 100%;
+  height: 25vh;
+  padding: 5px;
+
+}
+
 .tabelaAlterada {
   font-family: arial, sans-serif;
   border-collapse: collapse;
   width: 100%;
+  
 
 }
 .tituloColuna{
@@ -129,6 +155,7 @@
   height: 100%;
   margin: 0;
   background-color: #F0F8FF;
+  padding: 5px;
 }
 .fill{
   height: calc(100vh - 100px);

@@ -6,8 +6,14 @@
     <title>{{ nome }} - My Flask Application</title>
     <link rel="stylesheet" type="text/css" href="/static/content/bootstrap.min.css" />
     <link rel="stylesheet" type="text/css" href="/static/content/site.css" />
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.11.4/themes/redmond/jquery-ui.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/free-jqgrid/4.15.5/css/ui.jqgrid.min.css">
+
+    
+
     <title>Document</title>
     <link rel="stylesheet" href={{url_for('static',filename='estilo.css')}}
+
     {% block links %}{% endblock %}
 </head>
 <body class="container1">
@@ -39,6 +45,7 @@
     <script src="/static/scripts/bootstrap.js"></script>
     <script src="/static/scripts/respond.js"></script>
     <script src="/static/scripts/funcoesFuzzy.js"></script>
+   
 
     {% block scripts %}{% endblock %}
 </body>

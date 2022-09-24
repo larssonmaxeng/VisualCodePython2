@@ -225,7 +225,7 @@ function getDataTreeViewModels(){
                             }
                         },
                         "state": { "key": "demo2" },
-                        "plugins": ["state", "types", "unique", "json_data", "search"]
+                        "plugins": ["state", "types", "unique", "json_data", "search", "checkbox" ]
                     }).bind("activate_node.jstree", function (evt, data) {
                         console.log("Clicou");
                         
@@ -440,6 +440,22 @@ function ErroGetBulk(){
 function getBulkProperties(dbIds, options, SucessoGetBulk, ErroGetBulk){
 
 }
+
+function GetPropriedadesVisiveis(){
+    arraydb = [];
+    viewer.search('Floor',function(dbIds){
+     
+     viewer.model.getBulkProperties(dbIds, ['Area', 'Material estrutural', 'Comprimento'],
+     function(elements){
+        console.log(elements)
+       
+       
+     });
+    
+  } , null, ['Material']);  
+    
+ 
+ }
 
 function GetPropriedades(){
    arraydb = [];
