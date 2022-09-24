@@ -468,7 +468,7 @@ function GetPropriedadesVisiveis(){
     if(noArvoreSelecionado!=undefined){
         viewer.search('Floor',function(dbIds){
         
-            viewer.model.getBulkProperties(dbIds, ['Pavimento', 'Localizacao','Comentários', 'HID-Descrição',  'Comprimento'],
+            viewer.model.getBulkProperties(dbIds, ['IfcGUID','Pavimento', 'Localizacao','Comentários', 'HID-Descrição',  'Comprimento'],
             function(elements){
                 var v = [];
                 dadosModelo = []
@@ -482,7 +482,7 @@ function GetPropriedadesVisiveis(){
                             pavimentoId = GetIdProp(elements[i],'Pavimento');
                             comprimentoId = GetIdProp(elements[i],'Comprimento');
                             hidDescricao = GetIdProp(elements[i],'HID-Descrição');
-
+                            ifcGuidId = GetIdProp(elements[i],'IfcGUID');
                             if((localizacaoId!=undefined)&
                                (unidId!=undefined)&
                                (pavimentoId!=undefined)&
@@ -494,6 +494,7 @@ function GetPropriedadesVisiveis(){
                                     
                                     v.push(elements[i].dbId);
                                     var dadoModelo = {};
+                                    dadoModelo['ifcguid'] = elements[i].properties[ifcGuidId].displayValue;
                                     dadoModelo['descricao'] = elements[i].properties[hidDescricao].displayValue;
                                     dadoModelo['unid'] = elements[i].properties[unidId].displayValue;
                                     if(elements[i].properties[unidId].displayValue=='m'){
@@ -523,7 +524,8 @@ function GetPropriedadesVisiveis(){
                 $("#divGridMaterial").prepend('<table id="grid"></table>');
                 $("#grid").jqGrid({
                     colModel: [
-                        { name: "descricao", label: "Descrição", width: 250 },
+                        { name: "ifcguid", label: "IfcGUID", width: 120 },
+                        { name: "descricao", label: "Descrição", width: 350 },
                         { name: "unid", label: "Unidade", width: 100, align: "center"},
                         { name: "qtde", label: "Quantidade", width: 110, template: "number" }
                     ],
