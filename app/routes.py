@@ -971,7 +971,7 @@ def DeleteBucket(bucketKey):
     token = access_tokenTeste()   
     jtoken = token["access_token"]
     header= { "Authorization": "Bearer "+jtoken   }   
-    """body = {
+    """body = {     
        "bucketKey":"puowchhggffddaaaayyttrreehhhhggfgffn11111"+nome,
        "policyKey":"transient"}
     h = json.dumps(header, indent = 4) 

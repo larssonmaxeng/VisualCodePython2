@@ -182,9 +182,10 @@ function getDataTreeViewModels(){
                                     //console.log(nivel2)
 
                                     var  jsonNivel2 = {}
-                                    jsonNivel2['text']=nivel2['NIVEL02']
-                                    jsonNivel2['data']=nivel2
-                                    jsonNiveis2.push(jsonNivel2)
+                                    jsonNivel2['text']=nivel2['NIVEL02'];
+                                    jsonNivel2['data']=nivel2;
+
+                                    jsonNiveis2.push(jsonNivel2);
 
                                     });
 
@@ -234,12 +235,14 @@ function getDataTreeViewModels(){
                         if (data != null && data.node != null && data.node.data != []) {
                           //$("#forgeViewer").empty();
                           noArvoreSelecionado = data.node.data;
-                          console.log(data.node)
-                          console.log(btoa(data.node.data["objectId"]));
-                          var urn = btoa(data.node.data["objectId"]);
-                          console.log("tentarAbrir");
-                          AbrirModelo(urn);
-                          
+                          if(data.node.data["Nivel"]==1){
+                            console.log(data.node)
+                            console.log(btoa(data.node.data["objectId"]));
+                            var urn = btoa(data.node.data["objectId"]);
+                            console.log("tentarAbrir");
+                            
+                            AbrirModelo(urn);
+                          }
                             /*var options = {
                                 env: 'AutodeskProduction',
                                 getAccessToken: getForgeToken
@@ -445,7 +448,7 @@ function getBulkProperties(dbIds, options, SucessoGetBulk, ErroGetBulk){
 
 function GetIdProp(objeto, campoProcurado){
     //console.log(objeto)
-    registrosEsperados = 5
+    registrosEsperados = 7
     for(var i=0; i<registrosEsperados; i++){
         //console.log(objeto.properties[i].displayName)
         try
@@ -473,7 +476,8 @@ function GetPropriedadesVisiveis(){
                 var v = [];
                 dadosModelo = []
                 for(var i=0; i<elements.length; i++){
-                    //console.log(elements[i].properties);
+                    console.log('-------------------------------------------------');
+                    //console.log(elements[i]);
                     /*try
                     {*/
                         if(noArvoreSelecionado["NIVEL02"]!=undefined){
@@ -489,16 +493,25 @@ function GetPropriedadesVisiveis(){
                                (hidDescricao!=undefined)){
                                 if((elements[i].properties[localizacaoId].displayValue==noArvoreSelecionado["NIVEL02"])&
                                 (elements[i].properties[pavimentoId].displayValue==noArvoreSelecionado["NIVEL01"])){
-                                    console.log(noArvoreSelecionado["NIVEL02"]);
-                                    console.log(noArvoreSelecionado["NIVEL01"]);
-                                    
+                                    //console.log(noArvoreSelecionado["NIVEL02"]);
+                                    //console.log(noArvoreSelecionado["NIVEL01"]);
+                                    viewer.model.getProperties(elements[i].dbId, function(propriedades){
+                                        console.log(propriedades);
+
+                                    }, null);
                                     v.push(elements[i].dbId);
                                     var dadoModelo = {};
+                                    dadoModelo['idForge'] = elements[i]["dbId"];
                                     dadoModelo['ifcguid'] = elements[i].properties[ifcGuidId].displayValue;
                                     dadoModelo['descricao'] = elements[i].properties[hidDescricao].displayValue;
                                     dadoModelo['unid'] = elements[i].properties[unidId].displayValue;
                                     if(elements[i].properties[unidId].displayValue=='m'){
+                                       try{
                                         dadoModelo['qtde'] = elements[i].properties[comprimentoId].displayValue;
+                                       }
+                                       catch{
+
+                                       }
                                     } else{
                                         dadoModelo['qtde'] = 1;        
                                     }
@@ -524,6 +537,7 @@ function GetPropriedadesVisiveis(){
                 $("#divGridMaterial").prepend('<table id="grid"></table>');
                 $("#grid").jqGrid({
                     colModel: [
+                        { name: "idForge", label: "IDForge", width: 120 },
                         { name: "ifcguid", label: "IfcGUID", width: 120 },
                         { name: "descricao", label: "Descrição", width: 350 },
                         { name: "unid", label: "Unidade", width: 100, align: "center"},
