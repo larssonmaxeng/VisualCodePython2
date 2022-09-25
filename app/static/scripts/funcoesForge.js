@@ -19,6 +19,106 @@
 var viewer;
 var noArvoreSelecionado;
 var dadosModelo;
+var  listaDeCores = [];
+$(document).ready(function () {
+    console.log("foi?")
+   
+    dia = new Date('2022 01 01');
+   
+
+    j = 0;
+    while (j<30){
+        dia.setMonth(dia.getMonth() + 1 );
+        j = j+1;
+        
+        let ye = new Intl.DateTimeFormat('en', { year: 'numeric' }).format(dia);
+        let mo = new Intl.DateTimeFormat('en', { month: '2-digit' }).format(dia);
+        let da = new Intl.DateTimeFormat('en', { day: '2-digit' }).format(dia);
+        //console.log(`${da}-${mo}-${ye}`);             
+        cor = {};
+        cor['mes'] = `${ye}-${mo}-${da}`;
+        corHex = gerar_cor_hexadecimal();
+        corRGB = hexToRGBThree(hexToRGB(corHex), 0.9);
+        cc = corRGB; 
+        cor['cor'] = cc['cor'];
+        cor['textoCor']= cc['textoCor'];
+        cor['corhex'] = corHex;
+        listaDeCores.push(cor);
+    }
+      console.log(listaDeCores);
+
+
+      document.getElementById("abaHierarquiBOMButton").click();
+      document.getElementById("dadosBOMButton").click();
+      "use strict";
+      //$("#grid").remove();
+      
+      //$("#divGridMaterial").prepend('<table id="grid"></table>');
+      $("#grid").jqGrid({
+          colModel: [
+              //{ name: "idForge", label: "IDForge", width: 120 },
+              //{ name: "ifcguid", label: "IfcGUID", width: 120 },
+              { name: "descricao", label: "Descrição", width: 450 },
+              { name: "unid", label: "Unidade", width: 80, align: "center"},
+              { name: "qtde", label: "Quantidade", width: 110, template: "number" },
+              { name: "pacote", label: "Pacote", width: 90},
+              { name: "qtdePacote", label: "Qtde pacote", width: 110, template: "number" }
+              
+          ],
+          data: [],
+          iconSet: "fontAwesome",
+          idPrefix: "g5_",
+          rownumbers: true,
+          sortorder: "desc",
+          threeStateSort: true,
+          sortable: true,
+          guiStyle: "bootstrap",  
+          sortIconsBeforeText: true,
+          headertitles: true,
+          toppager: true,
+          navOptions: { add: false, edit: false, del: false, search: false },
+          multiselect: true,
+          pager: true,
+          rowNum: 60,
+          viewrecords: true,
+          searching: {
+              defaultSearch: "cn"
+          },
+          caption: "Quantidades para o modelo selecionado"
+      }).jqGrid("filterToolbar").jqGrid("navGrid", { view: true })
+          .jqGrid("inlineNav")
+          .jqGrid("gridResize");
+
+  
+  });
+ function hexToRGB(hex){
+  return hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i
+             ,(m, r, g, b) => '#' + r + r + g + g + b + b)
+    .substring(1).match(/.{2}/g)
+    .map(x => parseInt(x, 16))
+ }
+
+function gerar_cor(opacidade) {
+    let r = Math.random() * 255;
+    let g = Math.random() * 255;
+    let b = Math.random() * 255;
+ 
+    return  {'cor':new THREE.Vector4(r/255, g/255, b/255, opacidade), 
+              'textoCor':'rgba('+r/255+','+g/255+','+ b/255+','+ opacidade+')'};
+ }
+ function hexToRGBThree(obj, opacidade) {
+    let r = obj[0];//  Math.random() * 255;
+    let g = obj[1];// Math.random() * 255;
+    let b = obj[2];// Math.random() * 255;
+    return  {'cor':new THREE.Vector4(r/255, g/255, b/255, opacidade), 
+              'textoCor':'rgba('+r/255+','+g/255+','+ b/255+','+ opacidade+')'};
+ }
+ function gerar_cor_hexadecimal()
+ {
+   return '#' + parseInt((Math.random() * 0xFFFFFF))
+     .toString(16)
+     .padStart(6, '0');
+ }
 function onDocumentLoadSuccess(doc) {
 
     // A document contains references to 3D and 2D viewables.
@@ -147,11 +247,11 @@ function getDataTreeViewModels(){
             }).then(response => response.json())
             .then(function(data){ 
                 var jsonData = [];         
-                console.log(data);
+                //console.log(data);
 
                 data.forEach(function(data1, index) { 
                     var bucket = {};     
-                        
+                       
                     bucket['text'] = data1["bucketKey"].split("-")[1] ;
                     bucket['state'] = 'open';
                     jsonObjetos = [];
@@ -174,13 +274,14 @@ function getDataTreeViewModels(){
                                 if(nivel01['bom']!=undefined){    
                                     console.log(nivel01['bom'])
                                     var nivel02 = (nivel01['bom'])["NIVEL02"];
-                                    //console.log('***********************')    
-                                    //console.log(nivel02)
+                                     
+                                    
                                     //console.log((nivel01['bom'])["NIVEL01"])
                                     nivel02.forEach(function(nivel2, index) {
                                     //console.log('//for aqui nivel 02');
                                     //console.log(nivel2)
-
+                                    //console.log('***********************')  
+                                    //onsole.log(nivel2)
                                     var  jsonNivel2 = {}
                                     jsonNivel2['text']=nivel2['NIVEL02'];
                                     jsonNivel2['data']=nivel2;
@@ -209,8 +310,9 @@ function getDataTreeViewModels(){
                         
                         jsonData.push(bucket);
     
-                    });   
-                    $('#appBuckets').jstree({
+                    });  
+                    console.log(jsonData); 
+                    $('#treeHierarquia').jstree({
                         'core': {
                             "themes": {
                                 "responsive": false
@@ -231,17 +333,19 @@ function getDataTreeViewModels(){
                     }).bind("activate_node.jstree", function (evt, data) {
                         console.log("Clicou");
                         
-                        noArvoreSelecionado = undefined;
+                        //noArvoreSelecionado = undefined;
                         if (data != null && data.node != null && data.node.data != []) {
                           //$("#forgeViewer").empty();
-                          noArvoreSelecionado = data.node.data;
-                          if(data.node.data["Nivel"]==1){
-                            console.log(data.node)
-                            console.log(btoa(data.node.data["objectId"]));
-                            var urn = btoa(data.node.data["objectId"]);
-                            console.log("tentarAbrir");
-                            
-                            AbrirModelo(urn);
+                          
+                          if((noArvoreSelecionado != data.node.data)|
+                             (noArvoreSelecionado==undefined)){
+                                //console.log(data.node)
+                                //console.log(btoa(data.node.data["objectId"]));
+                                var urn = btoa(data.node.data["objectId"]);
+                                console.log("tentarAbrir");
+                                noArvoreSelecionado =data.node.data; 
+                                AbrirModelo(urn);
+                                
                           }
                             /*var options = {
                                 env: 'AutodeskProduction',
@@ -276,10 +380,10 @@ function getDataTreeViewModels(){
                           })*/
                         }
                       });
-                    $('#appBuckets').jstree(true).settings.core.data = jsonData;
-                    $('#appBuckets').jstree(true).refresh();
-                    $('#appBuckets').jstree("open_all");
-                    $('#appBuckets').jstree("deselect_all");
+                    $('#treeHierarquia').jstree(true).settings.core.data = jsonData;
+                    $('#treeHierarquia').jstree(true).refresh();
+                    $('#treeHierarquia').jstree("open_all");
+                    $('#treeHierarquia').jstree("deselect_all");
                 console.log(jsonData);
             }
                 //var jsonData = {};
@@ -467,16 +571,19 @@ function GetIdProp(objeto, campoProcurado){
 }
 
 function GetPropriedadesVisiveis(){
+    
     arraydb = [];
+    vetorCategoriasAnalisadas = ['Revit Peças hidrossanitárias', 'Revit Tubulação', 'Revit Conexões de tubo'];
     if(noArvoreSelecionado!=undefined){
         viewer.search('Floor',function(dbIds){
         
-            viewer.model.getBulkProperties(dbIds, ['IfcGUID','Pavimento', 'Localizacao','Comentários', 'HID-Descrição',  'Comprimento'],
+            viewer.model.getBulkProperties(dbIds, ['Category', 'ExecutarEm', 'Pavimento', 'Localizacao','Comentários', 'HID-Descrição',  'Comprimento'],
             function(elements){
                 var v = [];
-                dadosModelo = []
+                dadosModelo = [];
+                categoriasListadas = [];
                 for(var i=0; i<elements.length; i++){
-                    console.log('-------------------------------------------------');
+                    //console.log('-------------------------------------------------');
                     //console.log(elements[i]);
                     /*try
                     {*/
@@ -486,25 +593,47 @@ function GetPropriedadesVisiveis(){
                             pavimentoId = GetIdProp(elements[i],'Pavimento');
                             comprimentoId = GetIdProp(elements[i],'Comprimento');
                             hidDescricao = GetIdProp(elements[i],'HID-Descrição');
-                            ifcGuidId = GetIdProp(elements[i],'IfcGUID');
+                            ExecutarEmId = GetIdProp(elements[i],'ExecutarEm');
+                            // ifcGuidId = GetIdProp(elements[i],'IfcGUID');
+                            CategoriaId = GetIdProp(elements[i],'Category');
                             if((localizacaoId!=undefined)&
                                (unidId!=undefined)&
                                (pavimentoId!=undefined)&
                                (hidDescricao!=undefined)){
                                 if((elements[i].properties[localizacaoId].displayValue==noArvoreSelecionado["NIVEL02"])&
-                                (elements[i].properties[pavimentoId].displayValue==noArvoreSelecionado["NIVEL01"])){
-                                    //console.log(noArvoreSelecionado["NIVEL02"]);
-                                    //console.log(noArvoreSelecionado["NIVEL01"]);
-                                    viewer.model.getProperties(elements[i].dbId, function(propriedades){
+                                (elements[i].properties[pavimentoId].displayValue==noArvoreSelecionado["NIVEL01"])&
+                                (vetorCategoriasAnalisadas.indexOf(elements[i].properties[CategoriaId].displayValue)!=-1)){
+                                    //categoriaListada = {};
+                                   /* viewer.model.getProperties(elements[i].dbId, function(propriedades){
                                         console.log(propriedades);
+                                    }, null);*/
+                                    /*categoriaListada = elements[i].properties[CategoriaId].displayValue;
+                                    if(categoriasListadas.indexOf(categoriaListada)==-1){
+                                        categoriasListadas.push(categoriaListada);
+                                    }*/
 
-                                    }, null);
+
+                                   
                                     v.push(elements[i].dbId);
                                     var dadoModelo = {};
-                                    dadoModelo['idForge'] = elements[i]["dbId"];
-                                    dadoModelo['ifcguid'] = elements[i].properties[ifcGuidId].displayValue;
+                                    //dadoModelo['idForge'] = elements[i]["dbId"];
+                                    //dadoModelo['ifcguid'] = elements[i].properties[ifcGuidId].displayValue;
                                     dadoModelo['descricao'] = elements[i].properties[hidDescricao].displayValue;
                                     dadoModelo['unid'] = elements[i].properties[unidId].displayValue;
+                                    executarEm = elements[i].properties[ExecutarEmId].displayValue;
+                                    
+                                    if((executarEm!=undefined)&
+                                       (executarEm!="")&
+                                       (executarEm!='') ){
+                                        var arrDia = executarEm.split('/');
+                                        var stringFormatada = arrDia[2] + '-' + arrDia[1] + '-' +arrDia[0];  
+                                        dadoModelo['mes'] = /*new Date(*/stringFormatada /*)*/;
+                                       
+                                    }else{
+                                        //console.log(executarEm);
+                                        
+                                        dadoModelo['mes'] ="2022-01-01";
+                                    }
                                     if(elements[i].properties[unidId].displayValue=='m'){
                                        try{
                                         dadoModelo['qtde'] = elements[i].properties[comprimentoId].displayValue;
@@ -516,7 +645,7 @@ function GetPropriedadesVisiveis(){
                                         dadoModelo['qtde'] = 1;        
                                     }
                                     dadosModelo.push(dadoModelo);
-                                    v.push(elements[i].dbId);     
+                                      
 
                                 }
                             }
@@ -529,48 +658,50 @@ function GetPropriedadesVisiveis(){
                 };
                 viewer.isolate(v);    
                 console.log('*******************************************')
+                listaOriginal = JSON.parse(JSON.stringify(dadosModelo));
+                $("#pivot").pivotUI(listaOriginal, {
+                    derivedAttributes: {
+                        /*"Age Bin": derivers.bin("Age", 10),
+                        "Gender Imbalance": function(mp) {
+                            return mp["Gender"] == "Male" ? 1 : -1;
+                            }*/
+                        }
+                    });
                 
-                console.log(dadosModelo);
-                "use strict";
-                $("#grid").remove();
-                
-                $("#divGridMaterial").prepend('<table id="grid"></table>');
-                $("#grid").jqGrid({
-                    colModel: [
-                        { name: "idForge", label: "IDForge", width: 120 },
-                        { name: "ifcguid", label: "IfcGUID", width: 120 },
-                        { name: "descricao", label: "Descrição", width: 350 },
-                        { name: "unid", label: "Unidade", width: 100, align: "center"},
-                        { name: "qtde", label: "Quantidade", width: 110, template: "number" }
-                    ],
-                    data: dadosModelo,
-                    iconSet: "fontAwesome",
-                    idPrefix: "g5_",
-                    rownumbers: true,
-                    sortorder: "desc",
-                    threeStateSort: true,
-                    sortable: true,
-                    guiStyle: "bootstrap",  
-                    sortIconsBeforeText: true,
-                    headertitles: true,
-                    toppager: true,
-                    navOptions: { add: false, edit: false, del: false, search: false },
-                    multiselect: true,
-                    pager: true,
-                    rowNum: 60,
-                    viewrecords: true,
-                    searching: {
-                        defaultSearch: "cn"
-                    },
-                    caption: "Quantidades para o modelo selecionado"
-                }).jqGrid("filterToolbar").jqGrid("navGrid", { view: true })
-                    .jqGrid("inlineNav")
+                resumo = [];
+
+                dadosModelo.forEach(function(data1, index) { 
                     
-                    .jqGrid("gridResize");
+                    reg = resumo.find(o => o.descricao === data1['descricao']);
+                    //console.log(data1['descricao']);
+                    //console.log(reg);
+                    
+                    if(reg==undefined){
+                        resumo.push(data1);
+                    }  else{
+                       reg['qtde'] =      reg['qtde'] + data1['qtde'];
+                    }
+   
+                });
+               
+               
+                //navigator.clipboard.writeText(JSON.stringify(resumo));
+                filename='reports.xlsx';
+                    /*data=[{Market: "IN", New Arrivals: "6", Upcoming Appointments: "2", Pending - 1st Attempt: "4"},
+                            {Market: "KS/MO", New Arrivals: "4", Upcoming Appointments: "4", Pending - 1st Attempt: "2"},
+                            {Market: "KS/MO", New Arrivals: "4", Upcoming Appointments: "4", Pending - 1st Attempt: "2"},
+                            {Market: "KS/MO", New Arrivals: "4", Upcoming Appointments: "4", Pending - 1st Attempt: "2"}]*/
+                        var ws = XLSX.utils.json_to_sheet(listaOriginal);
+                        var wb = XLSX.utils.book_new();
+                        XLSX.utils.book_append_sheet(wb, ws, "Resumo");
+                        XLSX.writeFile(wb,filename);
+                $("#grid").jqGrid('setGridParam',
+                { 
+                    datatype: 'local',
+                    data:resumo
+                }).trigger("reloadGrid");
+                var derivers = $.pivotUtilities.derivers;
             
-
-
-
             });
         
          } , null, ['Material']);  
@@ -579,7 +710,7 @@ function GetPropriedadesVisiveis(){
         console.log("No arvore vazio")
     }
 
-    
+    $("body").css("cursor", "default");
  }
 /*esse deu certo*/
 function GetPropriedades(){
@@ -646,3 +777,143 @@ function GetEelemnets(){
  
  }
 
+ function openCity(evt, cityName, divpai) {
+    console.log(evt);
+    var i, tabcontent, tablinks;
+    tabcontent = document.getElementsByClassName("tabcontent");
+    
+    for (i = 0; i < tabcontent.length; i++) {
+      if(tabcontent[i].id.includes(divpai)){
+          console.log(tabcontent[i].id);
+          tabcontent[i].style.display = "none";
+        }
+    }
+    tablinks = document.getElementsByClassName("tablinks");
+    for (i = 0; i < tablinks.length; i++) {
+      if(tablinks[i].id.includes(divpai)){
+        console.log(tablinks[i].id);
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+    }
+    }
+    document.getElementById(cityName).style.display = "block";
+    evt.currentTarget.className += " active";
+  }
+
+
+  function GetColorirModeloBaseadoEmData(){
+    
+    arraydb = [];
+    $("#tabelaDeCores").remove();
+      
+    mesesUsado =[];
+    vetorCategoriasAnalisadas = ['Revit Peças hidrossanitárias', 'Revit Tubulação', 'Revit Conexões de tubo'];
+    if(noArvoreSelecionado!=undefined){
+        viewer.search('Floor',function(dbIds){
+        
+            viewer.model.getBulkProperties(dbIds, ['Category', 'ExecutarEm', 'Pavimento', 'Localizacao','Comentários', 'HID-Descrição',  'Comprimento'],
+            function(elements){
+                var v = [];
+               
+               
+               
+                for(var i=0; i<elements.length; i++){
+                    //console.log('-------------------------------------------------');
+                    //console.log(elements[i]);
+                    /*try
+                    {*/
+                        if(noArvoreSelecionado["NIVEL02"]!=undefined){
+                            localizacaoId = GetIdProp(elements[i],'Localizacao');
+                            unidId = GetIdProp(elements[i],'Comentários');
+                            pavimentoId = GetIdProp(elements[i],'Pavimento');
+                            comprimentoId = GetIdProp(elements[i],'Comprimento');
+                            hidDescricao = GetIdProp(elements[i],'HID-Descrição');
+                            ExecutarEmId = GetIdProp(elements[i],'ExecutarEm');
+                            // ifcGuidId = GetIdProp(elements[i],'IfcGUID');
+                            CategoriaId = GetIdProp(elements[i],'Category');
+                            if((localizacaoId!=undefined)&
+                               (unidId!=undefined)&
+                               (pavimentoId!=undefined)&
+                               (hidDescricao!=undefined)){
+                                if((elements[i].properties[localizacaoId].displayValue==noArvoreSelecionado["NIVEL02"])&
+                                (elements[i].properties[pavimentoId].displayValue==noArvoreSelecionado["NIVEL01"])&
+                                (vetorCategoriasAnalisadas.indexOf(elements[i].properties[CategoriaId].displayValue)!=-1)){
+                                   
+                                    v.push(elements[i].dbId);
+                                    var dadoModelo = {};
+                                    dadoModelo['descricao'] = elements[i].properties[hidDescricao].displayValue;
+                                    dadoModelo['unid'] = elements[i].properties[unidId].displayValue;
+                                    executarEm = elements[i].properties[ExecutarEmId].displayValue;
+                                    
+                                    if((executarEm!=undefined)&
+                                       (executarEm!="")&
+                                       (executarEm!='') ){
+                                        var arrDia = executarEm.split('/');
+                                        var stringFormatada = arrDia[2] + '-' + arrDia[1] + '-' +arrDia[0];  
+                                        dadoModelo['mes'] = /*new Date(*/stringFormatada /*)*/;
+                                       
+                                    }else{
+                                        //console.log(executarEm);
+                                        
+                                        dadoModelo['mes'] ="2022-01-01";
+                                    }
+                                   
+                                    cor = listaDeCores.find(o => String(o.mes) === String(dadoModelo['mes']));
+                                   
+                                    if(cor!=undefined){
+                                        
+                                        viewer.setThemingColor(elements[i].dbId,cor.cor);
+                                        mesUsado = mesesUsado.find(o => String(o.mes) === String(dadoModelo['mes']));
+                                        if(mesUsado==undefined){
+                                            mesesUsado.push(cor);
+                                        }    
+                                    }
+
+                                }
+                            }
+                        }
+
+                   
+                };
+                console.log(mesesUsado);
+                //viewer.isolate(v);    
+                $("#paiTabelaCores").append('<table id="tabelaDeCores"></table>');
+                $("#tabelaDeCores").append('<tr><th width="85px" class="tituloColuna">Mês</th><th width="50px" class="tituloColuna">Cor</th></tr>');
+                mesesUsado.forEach(function(data1, index) { 
+                    //$("#tabelaDeCores").append('<tr><td>'+data1['mes']+'</td><td id=\"cor'+data1['mes']+'\" bgcolor=\"'+rgba2hex(data1['textoCor'])+'\" ></td></tr>');
+                    $("#tabelaDeCores").append('<tr><td>'+data1['mes']+'</td><td id=\"cor'+data1['mes']+'\" bgcolor=\"'+data1['corhex']+'\" ></td></tr>');
+                    
+                    var id ='cor'+data1['mes'];
+                                  
+                });
+            
+            });
+        
+         } , null, ['Material']);  
+    }
+    else{
+        console.log("No arvore vazio")
+    }
+      
+    
+ }
+
+ function rgba2hex(orig) {
+    var a, isPercent,
+      rgb = orig.replace(/\s/g, '').match(/^rgba?\((\d+),(\d+),(\d+),?([^,\s)]+)?/i),
+      alpha = (rgb && rgb[4] || "").trim(),
+      hex = rgb ?
+      (rgb[1] | 1 << 8).toString(16).slice(1) +
+      (rgb[2] | 1 << 8).toString(16).slice(1) +
+      (rgb[3] | 1 << 8).toString(16).slice(1) : orig;
+  
+    if (alpha !== "") {
+      a = alpha;
+    } else {
+      a = 01;
+    }
+    // multiply before convert to HEX
+    a = ((a * 255) | 1 << 8).toString(16).slice(1)
+    hex = hex + a;
+  
+    return hex;
+  }

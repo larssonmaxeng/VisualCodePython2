@@ -18,6 +18,11 @@
 
 $(document).ready(function () {
   console.log("foi?")
+    "use strict";
+    //$("#grid").remove();
+    
+    //$("#divGridMaterial").prepend('<table id="grid"></table>');
+   
    // "use strict";
     /*$("#grid").jqGrid({
         colModel: [

@@ -1,46 +1,91 @@
 {% extends 'base.html' %}
 {% block links %}
+
+
+
 <meta name="viewport" content="width=device-width, minimum-scale=1.0, initial-scale=1, user-scalable=no" />
 <meta charset="utf-8">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap.min.css">
 <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.5/css/bootstrap-theme.min.css">
 <link rel="stylesheet" href="https://netdna.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
 <link rel="stylesheet" href="https://rawgit.com/free-jqgrid/jqGrid/master/css/ui.jqgrid.css">
-    <!-- The Viewer CSS -->
+<link rel="stylesheet" type="text/css" href="https://pivottable.js.org/dist/pivot.css">
+
+<!-- The Viewer CSS -->
     
 {% endblock %}
 {% block conteudo %}
-    <link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/2.*/style.min.css" type="text/css">
+    
+<link rel="stylesheet" href="https://developer.api.autodesk.com/modelderivative/v2/viewers/2.*/style.min.css" type="text/css">
     <!-- The Viewer will be instantiated here -->
     
 
+
+    <h3 class="tituloPagina textoCentralizado" id="TituloForge">BOM - Billing of Material</h3>
     
     <div class="containerFluid fill">
         <div class="row fill">
           <div class="col-sm-4 fill">
             <div class="panel panel-default fill">
-              <div class="panel-heading" data-toggle="tooltip">
-                Buckets &amp; Objects
-                <span id="refreshBuckets" class="glyphicon glyphicon-refresh" style="cursor: pointer"></span>
+              <div id="divTreeModelo" class="tab fill">
+                <!--Hierarquia BOM "panel-headingFuzzy"-->
+                
+                <!--span id="refreshBuckets" class="glyphicon glyphicon-refresh" style="cursor: pointer"></span>
                 <button class="btn btn-xs btn-info" style="float: right" id="showFormCreateBucket" data-toggle="modal" data-target="#createBucketModal">
                   <span class="glyphicon glyphicon-folder-close"></span> New bucket
-                </button>
+                </button-->
+                
+                <button id = "abaHierarquiBOMButton" class="tablinks" onclick="openCity(event, 'abaHierarquiBOM','aba')">Hieraquia BOM</button>
+                <button id = "abaPedido" class="tablinks" onclick="openCity(event, 'abaPedido', 'aba')">Pedidos</button>
               </div>
-              <div id="appBuckets">
-                tree here
-              </div>
+                <div id="abaHierarquiBOM" class="tabcontent fillFuzzy">
+                  <div id="treeHierarquia" >
+                    tree here
+                  </div>
+                </div>
+                
+                <div id="abaPedido" class="tabcontent fillFuzzy">
+                  <div id="treePedidos">
+                    tree here
+                  </div>
+                </div>
+              
+              
             </div>
           </div>
           <div class="col-sm-8 fill">
-            <div class = "MyViewerDiv" id="MyViewerDiv"></div>
+            <div class="panel-headingFuzzy">Modelo BIM</div>
+            <div id="MyViewerDiv"></div>
           </div>
           
         </div>
        
       </div>
     <div class="divbaixo" id="divGridMaterial">
-      <table id="grid"></table> 
-      <button class = "MyNextButto" id="MyNextButton" onClick=GetPropriedadesVisiveis()>Next!!!</button>
+      <div id="divTreeDados" class="tab">
+        <button id="dadosBOMButton" class="tablinks" onclick="openCity(event, 'dadosBOM','dados' )">BOM</button>
+        <button id="dadosLastplannerButton" class="tablinks" onclick="openCity(event, 'dadosLastplanner','dados' )">Last planner</button>
+      </div>   
+      <div id="dadosBOM" class="tabcontent">
+        <div class="divbaixo20" id="opcoesQtde">
+          <button id="dadosBOMButton" class="buttonForge" onclick=GetPropriedadesVisiveis()>Ver lista</button>       
+        </div>
+        <table id="grid"></table>
+      </div>    
+      <div id="dadosLastplanner" class="tabcontent divbaixo">
+        <div class="divbaixo20" id="opcoesQtde">
+          <button id="dadosLastplannerButton" class="buttonForge" onclick=GetPropriedadesVisiveis()>Fazer pedido</button>
+          <button id="dadosLastplannerButton" class="buttonForge" onclick=GetColorirModeloBaseadoEmData()>Colorir modelo</button>                
+        </div></br>
+        <div id="paiTabelaCores" class="widthTabelaCoresFuzzy">
+          
+        </div>       
+        <div class="fillWidthFuzzy">   
+          <div id="pivot"  ></div>
+        </div>
+      </div>
+      
+      
     </div>
     
     
@@ -54,9 +99,11 @@
 <script src="//cdnjs.cloudflare.com/ajax/libs/jquery/3.3.1/jquery.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/twitter-bootstrap/3.4.1/js/bootstrap.min.js"></script>
 <script src="//cdnjs.cloudflare.com/ajax/libs/jstree/3.3.7/jstree.min.js"></script>
-
+<script type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.13.1/xlsx.full.min.js"></script> 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/free-jqgrid/4.15.5/jquery.jqgrid.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/free-jqgrid/4.15.5/i18n/min/grid.locale-de.js"></script>
 <script src="https://rawgit.com/free-jqgrid/jqGrid/master/js/jquery.jqgrid.src.js"></script>
 <script src="https://ajax.googleapis.com/ajax/libs/jqueryui/1.11.4/jquery-ui.min.js"></script>
+<script type="text/javascript" src="https://pivottable.js.org/dist/pivot.js"></script>
+
 {% endblock %} 
