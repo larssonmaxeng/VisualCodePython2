@@ -1073,7 +1073,7 @@ def GetListBOM():
             #print(niveis2) 
             vetorNiveis2 = []
             for nivel2 in niveis2.index:
-                vetorNiveis2.append({"MODELO":modelo, "NIVEL01":nivel1, "NIVEL02":nivel2})
+                vetorNiveis2.append({"MODELO":modelo, "NIVEL01":nivel1, "NIVEL02":nivel2, "Nivel":3})
             vetorNiveis1.append({"MODELO":modelo, "NIVEL01":nivel1, "NIVEL02":vetorNiveis2})
         vetorModelos.append({"MODELO":modelo, "NIVEL01":vetorNiveis1})
     print(vetorNiveis1)        

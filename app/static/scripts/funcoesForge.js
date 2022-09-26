@@ -331,53 +331,24 @@ function getDataTreeViewModels(){
                         "state": { "key": "demo2" },
                         "plugins": ["state", "types", "unique", "json_data", "search", "checkbox" ]
                     }).bind("activate_node.jstree", function (evt, data) {
-                        console.log("Clicou");
-                        
-                        //noArvoreSelecionado = undefined;
                         if (data != null && data.node != null && data.node.data != []) {
-                          //$("#forgeViewer").empty();
+                          console.log("->->->->->->->->->->->->->->->->->->->->->->->");
+                          console.log(data.node.data);
+                          texto = "";
+                          noArvoreSelecionado =data.node.data; 
+                          if(data.node.data['Nivel']==1) texto = data.node.data['objectKey'];
                           
-                          if((noArvoreSelecionado != data.node.data)|
-                             (noArvoreSelecionado==undefined)){
-                                //console.log(data.node)
-                                //console.log(btoa(data.node.data["objectId"]));
-                                var urn = btoa(data.node.data["objectId"]);
-                                console.log("tentarAbrir");
-                                noArvoreSelecionado =data.node.data; 
-                                AbrirModelo(urn);
-                                
-                          }
-                            /*var options = {
-                                env: 'AutodeskProduction',
-                                getAccessToken: getForgeToken
-                            };
+                          if(data.node.data['Nivel']==2) texto = data.node.data['objectKey']+'->'+data.node.data['bom']['NIVEL01'];
+                          
+                          if(data.node.data['Nivel']==3) texto = data.node.data['MODELO']+'->'+data.node.data['NIVEL01']+'->'+data.node.data['NIVEL02'];
+                          document.getElementById("TituloForge").textContent = "BOM - Billing of Material: "+ texto;
+                           if(data.node.data['Nivel']==1){
+                           var urn = btoa(data.node.data["objectId"]);
+                           console.log("tentarAbrir");
+                           
+                           AbrirModelo(urn);
+                           }
 
-                            Autodesk.Viewing.Initializer(options, () => {
-                                viewer = new Autodesk.Viewing.GuiViewer3D(document.getElementById('forgeViewer'));
-                                viewer.start();
-                                var documentId = 'urn:' + 'dXJuOmFkc2sub2JqZWN0czpvcy5vYmplY3Q6cHVvd2NocWtncWJrZ3hzY212ajM4ZjhxcmhlamxjbG42Mzc5ODMwOTM4NTcwMTM5MDcvU09ZLUFSUS1NT0RFTE8tUlZUMjAyMC1SMDIlMjAtJTIwQ29waWEucnZ0';
-                                Autodesk.Viewing.Document.load(documentId, onDocumentLoadSuccess, onDocumentLoadFailure);
-                            });*/
-                          
-                          //alert("Teste")
-                          //alert(urn)
-                          
-                          /*getForgeToken(function (access_token) {
-                            jQuery.ajax({
-                              url: 'https://developer.api.autodesk.com/modelderivative/v2/designdata/' + urn + '/manifest',
-                              headers: { 'Authorization': 'Bearer ' + access_token },
-                              success: function (res) {
-                                if (res.progress === 'success' || res.progress === 'complete') launchViewer(urn);
-                                else $("#forgeViewer").html('The translation job still running: ' + res.progress + '. Please try again in a moment.');
-                              },
-                              error: function (err) {
-                                var msgButton = 'This file is not translated yet! ' +
-                                  '<button class="btn btn-xs btn-info" onclick="translateObject()"><span class="glyphicon glyphicon-eye-open"></span> ' +
-                                  'Start translation</button>'
-                                $("#forgeViewer").html(msgButton);
-                              }
-                            });
-                          })*/
                         }
                       });
                     $('#treeHierarquia').jstree(true).settings.core.data = jsonData;
@@ -569,11 +540,36 @@ function GetIdProp(objeto, campoProcurado){
     return undefined;
 
 }
+function GetCalculaQtde(noSelecionado, element){
+    vetorCategoriasAnalisadas = ['Revit Peças hidrossanitárias', 'Revit Tubulação', 'Revit Conexões de tubo'];
+    //console.log(noSelecionado);
+    if(noSelecionado.Nivel==1){
 
+        return (vetorCategoriasAnalisadas.indexOf(element.properties[CategoriaId].displayValue)!=-1);
+    }
+    if(noSelecionado.Nivel==2){
+        return (element.properties[pavimentoId].displayValue==(noArvoreSelecionado['bom'])["NIVEL01"])&
+               (vetorCategoriasAnalisadas.indexOf(element.properties[CategoriaId].displayValue)!=-1) ;
+        
+    }
+    if(noSelecionado.Nivel==3){
+        
+        return (element.properties[localizacaoId].displayValue==noArvoreSelecionado["NIVEL02"])&
+               (element.properties[pavimentoId].displayValue==noArvoreSelecionado["NIVEL01"])&
+               (vetorCategoriasAnalisadas.indexOf(element.properties[CategoriaId].displayValue)!=-1) ;
+    }
+    return false;
+    
+}
 function GetPropriedadesVisiveis(){
     
     arraydb = [];
-    vetorCategoriasAnalisadas = ['Revit Peças hidrossanitárias', 'Revit Tubulação', 'Revit Conexões de tubo'];
+    $("#grid").jqGrid('clearGridData').trigger("reloadGrid");
+    $("#grid").jqGrid('setGridParam',
+    { 
+        datatype: 'local',
+        data:[]
+    }).trigger("reloadGrid");
     if(noArvoreSelecionado!=undefined){
         viewer.search('Floor',function(dbIds){
         
@@ -584,40 +580,25 @@ function GetPropriedadesVisiveis(){
                 categoriasListadas = [];
                 for(var i=0; i<elements.length; i++){
                     //console.log('-------------------------------------------------');
-                    //console.log(elements[i]);
-                    /*try
-                    {*/
-                        if(noArvoreSelecionado["NIVEL02"]!=undefined){
-                            localizacaoId = GetIdProp(elements[i],'Localizacao');
-                            unidId = GetIdProp(elements[i],'Comentários');
-                            pavimentoId = GetIdProp(elements[i],'Pavimento');
-                            comprimentoId = GetIdProp(elements[i],'Comprimento');
-                            hidDescricao = GetIdProp(elements[i],'HID-Descrição');
-                            ExecutarEmId = GetIdProp(elements[i],'ExecutarEm');
-                            // ifcGuidId = GetIdProp(elements[i],'IfcGUID');
-                            CategoriaId = GetIdProp(elements[i],'Category');
+
+                        
+                    localizacaoId = GetIdProp(elements[i],'Localizacao');
+                    unidId = GetIdProp(elements[i],'Comentários');
+                    pavimentoId = GetIdProp(elements[i],'Pavimento');
+                    comprimentoId = GetIdProp(elements[i],'Comprimento');
+                    hidDescricao = GetIdProp(elements[i],'HID-Descrição');
+                    ExecutarEmId = GetIdProp(elements[i],'ExecutarEm');
+                    // ifcGuidId = GetIdProp(elements[i],'IfcGUID');
+                    CategoriaId = GetIdProp(elements[i],'Category');
+                      
                             if((localizacaoId!=undefined)&
                                (unidId!=undefined)&
                                (pavimentoId!=undefined)&
                                (hidDescricao!=undefined)){
-                                if((elements[i].properties[localizacaoId].displayValue==noArvoreSelecionado["NIVEL02"])&
-                                (elements[i].properties[pavimentoId].displayValue==noArvoreSelecionado["NIVEL01"])&
-                                (vetorCategoriasAnalisadas.indexOf(elements[i].properties[CategoriaId].displayValue)!=-1)){
-                                    //categoriaListada = {};
-                                   /* viewer.model.getProperties(elements[i].dbId, function(propriedades){
-                                        console.log(propriedades);
-                                    }, null);*/
-                                    /*categoriaListada = elements[i].properties[CategoriaId].displayValue;
-                                    if(categoriasListadas.indexOf(categoriaListada)==-1){
-                                        categoriasListadas.push(categoriaListada);
-                                    }*/
-
-
-                                   
+                                if(GetCalculaQtde(noArvoreSelecionado, elements[i])){
+                                    
                                     v.push(elements[i].dbId);
                                     var dadoModelo = {};
-                                    //dadoModelo['idForge'] = elements[i]["dbId"];
-                                    //dadoModelo['ifcguid'] = elements[i].properties[ifcGuidId].displayValue;
                                     dadoModelo['descricao'] = elements[i].properties[hidDescricao].displayValue;
                                     dadoModelo['unid'] = elements[i].properties[unidId].displayValue;
                                     executarEm = elements[i].properties[ExecutarEmId].displayValue;
@@ -649,7 +630,7 @@ function GetPropriedadesVisiveis(){
 
                                 }
                             }
-                        }
+                     
 
                     /*}
                         catch(error){
@@ -657,7 +638,8 @@ function GetPropriedadesVisiveis(){
                     }*/
                 };
                 viewer.isolate(v);    
-                console.log('*******************************************')
+                //console.log('*******************************************')
+                listaOriginal = [];               
                 listaOriginal = JSON.parse(JSON.stringify(dadosModelo));
                 $("#pivot").pivotUI(listaOriginal, {
                     derivedAttributes: {
@@ -916,4 +898,7 @@ function GetEelemnets(){
     hex = hex + a;
   
     return hex;
+  }
+  function GetFilterPivot (){
+    AbortController.log(("#pivot").getGridParam("postData").filters);
   }
