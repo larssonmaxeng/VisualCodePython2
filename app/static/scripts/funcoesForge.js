@@ -19,7 +19,9 @@
 var viewer;
 var noArvoreSelecionado;
 var dadosModelo;
-var  listaDeCores = [];
+var listaDeCores = [];
+var listaOriginal = [];
+var filtroPivot;
 $(document).ready(function () {
     console.log("foi?")
    
@@ -311,25 +313,46 @@ function getDataTreeViewModels(){
                         jsonData.push(bucket);
     
                     });  
-                    console.log(jsonData); 
+                    //console.log(jsonData); 
                     $('#treeHierarquia').jstree({
+                        "core" : {
+                          "animation" : 1,
+                          "check_callback" : true,
+                          "themes" : {"variant" : "large"   },
+                          'data' : []
+                        },
+                        "types": {  
+                            "folder": {  
+                                "icon": "fa fa-folder"  
+                            },  
+                            "file": {  
+                                "icon": "fa fa-file"  
+                            }  
+                        },  
+                        "plugins" : [
+                          "contextmenu", "dnd", "search",
+                          "state", "types", "wholerow"
+                        ]/*/jstree({
                         'core': {
+                            "animation" : 1,
                             "themes": {
-                                "responsive": false
+                                "responsive": false,
+                                "stripes" : true
                             },
                             "check_callback": true,
                             'data': []
-                        },
-                        "types": {
+                        },                        "types": {
                             "default": {
-                                "icon": "fa fa-folder icon-state-warning icon-lg"
+                                "icon" : "glyphicon glyphicon-file",
+                                "valid_children" : ["default","file"]
                             },
                             "file": {
-                                "icon": "fa fa-file icon-state-warning icon-lg"
+                                "icon" : "glyphicon glyphicon-file"
                             }
                         },
                         "state": { "key": "demo2" },
-                        "plugins": ["state", "types", "unique", "json_data", "search", "checkbox" ]
+                        "plugins": ["state", "types", "contextmenu", "unique", "dnd", "search",
+                                    "json_data", "search", "wholerow", "checkbox" ]*/
                     }).bind("activate_node.jstree", function (evt, data) {
                         if (data != null && data.node != null && data.node.data != []) {
                           console.log("->->->->->->->->->->->->->->->->->->->->->->->");
@@ -639,9 +662,21 @@ function GetPropriedadesVisiveis(){
                 };
                 viewer.isolate(v);    
                 //console.log('*******************************************')
-                listaOriginal = [];               
+                               
                 listaOriginal = JSON.parse(JSON.stringify(dadosModelo));
                 $("#pivot").pivotUI(listaOriginal, {
+                    onRefresh: function(config) {
+                        var config_copy = JSON.parse(JSON.stringify(config));
+                        //delete some values which are functions
+                        delete config_copy["aggregators"];
+                        delete config_copy["renderers"];
+                        //delete some bulky default values
+                        delete config_copy["rendererOptions"];
+                        delete config_copy["localeStrings"];
+                        filtroPivot =config_copy; 
+                        console.log(JSON.stringify(config_copy, undefined, 2));
+                    },
+                    
                     derivedAttributes: {
                         /*"Age Bin": derivers.bin("Age", 10),
                         "Gender Imbalance": function(mp) {
@@ -649,7 +684,11 @@ function GetPropriedadesVisiveis(){
                             }*/
                         }
                     });
-                
+                    
+                      
+                     
+                    
+                   
                 resumo = [];
 
                 dadosModelo.forEach(function(data1, index) { 
@@ -694,6 +733,9 @@ function GetPropriedadesVisiveis(){
 
     $("body").css("cursor", "default");
  }
+ 
+
+ 
 /*esse deu certo*/
 function GetPropriedades(){
    arraydb = [];
@@ -899,6 +941,59 @@ function GetEelemnets(){
   
     return hex;
   }
+  function createGuid(){  
+    function S4() {  
+       return (((1+Math.random())*0x10000)|0).toString(16).substring(1);  
+    }  
+    return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();  
+ }  
   function GetFilterPivot (){
-    AbortController.log(("#pivot").getGridParam("postData").filters);
+    console.log(111)
+    pedidoId = createGuid();
+    var name = prompt("Enter your name", "Enter name");
+    listaParaPedir = [];
+    if (name != null) {
+      if((filtroPivot["inclusions"]!=undefined)&
+         (filtroPivot["inclusions"]!={})){
+          filtroPivot["inclusions"].forEach(function(inclusao, index){
+                var reg = listaOriginal.filter(function(entry){
+                    return entry.mes === inclusao["mes"];       
+                });
+                reg.forEach(function(elemento, index){
+                itemPedido = {}
+                itemPedido["descricao"] = elemento["descricao"];
+                itemPedido["unid"] = elemento["unid"];
+                itemPedido["qtde"] = elemento["qtde"];
+                itemPedido["mes"] = elemento["mes"];
+                itemPedido["objectId"] = noArvoreSelecionado["modelo"];
+                itemPedido["pedidoGuid"] = pedidoId;
+                itemPedido["pedido"] = name;
+                listaParaPedir.push(itemPedido);
+                
+                
+
+                });  
+            });
+        } else {
+            listaOriginal.forEach(function(elemento, index){
+            itemPedido = {}
+            itemPedido["descricao"] = elemento["descricao"];
+            itemPedido["unid"] = elemento["unid"];
+            itemPedido["qtde"] = elemento["qtde"];
+            itemPedido["mes"] = elemento["mes"];
+            itemPedido["objectId"] = noArvoreSelecionado["modelo"];
+            itemPedido["pedidoGuid"] = pedidoId;
+            itemPedido["pedido"] = name;
+            listaParaPedir.push(itemPedido);
+
+            });
+        }
+        //criar rota no flask
+        //criar pedido
+        //limparPedidoAnterior    
+        //registrar pedido no google
+        //mostrar pedido no modelo (depois juntar vários modelos)
+
+    }
+   
   }

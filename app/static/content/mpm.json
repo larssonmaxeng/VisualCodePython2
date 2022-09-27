@@ -1,0 +1,21 @@
+{
+    "derivedAttributes": {},
+    "hiddenAttributes": [],
+    "hiddenFromAggregators": [],
+    "hiddenFromDragDrop": [],
+    "menuLimit": 500,
+    "cols": [],
+    "rows": [],
+    "vals": [],
+    "rowOrder": "key_a_to_z",
+    "colOrder": "key_a_to_z",
+    "exclusions": {},
+    "inclusions": {},
+    "unusedAttrsVertical": 85,
+    "autoSortUnusedAttrs": false,
+    "showUI": true,
+    "sorters": {},
+    "inclusionsInfo": {},
+    "aggregatorName": "Count",
+    "rendererName": "Table"
+  }
