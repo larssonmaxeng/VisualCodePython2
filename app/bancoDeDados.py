@@ -5,6 +5,7 @@ from google.oauth2.credentials import Credentials
 from google_auth_oauthlib.flow import InstalledAppFlow
 from googleapiclient.discovery import build
 from googleapiclient.errors import HttpError
+
 def GetFornecedores(sheet):
     linha = GetLinhaMaxima(nome="fornecedor", sheet=sheet)+1
     planilha = sheet.GetDados(SAMPLE_RANGE_NAME='fornecedor!A3:B'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
@@ -21,6 +22,10 @@ def GetPedidos(sheet):
     linha = GetLinhaMaxima(nome="pedido", sheet=sheet)+1
     planilha = sheet.GetDados(SAMPLE_RANGE_NAME='pedido!A3:B'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
     df = pd.DataFrame(planilha, columns=['pedidoId','pedido'])
+    return df
+def GetPedidoMaterial(sheet):
+    planilha = sheet.GetDados(SAMPLE_RANGE_NAME='pedidoMaterial!A2:j150000', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    df = pd.DataFrame(planilha, columns=['descricao','unid','qtde','mes','objectId','pedidoGuid','pedido','nivel01','nivel02','id'])
     return df
 def GetNotaPedidoFornecedor(sheet):
     linha = GetLinhaMaxima(nome="notaPedidoFornecedor", sheet=sheet)+1
@@ -86,6 +91,25 @@ def SetSubCriterios(sheet, valores, listaParaLimpar):
                           body={"values":valores}).execute()
     print(response)
     
+def SetPedidoMaterial(sheet, valores, listaParaLimpar):
+    linha =GetLinhaMaxima(nome="pedidoMaterial", sheet=googleSheet.GoogleSheet())+1
+    zerar = []
+    zerar.append([0])
+    for l in listaParaLimpar:
+        sheet.values().update(spreadsheetId= "13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig", 
+                              range="pedidoMaterial!G"+str(l)+":G"+str(l) , 
+                              valueInputOption="RAW",
+                              body={"values":zerar}).execute()
+        #print("Excluído:"+str(l))
+        
+    linha = linha+1    
+    response = sheet.values().update(spreadsheetId= "13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig", 
+                          range="pedidoMaterial!A"+str(linha)+":J"+str(linha + len(valores)) , 
+                          valueInputOption="RAW",
+                          body={"values":valores}).execute()
+    print(response)
+    
+
 def GetBaseRegras(sheet, sampleRange, idDaPlanilha, colunas ):
 
     planilha = sheet.GetDados(SAMPLE_RANGE_NAME=sampleRange, SAMPLE_SPREADSHEET_ID=idDaPlanilha)

@@ -16,6 +16,9 @@ from app import funcoes
 import requests
 import pandas as pd
 import string
+from app import database 
+from flask_migrate import Migrate
+from app import materiaisPedidos
 
 
 import io
@@ -425,12 +428,69 @@ def your_url():
     
     return res
 
+
+
+@app.route('/SalvarPedido', methods=["GET", "POST", "PUT"])
+def SalvarPedido():
+    
+    req = request.get_json()
+    pedido = ''
+    for i in req:
+        pedido = i["pedido"]    
+    print(pedido)
+    listaParaLimpar = []
+    j = 2;
+    dados = []
+    #notaPedidoForncedorId	pedidoId	fornecedorId	criterio	subcriterio	nota	htmlId	ativo
+    for song in req:
+        dados.append([
+                      song['descricao'],
+                      song['unid'],
+                      song['qtde'],
+                      song['mes'],
+                      song['objectId'],
+                      song['pedidoGuid'],
+                      song['pedido'],
+                      song['nivel01'],
+                      song['nivel02'],
+                      song['id'] ])
+    dfPedido =  bancoDeDados.GetPedidoMaterial(sheet=googleSheet.GoogleSheet())    
+    for i in dfPedido.index:
+        if (dfPedido["pedido"][i]==pedido):
+            listaParaLimpar.append(j)  
+        j = j+1     
+    print(listaParaLimpar)
+    sheet = googleSheet.GoogleSheet().GetService()
+    bancoDeDados.SetPedidoMaterial(sheet=sheet, valores=dados, listaParaLimpar=listaParaLimpar)
+    #print(criterio)
+    #bancoDeDados.SetSubCriterios(sheet=sheet,valores=dados)
+    criterios = []
+    criterios.append({"Resultado":"Foi"})
+    criterio = json.dumps(criterios)
+    res = make_response(criterio)
+    #print(res)
+    
+    return res
+   
+        
+    criterios = []
+    
+    criterios.append({"resultado":"foi"})
+    
+    criterio = json.dumps(criterios)
+    
+    res = make_response(criterio)
+    
+    return res
+
+
 @app.route('/salvarDados', methods=["GET", "POST", "PUT"])
 def salvarDados():
     
     req = request.get_json()
     print(req)
-    
+ 
+        
     dados = []
     #notaPedidoForncedorId	pedidoId	fornecedorId	criterio	subcriterio	nota	htmlId	ativo
     for song in req:

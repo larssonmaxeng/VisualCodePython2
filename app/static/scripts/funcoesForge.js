@@ -18,9 +18,11 @@
 
 var viewer;
 var noArvoreSelecionado;
+var noArvoreSelecionadoMaterialPedido;
 var dadosModelo;
 var listaDeCores = [];
 var listaOriginal = [];
+var urnAberto;
 var filtroPivot;
 $(document).ready(function () {
     console.log("foi?")
@@ -227,6 +229,73 @@ function AbrirModelo(urn){
                 });
 }
 
+function getDataTreeViewPedidoMaterial(){
+    var jsonData = {};
+   
+    jsonData["Teste"] = "Teste";
+    var your_data =  jsonData
+    
+    fetch(`${window.origin}/materiaisPedidos/GetTreviewPedidoMaterial`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(your_data),
+        cache: "no-cache",
+        headers: new Headers({
+            "content-type": "application/json"
+        })
+        }).then(response => response.json())
+        .then(function(data){ 
+           /* var jsonData = [];     
+
+            data.forEach(function(data1, index) { 
+                var bucket = {};     
+                bucket['text'] = data1["text"];
+                bucket['state'] = 'open';
+                bucket['data']=data1;
+                jsonData.push(bucket);
+                });  */
+                console.log("************************************") 
+                console.log(data)
+                $('#treePedidos').jstree({
+                    "core" : {
+                      "animation" : 1,
+                      "check_callback" : true,
+                      "themes" : {"variant" : "large"   },
+                      'data' : []
+                    },
+                    "types": {  
+                        "folder": {  
+                            "icon": "fa fa-folder"  
+                        },  
+                        "file": {  
+                            "icon": "fa fa-file"  
+                        }  
+                    },  
+                    "plugins" : [
+                      "contextmenu", "dnd", "search",
+                      "state", "types", "wholerow"
+                    ]}).bind("activate_node.jstree", function (evt, data) {
+                    if (data != null && data.node != null && data.node.data!= []) {
+                      console.log("->->->->->->->->->->->->->->->->->->->->->->->");
+                      console.log(data.node.data);
+                      console.log("tentarAbrir");
+                      if((urnAberto==undefined)|(urnAberto!=data.node.data["urn"])){
+                          AbrirModelo(urn);
+                        }                     
+                    }
+                  });
+                  console.log('*************************')
+                  console.log(data)
+                $('#treePedidos').jstree(true).settings.core.data = data;
+                $('#treePedidos').jstree(true).refresh();
+                $('#treePedidos').jstree("open_all");
+                $('#treePedidos').jstree("deselect_all");
+           
+        }
+            //var jsonData = {};
+            );
+            
+    }
 
 function getDataTreeViewModels(){
         var jsonData = {};
@@ -367,7 +436,7 @@ function getDataTreeViewModels(){
                           document.getElementById("TituloForge").textContent = "BOM - Billing of Material: "+ texto;
                            if(data.node.data['Nivel']==1){
                            var urn = btoa(data.node.data["objectId"]);
-                           console.log("tentarAbrir");
+                           urnAberto = urn;
                            
                            AbrirModelo(urn);
                            }
@@ -622,6 +691,7 @@ function GetPropriedadesVisiveis(){
                                     
                                     v.push(elements[i].dbId);
                                     var dadoModelo = {};
+                                    dadoModelo['id']=elements[i].dbId
                                     dadoModelo['descricao'] = elements[i].properties[hidDescricao].displayValue;
                                     dadoModelo['unid'] = elements[i].properties[unidId].displayValue;
                                     executarEm = elements[i].properties[ExecutarEmId].displayValue;
@@ -648,6 +718,10 @@ function GetPropriedadesVisiveis(){
                                     } else{
                                         dadoModelo['qtde'] = 1;        
                                     }
+                                    if(pavimentoId>=0) dadoModelo['nivel01'] =elements[i].properties[pavimentoId].displayValue;        
+                                    if(localizacaoId>=0) dadoModelo['nivel02'] =elements[i].properties[pavimentoId].displayValue;        
+                                    dadoModelo['modelo'] =GetObjectId()[0];
+                                   
                                     dadosModelo.push(dadoModelo);
                                       
 
@@ -821,6 +895,10 @@ function GetEelemnets(){
     }
     document.getElementById(cityName).style.display = "block";
     evt.currentTarget.className += " active";
+    if(cityName=='abaPedido'){
+       // getDataTreeViewPedidoMaterial();
+    }
+
   }
 
 
@@ -948,16 +1026,38 @@ function GetEelemnets(){
     return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();  
  }  
   function GetFilterPivot (){
-    console.log(111)
+ 
+   
+    /*fetch(`${window.origin}/materiaisPedidos/GetMaterialPedido`, {
+        method: "POST",
+        credentials: "include",
+        body: [],
+        cache: "no-cache",
+        headers: new Headers({
+            "content-type": "application/json"
+        })
+        }).then(response => response.json())
+        .then(function(data){         
+        
+            console.log(data)
+            
+        });
+    return;*/
     pedidoId = createGuid();
-    var name = prompt("Enter your name", "Enter name");
+    var name = prompt("Digite o nome do pedido", "Aqui");
     listaParaPedir = [];
+    objectId = GetObjectId();
+    
+    console.log(filtroPivot)
+    console.log(filtroPivot["inclusions"])
     if (name != null) {
-      if((filtroPivot["inclusions"]!=undefined)&
+      if((filtroPivot!=undefined)&
+         (filtroPivot["inclusions"]!=undefined)&
          (filtroPivot["inclusions"]!={})){
-          filtroPivot["inclusions"].forEach(function(inclusao, index){
+          filtroPivot["inclusions"]['mes'].forEach(function(inclusao, index){
+                console.log(inclusao)
                 var reg = listaOriginal.filter(function(entry){
-                    return entry.mes === inclusao["mes"];       
+                    return entry.mes === inclusao;       
                 });
                 reg.forEach(function(elemento, index){
                 itemPedido = {}
@@ -965,9 +1065,14 @@ function GetEelemnets(){
                 itemPedido["unid"] = elemento["unid"];
                 itemPedido["qtde"] = elemento["qtde"];
                 itemPedido["mes"] = elemento["mes"];
-                itemPedido["objectId"] = noArvoreSelecionado["modelo"];
+                itemPedido["objectId"] = objectId[0];
                 itemPedido["pedidoGuid"] = pedidoId;
                 itemPedido["pedido"] = name;
+                itemPedido["nivel01"] = elemento["nivel01"];
+                itemPedido["nivel02"] = elemento["nivel02"];
+                itemPedido["id"] = elemento["id"];
+                itemPedido["urn"] = urnAberto;
+                
                 listaParaPedir.push(itemPedido);
                 
                 
@@ -981,19 +1086,51 @@ function GetEelemnets(){
             itemPedido["unid"] = elemento["unid"];
             itemPedido["qtde"] = elemento["qtde"];
             itemPedido["mes"] = elemento["mes"];
-            itemPedido["objectId"] = noArvoreSelecionado["modelo"];
+            itemPedido["objectId"] = objectId[0];
             itemPedido["pedidoGuid"] = pedidoId;
             itemPedido["pedido"] = name;
+            itemPedido["nivel01"] = elemento["nivel01"];
+            itemPedido["nivel02"] = elemento["nivel02"];
+            itemPedido["id"] = elemento["id"];
+            itemPedido["urn"] = urnAberto;
             listaParaPedir.push(itemPedido);
 
             });
         }
-        //criar rota no flask
-        //criar pedido
-        //limparPedidoAnterior    
-        //registrar pedido no google
-        //mostrar pedido no modelo (depois juntar vários modelos)
+        console.log(listaParaPedir)
+       
+        fetch(`${window.origin}/materiaisPedidos/createMaterialPedido`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(listaParaPedir),
+        cache: "no-cache",
+        headers: new Headers({
+            "content-type": "application/json"
+        })
+        }).then(response => response.json())
+        .then(function(data){         
+        
+            console.log(data)
+            
+        });
 
     }
    
   }
+  function GetObjectId(){
+    vetorCategoriasAnalisadas = ['Revit Peças hidrossanitárias', 'Revit Tubulação', 'Revit Conexões de tubo'];
+    //console.log(noSelecionado);
+    if(noArvoreSelecionado.Nivel==1){
+
+        return [noArvoreSelecionado['objectKey'], '','' ]
+    }
+    if(noArvoreSelecionado.Nivel==2){
+        return [(noArvoreSelecionado['bom'])['MODELO'], (noArvoreSelecionado['bom'])["NIVEL01"],'']
+        
+    }
+    if(noArvoreSelecionado.Nivel==3){
+        return [noArvoreSelecionado['MODELO'], noArvoreSelecionado["NIVEL01"],noArvoreSelecionado["NIVEL02"]]
+    }
+    return ['','',''];
+    
+}
