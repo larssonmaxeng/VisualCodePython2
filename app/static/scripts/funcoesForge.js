@@ -912,6 +912,7 @@ function GetEelemnets(){
     if(noArvoreSelecionado!=undefined){
         viewer.search('Floor',function(dbIds){
         
+            
             viewer.model.getBulkProperties(dbIds, ['Category', 'ExecutarEm', 'Pavimento', 'Localizacao','Comentários', 'HID-Descrição',  'Comprimento'],
             function(elements){
                 var v = [];
