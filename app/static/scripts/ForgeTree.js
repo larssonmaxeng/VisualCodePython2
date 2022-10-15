@@ -82,7 +82,7 @@ $(document).ready(function () {
 		.jqGrid("gridResize");*/
 
   getDataTreeViewModels();
-  //getDataTreeViewPedidoMaterial();
+  getDataTreeViewPedidoMaterial();
    //console.log("teste")
 
 

@@ -36,6 +36,13 @@ def createMaterialPedido():
         
       
     database.db.session.commit()
+    database.db.session.execute("insert into PacotesDeEntrega (descricao, unidadeBasica) "+
+                             "select distinct pedidoMaterial.descricao, pedidoMaterial.unid " +
+                                " from pedidoMaterial " +
+                                " where pedidoMaterial.descricao not in (select PacotesDeEntrega.descricao "+
+                                                                        " from PacotesDeEntrega) " )
+   
+    database.db.session.commit()
     criterios = []
     criterios.append({"Situação":"Comitado"})
     
@@ -58,30 +65,76 @@ def GetTreviewPedidoMaterial():
                 "pedidoId":p.pedidoId,
                 "urn":p.urn}
         item ={"text":p.pedido,
-               "state":"open",
+               "children":[],
                "data":data}
         criterios.append(item)
+    
+   
     
     criterio = json.dumps(criterios)
     
     res = make_response(criterio)
-    print(res)
+
     return res
 
 
 @bp_materialPedidos.route('/GetMaterialPedido', methods=['GET','POST'])
 def getMaterialPedido():
-    mp = database.db.session.query(tabelas.PedidoMaterial.Pedido)
-    """for p in mp:
-        #print(p)
-        print(p.descricao)"""
-    criterio = jsonify(mp) 
+    req = request.get_json()
+    #print(req)
+    #mp = database.db.session.query(tabelas.PedidoMaterial).filter(tabelas.PedidoMaterial.pedido==req['pedido'])
+    
+    mp = database.db.session.execute( "select pm.descricao, "
+      " pde.pacote,  "
+       " sum(iif(pde.descricao is not null, pm.qtde/pde.conversao, 0.0000)) QtdePacote,  "
+       " pm.mes,  "
+       " pm.pedido ,  "
+       " group_concat(pm.idElement,',') ListaId,   "
+       " group_concat(pm.urn ,',') ListaUrn "
+        " from pedidoMaterial pm  "
+        " left join PacotesDeEntrega pde on pm.descricao = pde.descricao  "
+        " where pm.pedido = '"+req['pedido']+"'"+
+       "  group by pm.descricao, pde.pacote, pm.mes, pm.pedido")
+    criterio = []
+    for p in mp:
+        item = {'descricao':p.descricao,
+                'pacote':p.pacote,
+                'QtdePacote':p.QtdePacote,
+                'mes':p.mes,
+                'pedido':p.pedido,
+                'ListaId':p.ListaId,
+                'ListaUrn':p.ListaUrn,
+                'pedidoId':0}
+        criterio.append(item)
     
     print(criterio)
+    elementIds = json.dumps(criterio)
+    res = make_response(elementIds)
+    return res   
+
+@bp_materialPedidos.route('/GetPacoteDeEntrega', methods=['GET','POST'])
+def getPacoteDeEntrega():
+    req = request.get_json()
+    #print(req)
+    mp = database.db.session.query(tabelas.PacotesDeEntrega)
+    criterio = []
+    for p in mp:
+        item = {"descricao": p.descricao,
+                "unidadeBasica":p.unidadeBasica,
+                "pacote":p.pacote,
+                "conversao":p.conversao,
+                "base":p.base ,
+                "largura":p.largura ,
+                "altura":p.altura ,
+                "formato":p.formato ,
+                "empolamento":p.empolamento,
+                "preco":p.preco, 
+                "alturaMaxima":p.alturaMaxima, 
+                "areaBaseMaxima":p.areaBaseMaxima}
+        criterio.append(item)
     
-    res = make_response(criterio)
-    #print(res)
-    
+    print(criterio)
+    elementIds = json.dumps(criterio)
+    res = make_response(elementIds)
     return res   
     
-    return 'Teste'  

@@ -8,10 +8,41 @@ class Pedido(database.db.Model):
   def __init__(self, pedido):
     self.pedido = pedido
 
+class PacotesDeEntrega(database.db.Model):
+  __tablename__="PacotesDeEntrega"
+  id=database.db.Column(database.db.Integer, primary_key=True)
+  descricao=database.db.Column(database.db.String(500), unique=True)
+  unidadeBasica = database.db.Column(database.db.String(10))
+  pacote = database.db.Column(database.db.String(50))
+  conversao= database.db.Column(database.db.Float)
+  volume=database.db.Column(database.db.Float)
+  base=database.db.Column(database.db.Float)
+  largura=database.db.Column(database.db.Float)
+  altura=database.db.Column(database.db.Float)
+  formato=database.db.Column(database.db.String(50))
+  empolamento=database.db.Column(database.db.Float)
+  preco = database.db.Column(database.db.Float)
+  alturaMaxima = database.db.Column(database.db.Float)
+  areaBaseMaxima = database.db.Column(database.db.Float)  
+  def __init__ (self,descricao,unidadeBasica,pacote,conversao, base, largura, 
+                altura, formato, empolamento, preco, alturaMaxima, areaBaseMaxima):
+      self.descricao = descricao
+      self.unidadeBasica=unidadeBasica
+      self.pacote=pacote
+      self.conversao=conversao
+      self.base=base 
+      self.largura=largura 
+      self.altura=altura 
+      self.formato=formato 
+      self.empolamento=empolamento
+      self.preco=preco
+      self.alturaMaxima=alturaMaxima
+      self.areaBaseMaxima=areaBaseMaxima
+  
 class PedidoMaterial(database.db.Model):
   __tablename__="pedidoMaterial"
   id = database.db.Column(database.db.Integer, primary_key=True)
-  descricao=database.db.Column(database.db.String(100))
+  descricao=database.db.Column(database.db.String(500))
   unid=database.db.Column(database.db.String(100))
   qtde=database.db.Column(database.db.Float)
   mes=database.db.Column(database.db.String(100))

@@ -27,7 +27,7 @@ var filtroPivot;
 $(document).ready(function () {
     console.log("foi?")
    
-    dia = new Date('2022 01 01');
+    dia = new Date('2021 12 01');
    
 
     j = 0;
@@ -58,6 +58,7 @@ $(document).ready(function () {
       //$("#grid").remove();
       
       //$("#divGridMaterial").prepend('<table id="grid"></table>');
+      
       $("#grid").jqGrid({
           colModel: [
               //{ name: "idForge", label: "IDForge", width: 120 },
@@ -276,24 +277,146 @@ function getDataTreeViewPedidoMaterial(){
                       "state", "types", "wholerow"
                     ]}).bind("activate_node.jstree", function (evt, data) {
                     if (data != null && data.node != null && data.node.data!= []) {
-                      console.log("->->->->->->->->->->->->->->->->->->->->->->->");
-                      console.log(data.node.data);
-                      console.log("tentarAbrir");
-                      if((urnAberto==undefined)|(urnAberto!=data.node.data["urn"])){
-                          AbrirModelo(urn);
-                        }                     
+                      
+                        if((urnAberto!=data.node.data["urn"])){
+                          AbrirModelo(data.node.data["urn"]);
+                          urnAberto = data.node.data["urn"];
+                        }
+                        var jsonData = {};
+                        jsonData["pedido"] = data.node.data["pedido"];
+                        
+                        fetch(`${window.origin}/materiaisPedidos/GetMaterialPedido`, {
+                            method: "POST",
+                            credentials: "include",
+                            body: JSON.stringify(jsonData),
+                            cache: "no-cache",
+                            headers: new Headers({
+                                "content-type": "application/json"
+                            })
+                            }).then(response => response.json())
+                            .then(function(data2){ 
+                                $("#tabelaDeCores").remove();
+                                /*listaComTodosOsElementos = data2.map(function(element){
+                                    return element.ids
+                                });*/
+                                //lista para deixar com cor sólida somente os elementos do modelo
+                                listaComTodosOsElementos = []
+                                data2.forEach(function(ids, index){
+                                     ids["ListaId"].split(',').forEach(function(id){
+                                       listaComTodosOsElementos.push(parseInt(id));     
+                                     });          
+                                });   
+                                mesesUsado =[];
+                                data2.forEach(function(data3, index) { 
+                                   
+                                cor = listaDeCores.find(o => String(o.mes) === String(data3['mes']));
+                                   
+                                    if(cor!=undefined){ 
+                                        data3["ListaId"].split(',').forEach(function(id){
+                                            viewer.setThemingColor(parseInt(id),cor.cor);  
+                                          });    
+                                        mesUsado = mesesUsado.find(o => String(o.mes) === String(data3['mes']));
+                                        if(mesUsado==undefined){
+                                            mesesUsado.push(cor);
+                                        }    
+                                    }
+                                });
+                                $("#paiTabelaCores").append('<table id="tabelaDeCores"></table>');
+                                $("#tabelaDeCores").append('<tr><th width="85px" class="tituloColuna">Mês</th><th width="50px" class="tituloColuna">Cor</th></tr>');
+                                mesesUsado.forEach(function(data1, index) { 
+                                    //$("#tabelaDeCores").append('<tr><td>'+data1['mes']+'</td><td id=\"cor'+data1['mes']+'\" bgcolor=\"'+rgba2hex(data1['textoCor'])+'\" ></td></tr>');
+                                    $("#tabelaDeCores").append('<tr><td>'+data1['mes']+'</td><td id=\"cor'+data1['mes']+'\" bgcolor=\"'+data1['corhex']+'\" ></td></tr>');
+                                    
+                                    var id ='cor'+data1['mes'];
+                                                
+                                });
+                            
+                                ///começou aqui
+                                $("#pivot").pivotUI([], {
+                                    derivedAttributes: {
+                                        /*"Age Bin": derivers.bin("Age", 10),
+                                        "Gender Imbalance": function(mp) {
+                                            return mp["Gender"] == "Male" ? 1 : -1;
+                                            }*/
+                                        }
+                                    });                                               
+                                
+                                /*filename='reports.xlsx';
+                                var ws = XLSX.utils.json_to_sheet(data2);
+                                var wb = XLSX.utils.book_new();
+                                XLSX.utils.book_append_sheet(wb, ws, "Resumo");
+                                XLSX.writeFile(wb,filename);*/
+                                $("#grid").jqGrid('GridUnload')
+                                $("#grid").jqGrid('jqPivot',data2,
+                                {
+                                    xDimension:[
+                                        { dataName: "descricao", label: "Descrição", width: 550 },
+                                        { dataName: "pacote", label: "Pacote", width: 100, align: "center"}
+                                    ],
+                                    yDimension:[
+                                        { dataName: "mes", width:110}
+
+                                    ],
+                                    aggregates:[
+                                        {member : 'QtdePacote', aggregator : 'sum', width:110, label:'Total'}       
+                                    ],
+                                    rowTotals:true,
+                                    colTotals:false
+                                },
+                               {
+                            		width: 900,
+                            		rowNum : 60,
+                            		pager: true,
+                            		caption: "Amounts and quantity by category and product",
+                                    viewrecords: true,
+                                    rownumbers: true,
+                                    guiStyle: "bootstrap",
+                                    iconSet: "fontAwesome",
+                                    idPrefix: "g5_",
+                                    sortorder: "desc",
+                                    threeStateSort: true,
+                                    sortable: true,
+                                     
+                                    sortIconsBeforeText: true,
+                                    headertitles: true,
+                                    toppager: true,
+                                    navOptions: { add: false, edit: false, del: false, search: false }
+                            		
+                                   /*rowNum : 10,
+                            		pager: "#pager",
+                            		//caption: "Amounts and quantity by category and product",
+                                    
+                                    pager: true,
+                                    rowNum: 60,
+                                   
+                                    searching: {
+                                        defaultSearch: "cn"
+                                    },
+                                    caption: "Quantidades para o modelo selecionado"*/
+                                 	}
+                                   ).jqGrid("filterToolbar").jqGrid("navGrid", { view: true })
+                                     .jqGrid("inlineNav")
+                                   .jqGrid("gridResize");
+                          
+                                /*$("#grid").jqGrid('setGridParam',
+                                { 
+                                    datatype: 'local',
+                                    data:resumo
+                                }).trigger("reloadGrid");
+                                */
+                                viewer.isolate(listaComTodosOsElementos);
+                            });
                     }
                   });
-                  console.log('*************************')
-                  console.log(data)
+                
                 $('#treePedidos').jstree(true).settings.core.data = data;
                 $('#treePedidos').jstree(true).refresh();
                 $('#treePedidos').jstree("open_all");
                 $('#treePedidos').jstree("deselect_all");
            
-        }
+            }
             //var jsonData = {};
-            );
+        );
             
     }
 
@@ -895,9 +1018,9 @@ function GetEelemnets(){
     }
     document.getElementById(cityName).style.display = "block";
     evt.currentTarget.className += " active";
-    if(cityName=='abaPedido'){
-       // getDataTreeViewPedidoMaterial();
-    }
+    /*if(cityName=='abaPedido'){
+        getDataTreeViewPedidoMaterial();
+    }*/
 
   }
 
