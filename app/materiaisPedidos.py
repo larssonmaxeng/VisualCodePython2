@@ -107,7 +107,7 @@ def getMaterialPedido():
                 'pedidoId':0}
         criterio.append(item)
     
-    print(criterio)
+    #print(criterio)
     elementIds = json.dumps(criterio)
     res = make_response(elementIds)
     return res   
@@ -133,7 +133,7 @@ def getPacoteDeEntrega():
                 "areaBaseMaxima":p.areaBaseMaxima}
         criterio.append(item)
     
-    print(criterio)
+    #print(criterio)
     elementIds = json.dumps(criterio)
     res = make_response(elementIds)
     return res   

@@ -58,44 +58,47 @@ $(document).ready(function () {
       //$("#grid").remove();
       
       //$("#divGridMaterial").prepend('<table id="grid"></table>');
+      EstruturaGridQtde();
       
-      $("#grid").jqGrid({
-          colModel: [
-              //{ name: "idForge", label: "IDForge", width: 120 },
-              //{ name: "ifcguid", label: "IfcGUID", width: 120 },
-              { name: "descricao", label: "Descrição", width: 450 },
-              { name: "unid", label: "Unidade", width: 80, align: "center"},
-              { name: "qtde", label: "Quantidade", width: 110, template: "number" },
-              { name: "pacote", label: "Pacote", width: 90},
-              { name: "qtdePacote", label: "Qtde pacote", width: 110, template: "number" }
-              
-          ],
-          data: [],
-          iconSet: "fontAwesome",
-          idPrefix: "g5_",
-          rownumbers: true,
-          sortorder: "desc",
-          threeStateSort: true,
-          sortable: true,
-          guiStyle: "bootstrap",  
-          sortIconsBeforeText: true,
-          headertitles: true,
-          toppager: true,
-          navOptions: { add: false, edit: false, del: false, search: false },
-          multiselect: true,
-          pager: true,
-          rowNum: 60,
-          viewrecords: true,
-          searching: {
-              defaultSearch: "cn"
-          },
-          caption: "Quantidades para o modelo selecionado"
-      }).jqGrid("filterToolbar").jqGrid("navGrid", { view: true })
-          .jqGrid("inlineNav")
-          .jqGrid("gridResize");
-
   
   });
+
+function EstruturaGridQtde(){
+    $("#grid").jqGrid('GridUnload')
+    $("#grid").jqGrid({
+        colModel: [
+            //{ name: "idForge", label: "IDForge", width: 120 },
+            //{ name: "ifcguid", label: "IfcGUID", width: 120 },
+            { name: "descricao", label: "Descrição", width: 450 },
+            { name: "unid", label: "Unidade", width: 80, align: "center"},
+            { name: "qtde", label: "Quantidade", width: 110, template: "number" }          
+        ],
+        data: [],
+        iconSet: "fontAwesome",
+        idPrefix: "g5_",
+        rownumbers: true,
+        sortorder: "desc",
+        threeStateSort: true,
+        sortable: true,
+        guiStyle: "bootstrap",  
+        sortIconsBeforeText: true,
+        headertitles: true,
+        toppager: true,
+        navOptions: { add: false, edit: false, del: false, search: false },
+        multiselect: true,
+        pager: true,
+        rowNum: 60,
+        viewrecords: true,
+        searching: {
+            defaultSearch: "cn"
+        },
+        caption: "Quantidades para o modelo selecionado"
+    }).jqGrid("filterToolbar").jqGrid("navGrid", { view: true })
+        .jqGrid("inlineNav")
+        .jqGrid("gridResize");
+
+}
+
  function hexToRGB(hex){
   return hex.replace(/^#?([a-f\d])([a-f\d])([a-f\d])$/i
              ,(m, r, g, b) => '#' + r + r + g + g + b + b)
@@ -341,11 +344,11 @@ function getDataTreeViewPedidoMaterial(){
                                         }
                                     });                                               
                                 
-                                /*filename='reports.xlsx';
+                                filename='reports.xlsx';
                                 var ws = XLSX.utils.json_to_sheet(data2);
                                 var wb = XLSX.utils.book_new();
                                 XLSX.utils.book_append_sheet(wb, ws, "Resumo");
-                                XLSX.writeFile(wb,filename);*/
+                                XLSX.writeFile(wb,filename);
                                 $("#grid").jqGrid('GridUnload')
                                 $("#grid").jqGrid('jqPivot',data2,
                                 {
@@ -779,7 +782,7 @@ function GetCalculaQtde(noSelecionado, element){
 function GetPropriedadesVisiveis(){
     
     arraydb = [];
-    $("#grid").jqGrid('clearGridData').trigger("reloadGrid");
+    EstruturaGridQtde();
     $("#grid").jqGrid('setGridParam',
     { 
         datatype: 'local',

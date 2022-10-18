@@ -5,6 +5,14 @@
     "version": "0.2.0",
     "configurations": [
         {
+            "name": "Python: Arquivo Atual",
+            "type": "python",
+            "request": "launch",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "justMyCode": false
+        },
+        {
             "name": "Python: Flask",
             "type": "python",
             "request": "launch",
@@ -19,7 +27,7 @@
                 "--no-reload"
             ],
             "jinja": true,
-            "justMyCode": true
+            "justMyCode": false
         }
     ]
 }

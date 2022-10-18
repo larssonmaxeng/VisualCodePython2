@@ -71,9 +71,9 @@ def index():
     r4 = ctrl.Rule(preco[muitoBaixo] ,custo[muitoBaixo])
          
     custo_ctrl = ctrl.ControlSystem([r1, r2, r3, r4])
-    print('leu regras')
+    #print('leu regras')
     custo_simulador = ctrl.ControlSystemSimulation(custo_ctrl)
-    print('simulou')
+    #print('simulou')
     custo_simulador.input[vePreco] =8# notasCusto[nota]
     custo_simulador.input[vePagamento] = 2;#notasCusto[nota]
     custo_simulador.input[veReajuste] = 2;#notasCusto[nota]
@@ -89,7 +89,7 @@ def index():
     encodes_img_data = base64.b64encode(data.getbuffer()).decode('ascii')
     figura = []
     figura.append(encodes_img_data)
-    print(nome)
+    #print(nome)
     return render_template('index.html', nome=nome, criterio=criterio, fig = figura )
 
 @app.route('/login')
@@ -199,15 +199,15 @@ def resultado():
     fecharCompra[muitoAlto1] = fuzz.gaussmf(fecharCompra.universe,9.5,.8)
     fecharCompra[muitoAlto2] = fuzz.gaussmf(fecharCompra.universe,10,.8)
    
-    #    print('começou')
+    #    #print('começou')
 
-    #print('terminou')
+    ##print('terminou')
     #fecharCompra_ctrl = ctrl.ControlSystem([r4, r41, r2, r3, r5, r1, r11 , r7])
     r1 = ctrl.Rule((preco[muitoAlto] & qualidade[muitoRuim] ) | (preco[alto] & qualidade[muitoRuim] & prazo[muitoAlto]) ,fecharCompra[alto]) 
     fecharCompra_ctrl = ctrl.ControlSystem([r1])
-    print('leu regras')
+    #print('leu regras')
     fecharCompra_simulador = ctrl.ControlSystemSimulation(fecharCompra_ctrl)
-    print('simulou')
+    #print('simulou')
 
     fecharCompra_simulador.input[vequalidade] = 7
     fecharCompra_simulador.input[vePreco] = 9
@@ -232,7 +232,7 @@ def resultado():
     encodes_img_data = base64.b64encode(data.getbuffer())
 
     """fecharCompra.view(sim=fecharCompra_simulador)
-    print(fecharCompra_simulador.output[vsFecharCompra])"""
+    #print(fecharCompra_simulador.output[vsFecharCompra])"""
     nome = "dissertação2"
     criterio = {"nome":"Preço", "nota":"Médio"}
     return render_template('resultado.html', modo="Limpeza", criterios = [], subcriterios = [], imagens=[])
@@ -252,7 +252,7 @@ def limpar():
     subcriterios.append(['01- Custo', 'Condições de pagamento', 'fuzzy', variavelLinguistica3Opcoes, 'CustoPgto'])
     subcriterios.append(['01- Custo', 'Modelo de reajuste','fuzzy', variavelLinguistica3Opcoes, 'CustoReajuste'])
     #sheet = googleSheet.GoogleSheet()
-    #print(sheet.GetParametros( SAMPLE_RANGE_NAME= 'DadosGerais!A2:A5', SAMPLE_SPREADSHEET_ID="1NLqJWL8LeRECbK04Bm41AYq0tu95VbYgsT6DTX6Sq1g"))
+    ##print(sheet.GetParametros( SAMPLE_RANGE_NAME= 'DadosGerais!A2:A5', SAMPLE_SPREADSHEET_ID="1NLqJWL8LeRECbK04Bm41AYq0tu95VbYgsT6DTX6Sq1g"))
     subcriterios.append(['02- Qualidade', 'Baixas taxas de devolução', 'fuzzy', variavelLinguistica3Opcoes, 'QualiDevolucao'])
     subcriterios.append(['02- Qualidade', 'Precisão nas dimensões', 'fuzzy', variavelLinguistica3Opcoes, 'QualiDimensoes'])
     subcriterios.append(['02- Qualidade', 'Equipe técnica capacitada','fuzzy', variavelLinguistica3Opcoes, 'QualiEquipe'])
@@ -1043,18 +1043,18 @@ def GetBucketRota(token):
     header= {"Authorization": "Bearer "+token}     
     res = requests.get("https://developer.api.autodesk.com/oss/v2/buckets",  headers=header)
     buckets = res.json()
-    print(buckets)
+    
     return buckets
 @app.route("/GetItensRota",  methods=["GET", "POST", "PUT"])
 def GetItensRota():
     req = request.get_json()
-    print(req)
+    
     token = req["token_acess"]
     bucket = req["bucket"]    
     header= {"Authorization": "Bearer "+token}   
     res = requests.get("https://developer.api.autodesk.com/oss/v2/buckets/"+bucket+"/objects",  headers=header)
     itens = res.json()
-    print(itens)
+   
     return itens
 @app.route("/GetTreeViewModels",  methods=["GET", "POST", "PUT"])
 def GetTreeViewModels():
@@ -1063,31 +1063,31 @@ def GetTreeViewModels():
     token = access_tokenTeste()
     
     jtoken = token["access_token"]
-    #print(jtoken["access_token"])
+    ##print(jtoken["access_token"])
 
    
     buketsItem = GetBucket(jtoken)
-    #print(buketsItem["items"])
+    ##print(buketsItem["items"])
     #for buketItem in buketsItem:
     modelosBom = GetListBOM()
-    print(modelosBom)
+    #print(modelosBom)
     for bucket in buketsItem["items"]:
         
-        #print(bucket["bucketKey"])
+        ##print(bucket["bucketKey"])
         bucket = bucket["bucketKey"]   
         header= {"Authorization": "Bearer "+jtoken}   
         res = requests.get("https://developer.api.autodesk.com/oss/v2/buckets/"+bucket+"/objects",  headers=header)
         itens = res.json()
-        #print(itens)
+        ##print(itens)
         modelos = []
         i = 0
         for item in itens["items"]:
             listBom = []
             for itemBom in modelosBom:
-                """print(type(itemBom).__name__)
-                print(str(i)+'********************Item bOM*******************')
-                print(itemBom)
-                print(itemBom["MODELO"]) """
+                """#print(type(itemBom).__name__)
+                #print(str(i)+'********************Item bOM*******************')
+                #print(itemBom)
+                #print(itemBom["MODELO"]) """
                 i=i+1
                 if(itemBom["MODELO"]==item["objectKey"]):
                     listBom.append({"bucketKey":bucket, "objectId":item["objectId"], "objectKey":item["objectKey"], "Nivel":2, "bom":itemBom})
@@ -1095,7 +1095,7 @@ def GetTreeViewModels():
         treeViewModels.append({"bucketKey":bucket, "Nivel":0, "objetos":modelos })    
     criterio = json.dumps(treeViewModels)
     res = make_response(criterio)
-    #print(criterio)
+    ##print(criterio)
     
     return res
 def GetBucket(token):
@@ -1109,34 +1109,34 @@ def GetListBOM():
 
     
     dataFrame = bancoDeDados.GetListBOM(nomeDaAba="EstruturaBOM",sheet=sheet)
-    #print(dataFrame)
+    ##print(dataFrame)
    
     df = dataFrame.groupby(["MODELO", "NIVEL01"])
-    #print(df.first())
+    ##print(df.first())
     Modelos = GetModelos(dataFrame=dataFrame)
-    #print(Modelos)
+    ##print(Modelos)
 
     vetorModelos = []
     vetorNiveis1 = []
     for modelo in Modelos.index:
         m = dataFrame.loc[dataFrame["MODELO"]==modelo]
-        #print('***************Modelo filtrado**************************')
-       # print(m)
+        ##print('***************Modelo filtrado**************************')
+       # #print(m)
         niveis1 = GetNivel01(dataFrame=m, modelo=modelo)
         
         for nivel1 in niveis1.index:
-            #print('***************Modelo filtrado nivel 1**************************')
+            ##print('***************Modelo filtrado nivel 1**************************')
             dfNivel1 = m.loc[m["NIVEL01"]==nivel1]
-            ##print(dfNivel1)
+            ###print(dfNivel1)
             niveis2 = (dfNivel1.loc[dataFrame["NIVEL01"]==nivel1]).groupby("NIVEL02").first()
-           # print('***************Modelo filtrado nivel 2**************************')
-            #print(niveis2) 
+           # #print('***************Modelo filtrado nivel 2**************************')
+            ##print(niveis2) 
             vetorNiveis2 = []
             for nivel2 in niveis2.index:
                 vetorNiveis2.append({"MODELO":modelo, "NIVEL01":nivel1, "NIVEL02":nivel2, "Nivel":3})
             vetorNiveis1.append({"MODELO":modelo, "NIVEL01":nivel1, "NIVEL02":vetorNiveis2})
         vetorModelos.append({"MODELO":modelo, "NIVEL01":vetorNiveis1})
-    print(vetorNiveis1)        
+    #print(vetorNiveis1)        
     
     return vetorNiveis1
     
@@ -1146,8 +1146,8 @@ def GetModelos(dataFrame):
     
 def GetNivel01(dataFrame, modelo):
     df = (dataFrame.loc[dataFrame["MODELO"]==modelo]).groupby("NIVEL01").first()
-   # print('******************GetMNivel01*********************')
-    #print(df)
+   # #print('******************GetMNivel01*********************')
+    ##print(df)
     return df    
 @app.route("/GetTreeViewPedidos",  methods=["GET", "POST", "PUT"])
 def GetTreeViewPedidos():
@@ -1294,8 +1294,8 @@ def ConstruirRegrasRota(colunas, opcoes, nomeDaPlanilha):
     for i in opcoes.split(','):
         opcoesPorColuna1.append(int(i))
        
-    print(opcoesPorColuna1)
-    print(colunas1)
+    #print(opcoesPorColuna1)
+    #print(colunas1)
     #colunas = ['Preco', 'Pagamento', 'Reajuste', 'Resultado', 'Formula', 'Regra']
     #opcoesPorColuna = [5,3,3]
     return ConstruirRegrasFuncao(colunas=colunas1, opcoesPorColuna=opcoesPorColuna1, nomeDaPlanilha=nomeDaPlanilha,idDaPlanilha= "1dBgZ4Zzl0B4esOjsSy5h0YeYD_XaqftJzqQPithL524")
@@ -1309,10 +1309,10 @@ def ConstruirRegrasFuncao(colunas, opcoesPorColuna, nomeDaPlanilha,idDaPlanilha 
 
     a = list(string.ascii_uppercase)
     colunaFim=a[len(colunas)]#o primeiro  +1 é da formula e o segundo +1 é a Regra
-    print(a)
-    print("*******************COLUNA FIM******************")
-    print(colunaFim)
-    print(nomeDaPlanilha+"!B2:"+colunaFim+"15000")
+    #print(a)
+    #print("*******************COLUNA FIM******************")
+    #print(colunaFim)
+    #print(nomeDaPlanilha+"!B2:"+colunaFim+"15000")
    
      
     dfRegrasBase = bancoDeDados.GetBaseRegras(sheet=planilha, 
@@ -1322,7 +1322,7 @@ def ConstruirRegrasFuncao(colunas, opcoesPorColuna, nomeDaPlanilha,idDaPlanilha 
     
     for i in dfRegrasBase.index:
         dfRegrasBase["Formula"][i]="Indefinido"
-    print(dfRegrasBase)
+    #print(dfRegrasBase)
     qtdeDeCriterios = len(colunas)-3
     ff = 0
     if(qtdeDeCriterios>=7):
@@ -1338,16 +1338,16 @@ def ConstruirRegrasFuncao(colunas, opcoesPorColuna, nomeDaPlanilha,idDaPlanilha 
                                    (dfRegrasBase["Formula"]=='Indefinido')
                                 ]
             dff7Colunas = dff[[colunas[0], colunas[1],  colunas[2], colunas[3], colunas[4],colunas[5], 'Resultado', 'Formula']]
-            #print('******************************************')
-            #print(dff7Colunas)
-            #print(str(len(dff7Colunas.index)))
-            #print(str(opcoesPorColuna[6]))
+            ##print('******************************************')
+            ##print(dff7Colunas)
+            ##print(str(len(dff7Colunas.index)))
+            ##print(str(opcoesPorColuna[6]))
             
             if(len(dff7Colunas.index)<opcoesPorColuna[6]):              
                 for k in dff7Colunas.index:
-                    print("o "+str(k)+" foi definido como 7"+" Total index "+ str(len(dff7Colunas.index)))
+                    #print("o "+str(k)+" foi definido como 7"+" Total index "+ str(len(dff7Colunas.index)))
                     dfRegrasBase["Formula"][k]=7
-    print("Passou o 7")    
+    #print("Passou o 7")    
    
     if(qtdeDeCriterios>=6):
         for i in dfRegrasBase.index:
@@ -1361,12 +1361,12 @@ def ConstruirRegrasFuncao(colunas, opcoesPorColuna, nomeDaPlanilha,idDaPlanilha 
                                 (dfRegrasBase["Formula"]=='Indefinido')
                                 ]
             dff6Colunas = dff[[colunas[0], colunas[1],  colunas[2],colunas[3], colunas[4], 'Resultado', 'Formula']]
-           # print(dff6Colunas)
+           # #print(dff6Colunas)
             if(len(dff6Colunas.index)<(opcoesPorColuna[5])):              
                 for k in dff6Colunas.index:
-                    print("o "+str(k)+" foi definido como 6")
+                    #print("o "+str(k)+" foi definido como 6")
                     dfRegrasBase["Formula"][k]=6
-    print("Passou o 6")    
+    #print("Passou o 6")    
        
     if(qtdeDeCriterios>=5):
         for i in dfRegrasBase.index:
@@ -1381,9 +1381,9 @@ def ConstruirRegrasFuncao(colunas, opcoesPorColuna, nomeDaPlanilha,idDaPlanilha 
             dff5Colunas = dff[[colunas[0], colunas[1],  colunas[2],colunas[3],  'Resultado', 'Formula']]
             if(len(dff5Colunas.index)<(opcoesPorColuna[4])):              
                 for k in dff5Colunas.index:
-                    print("o "+str(k)+" foi definido como 5")
+                    #print("o "+str(k)+" foi definido como 5")
                     dfRegrasBase["Formula"][k]=5        
-    print("Passou o 5")  
+    #print("Passou o 5")  
     if(qtdeDeCriterios>=4):
         for i in dfRegrasBase.index:
             dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
@@ -1395,7 +1395,7 @@ def ConstruirRegrasFuncao(colunas, opcoesPorColuna, nomeDaPlanilha,idDaPlanilha 
             dff4Colunas = dff[[colunas[0], colunas[1],  colunas[2], 'Resultado', 'Formula']]
             if(len(dff4Colunas.index)<(opcoesPorColuna[3])):              
                 for k in dff4Colunas.index:
-                    print("o "+str(k)+" foi definido como 5")
+                    #print("o "+str(k)+" foi definido como 5")
                     dfRegrasBase["Formula"][k]=4  
     for i in dfRegrasBase.index:
         dff = dfRegrasBase.loc[(dfRegrasBase[colunas[0]]==dfRegrasBase[colunas[0]][i])&
