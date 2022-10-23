@@ -179,10 +179,10 @@ def GetCriaCanteiro():
     ifcFile.Salvar()
     
     del ifcFile
-    criterio.append({"arquivo":"ifcFile.ifcfile.to_string()"})
+    """criterio.append({"arquivo":"ifcFile.ifcfile.to_string()"})
     elementIds = json.dumps(criterio)
     res = make_response(elementIds)
-    return res   
+    return res  """ 
 
 @app.route('/login')
 def login():
