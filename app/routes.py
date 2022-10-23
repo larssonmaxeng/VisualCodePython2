@@ -20,12 +20,23 @@ from app import database
 from flask_migrate import Migrate
 from app import materiaisPedidos, FuncoesBIM, ObjetoDeTransferencia
 import os
+import ifcopenshell
+import ifcopenshell.util
+import ifcopenshell.util.element
+import ifcopenshell.file
+from enum import Enum
+import uuid
+import time
+import tempfile
 
 import io
 
 from app import googleSheet
 from app import bancoDeDados
-
+O = 0., 0., 0.
+X = 1., 0., 0.
+Y = 0., 1., 0.
+Z = 0., 0., 1.
 @app.route('/')
 @app.route('/index')
 def index():
@@ -92,6 +103,38 @@ def index():
     #print(nome)
     return render_template('index.html', nome=nome, criterio=criterio, fig = figura )
 
+def create_ifcaxis2placement(ifcfile, point=O, dir1=Z, dir2=X):
+        point = ifcfile.createIfcCartesianPoint(point)
+        dir1 = ifcfile.createIfcDirection(dir1)
+        dir2 = ifcfile.createIfcDirection(dir2)
+        axis2placement = ifcfile.createIfcAxis2Placement3D(point, dir1, dir2)
+        return axis2placement
+
+# Creates an IfcLocalPlacement from Location, Axis and RefDirection, specified as Python tuples, and relative placement
+def create_ifclocalplacement( ifcfile, point=O, dir1=Z, dir2=X, relative_to=None):
+    axis2placement = create_ifcaxis2placement(ifcfile,point,dir1,dir2)
+    ifclocalplacement2 = ifcfile.createIfcLocalPlacement(relative_to,axis2placement)
+    return ifclocalplacement2
+
+# Creates an IfcPolyLine from a list of points, specified as Python tuples
+def create_ifcpolyline( ifcfile, point_list):
+    ifcpts = []
+    for point in point_list:
+        point = ifcfile.createIfcCartesianPoint(point)
+        ifcpts.append(point)
+    polyline = ifcfile.createIfcPolyLine(ifcpts)
+    return polyline
+
+# Creates an IfcExtrudedAreaSolid from a list of points, specified as Python tuples
+def create_ifcextrudedareasolid( ifcfile, point_list, ifcaxis2placement, extrude_dir, extrusion):
+    polyline = create_ifcpolyline(ifcfile, point_list)
+    ifcclosedprofile = ifcfile.createIfcArbitraryClosedProfileDef("AREA", None, polyline)
+    ifcdir = ifcfile.createIfcDirection(extrude_dir)
+    ifcextrudedareasolid = ifcfile.createIfcExtrudedAreaSolid(ifcclosedprofile, ifcaxis2placement, ifcdir, extrusion)
+    return ifcextrudedareasolid
+
+def create_guid():
+    return  uuid.uuid4().hex # ifcopenshell.guid.compress(uuid.uuid1().hex)   
 
 @app.route('/GetCriaCanteiro', methods=['GET','POST'])
 def GetCriaCanteiro():
@@ -99,7 +142,83 @@ def GetCriaCanteiro():
     #print(req)
     #mp = database.db.session.query(tabelas.PedidoMaterial).filter(tabelas.PedidoMaterial.pedido==req['pedido'])
     
-    mp = database.db.session.execute( "select pm.descricao, "+
+    filename = "hello_wall.ifc"
+    timestamp = time.time()
+    timestring = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime( timestamp))
+    creator = "Kianwee Chen"
+    organization = "NUS"
+    application = "IfcOpenShell"
+    application_version = "0.5"
+    project_globalid= create_guid()
+    project_name = "Hello Wall"
+
+    template = """ISO-10303-21;
+        HEADER;
+        FILE_DESCRIPTION(('ViewDefinition [CoordinationView]'),'2;1');
+        FILE_NAME('%(filename)s','%(timestring)s',('%(creator)s'),('%(organization)s'),'%(application)s','%(application)s','');
+        FILE_SCHEMA(('IFC4'));
+        ENDSEC;
+        DATA;
+        #1=IFCPERSON($,$,'%(creator)s',$,$,$,$,$);
+        #2=IFCORGANIZATION($,'%(organization)s',$,$,$);
+        #3=IFCPERSONANDORGANIZATION(#1,#2,$);
+        #4=IFCAPPLICATION(#2,'%(application_version)s','%(application)s','');
+        #5=IFCOWNERHISTORY(#3,#4,$,.ADDED.,$,#3,#4,%(timestamp)s);
+        #6=IFCDIRECTION((1.,0.,0.));
+        #7=IFCDIRECTION((0.,0.,1.));
+        #8=IFCCARTESIANPOINT((0.,0.,0.));
+        #9=IFCAXIS2PLACEMENT3D(#8,#7,#6);
+        #10=IFCDIRECTION((0.,1.,0.));
+        #11=IFCGEOMETRICREPRESENTATIONCONTEXT($,'Model',3,1.E-05,#9,#10);
+        #12=IFCDIMENSIONALEXPONENTS(0,0,0,0,0,0,0);
+        #13=IFCSIUNIT(\*,.LENGTHUNIT.,$,.METRE.);
+        #14=IFCSIUNIT(\*,.AREAUNIT.,$,.SQUARE_METRE.);
+        #15=IFCSIUNIT(\*,.VOLUMEUNIT.,$,.CUBIC_METRE.);
+        #16=IFCSIUNIT(\*,.PLANEANGLEUNIT.,$,.RADIAN.);
+        #17=IFCMEASUREWITHUNIT(IFCPLANEANGLEMEASURE(0.017453292519943295),#16);
+        #18=IFCCONVERSIONBASEDUNIT(#12,.PLANEANGLEUNIT.,'DEGREE',#17);
+        #19=IFCUNITASSIGNMENT((#13,#14,#15,#18));
+        #20=IFCPROJECT('%(project_globalid)s',#5,'%(project_name)s',$,$,$,$,(#11),#19);
+        ENDSEC;
+        END-ISO-10303-21;
+        """ % {"filename":  filename,   
+            "timestamp": timestamp,
+            "timestring": timestring,
+            "creator": creator,
+            "organization": organization,
+            "application": application,
+            "application_version": application_version,
+            "project_globalid": project_globalid,
+            "project_name": project_name}
+    # Write the template to a temporary file 
+    temp_handle, temp_filename = tempfile.mkstemp(suffix=".ifc")
+    with open(temp_filename, "wb") as f:
+        f.write(template.encode())
+
+# Obtain references to instances defined in template
+
+    ifcfile = ifcopenshell.open(temp_filename)
+
+    owner_history =  ifcfile.by_type("IfcOwnerHistory")[0]
+    project =  ifcfile.by_type("IfcProject")[0]
+    context =  ifcfile.by_type("IfcGeometricRepresentationContext")[0]
+    site_placement =  create_ifclocalplacement( ifcfile)
+    site =  ifcfile.createIfcSite( create_guid(),  owner_history, "Site", None, None,  site_placement, None, None, "ELEMENT", None, None, None, None, None)
+
+    building_placement =  create_ifclocalplacement( ifcfile, relative_to= site_placement)
+    building =  ifcfile.createIfcBuilding( create_guid(),  owner_history, 'Building', None, None,  building_placement, None, None, "ELEMENT", None, None, None)
+
+    storey_placement =  create_ifclocalplacement( ifcfile, relative_to= building_placement)
+    elevation = 0.0
+    building_storey =  ifcfile.createIfcBuildingStorey( create_guid(),  owner_history, 'Storey', None, None,  storey_placement, None, None, "ELEMENT",  elevation)
+
+    container_storey =  ifcfile.createIfcRelAggregates( create_guid(),  owner_history, "Building Container", None,  building, [ building_storey])
+    container_site =  ifcfile.createIfcRelAggregates( create_guid(),  owner_history, "Site Container", None,  site, [ building])
+    container_project =  ifcfile.createIfcRelAggregates( create_guid(),  owner_history, "Project Container", None,  project, [ site])
+    material =   ifcfile.createIfcMaterial("Representação do canteiro")
+    print(ifcfile.to_string())
+    del ifcfile
+    """mp = database.db.session.execute( "select pm.descricao, "+
                                         "pde.pacote, "+
                                         "sum(iif(pde.descricao is not null, pm.qtde/pde.conversao, 0.0000)) QtdePacote, "+
                                         "group_concat(pm.mes) mes, "+
@@ -178,11 +297,12 @@ def GetCriaCanteiro():
     #print(criterio)
     ifcFile.Salvar()
     
-    del ifcFile
-    """criterio.append({"arquivo":"ifcFile.ifcfile.to_string()"})
+    del ifcFile"""
+    """criterio = []
+    criterio.append({"arquivo":"ifcFile.ifcfile.to_string()"})
     elementIds = json.dumps(criterio)
     res = make_response(elementIds)
-    return res  """ 
+    return res """
 
 @app.route('/login')
 def login():

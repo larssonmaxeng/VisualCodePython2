@@ -21,6 +21,9 @@ var noArvoreSelecionado;
 var noArvoreSelecionadoMaterialPedido;
 var dadosModelo;
 var listaDeCores = [];
+
+
+
 var listaOriginal = [];
 var urnAberto;
 var filtroPivot;
