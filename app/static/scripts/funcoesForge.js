@@ -801,11 +801,7 @@ function GetPropriedadesVisiveis(){
         headers: new Headers({
             "content-type": "application/json"
         })
-        }).then(response => response.json())
-        .then(function(data){ 
-            console.log(data)
         });
-
     
     return undefined;
     

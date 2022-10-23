@@ -136,69 +136,14 @@ def create_ifcextrudedareasolid( ifcfile, point_list, ifcaxis2placement, extrude
 def create_guid():
     return  uuid.uuid4().hex # ifcopenshell.guid.compress(uuid.uuid1().hex)   
 
-@app.route('/GetCriaCanteiro', methods=['GET','POST'])
+@app.route('/GetCriaCanteiro', methods=['POST'])
 def GetCriaCanteiro():
     req = request.get_json()
     #print(req)
     #mp = database.db.session.query(tabelas.PedidoMaterial).filter(tabelas.PedidoMaterial.pedido==req['pedido'])
     
-    filename = "hello_wall.ifc"
-    timestamp = time.time()
-    timestring = time.strftime("%Y-%m-%dT%H:%M:%S", time.gmtime( timestamp))
-    creator = "Kianwee Chen"
-    organization = "NUS"
-    application = "IfcOpenShell"
-    application_version = "0.5"
-    project_globalid= create_guid()
-    project_name = "Hello Wall"
-
-    template = """ISO-10303-21;
-        HEADER;
-        FILE_DESCRIPTION(('ViewDefinition [CoordinationView]'),'2;1');
-        FILE_NAME('%(filename)s','%(timestring)s',('%(creator)s'),('%(organization)s'),'%(application)s','%(application)s','');
-        FILE_SCHEMA(('IFC4'));
-        ENDSEC;
-        DATA;
-        #1=IFCPERSON($,$,'%(creator)s',$,$,$,$,$);
-        #2=IFCORGANIZATION($,'%(organization)s',$,$,$);
-        #3=IFCPERSONANDORGANIZATION(#1,#2,$);
-        #4=IFCAPPLICATION(#2,'%(application_version)s','%(application)s','');
-        #5=IFCOWNERHISTORY(#3,#4,$,.ADDED.,$,#3,#4,%(timestamp)s);
-        #6=IFCDIRECTION((1.,0.,0.));
-        #7=IFCDIRECTION((0.,0.,1.));
-        #8=IFCCARTESIANPOINT((0.,0.,0.));
-        #9=IFCAXIS2PLACEMENT3D(#8,#7,#6);
-        #10=IFCDIRECTION((0.,1.,0.));
-        #11=IFCGEOMETRICREPRESENTATIONCONTEXT($,'Model',3,1.E-05,#9,#10);
-        #12=IFCDIMENSIONALEXPONENTS(0,0,0,0,0,0,0);
-        #13=IFCSIUNIT(\*,.LENGTHUNIT.,$,.METRE.);
-        #14=IFCSIUNIT(\*,.AREAUNIT.,$,.SQUARE_METRE.);
-        #15=IFCSIUNIT(\*,.VOLUMEUNIT.,$,.CUBIC_METRE.);
-        #16=IFCSIUNIT(\*,.PLANEANGLEUNIT.,$,.RADIAN.);
-        #17=IFCMEASUREWITHUNIT(IFCPLANEANGLEMEASURE(0.017453292519943295),#16);
-        #18=IFCCONVERSIONBASEDUNIT(#12,.PLANEANGLEUNIT.,'DEGREE',#17);
-        #19=IFCUNITASSIGNMENT((#13,#14,#15,#18));
-        #20=IFCPROJECT('%(project_globalid)s',#5,'%(project_name)s',$,$,$,$,(#11),#19);
-        ENDSEC;
-        END-ISO-10303-21;
-        """ % {"filename":  filename,   
-            "timestamp": timestamp,
-            "timestring": timestring,
-            "creator": creator,
-            "organization": organization,
-            "application": application,
-            "application_version": application_version,
-            "project_globalid": project_globalid,
-            "project_name": project_name}
-    # Write the template to a temporary file 
-    temp_handle, temp_filename = tempfile.mkstemp(suffix=".ifc")
-    with open(temp_filename, "wb") as f:
-        f.write(template.encode())
-
-# Obtain references to instances defined in template
-
-    ifcfile = ifcopenshell.open(temp_filename)
-
+    ifcfile = ifcopenshell.open(r"C:\Users\Usuario\Desktop\VisualCodePython2\hello_wall.ifc")
+    ifcfile.begin_transaction()
     owner_history =  ifcfile.by_type("IfcOwnerHistory")[0]
     project =  ifcfile.by_type("IfcProject")[0]
     context =  ifcfile.by_type("IfcGeometricRepresentationContext")[0]
@@ -216,9 +161,7 @@ def GetCriaCanteiro():
     container_site =  ifcfile.createIfcRelAggregates( create_guid(),  owner_history, "Site Container", None,  site, [ building])
     container_project =  ifcfile.createIfcRelAggregates( create_guid(),  owner_history, "Project Container", None,  project, [ site])
     material =   ifcfile.createIfcMaterial("Representação do canteiro")
-    print(ifcfile.to_string())
-    del ifcfile
-    """mp = database.db.session.execute( "select pm.descricao, "+
+    mp = database.db.session.execute( "select pm.descricao, "+
                                         "pde.pacote, "+
                                         "sum(iif(pde.descricao is not null, pm.qtde/pde.conversao, 0.0000)) QtdePacote, "+
                                         "group_concat(pm.mes) mes, "+
@@ -255,8 +198,6 @@ def GetCriaCanteiro():
     z=0.
     pontoDeOrigem =(x,y,z) 
     for p in mp:
-        
-      
         volumeMaximo = p.VolumeMaximo
         volumeMaterial = p.volumeTotal
         inteiro =int(volumeMaterial//volumeMaximo )
@@ -291,18 +232,13 @@ def GetCriaCanteiro():
                 ifcFile.CriarVolumeRetangular(dadosCanteiro)           
             case 'Cilindrico':
                 ifcFile.CriarVolumeCilindrico(dadosCanteiro)
-    #print(app.config['UPLOAD_FOLDER']+ "Teste.ifc")
-    #ifcFile.ifcfile.write(app.config['UPLOAD_FOLDER']+ "Teste.ifc")
-            
-    #print(criterio)
-    ifcFile.Salvar()
     
-    del ifcFile"""
-    """criterio = []
-    criterio.append({"arquivo":"ifcFile.ifcfile.to_string()"})
-    elementIds = json.dumps(criterio)
-    res = make_response(elementIds)
-    return res """
+    #print(ifcfile.to_string())
+    ifcfile.end_transaction()
+    del ifcfile
+    criterio = []
+    
+    return "teste"
 
 @app.route('/login')
 def login():
