@@ -18,8 +18,8 @@ import pandas as pd
 import string
 from app import database 
 from flask_migrate import Migrate
-from app import materiaisPedidos
-
+from app import materiaisPedidos, FuncoesBIM, ObjetoDeTransferencia
+import os
 
 import io
 
@@ -31,7 +31,7 @@ from app import bancoDeDados
 def index():
     nome = "dissertação2"
     criterio = {"nome":"Preço", "nota":"Médio"}
-    
+    print(app.config['UPLOAD_FOLDER'])
     medio = 'médio'
     muitoAlto = 'muito alto'
     alto = 'alto'
@@ -91,6 +91,98 @@ def index():
     figura.append(encodes_img_data)
     #print(nome)
     return render_template('index.html', nome=nome, criterio=criterio, fig = figura )
+
+
+@app.route('/GetCriaCanteiro', methods=['GET','POST'])
+def GetCriaCanteiro():
+    req = request.get_json()
+    #print(req)
+    #mp = database.db.session.query(tabelas.PedidoMaterial).filter(tabelas.PedidoMaterial.pedido==req['pedido'])
+    
+    mp = database.db.session.execute( "select pm.descricao, "+
+                                        "pde.pacote, "+
+                                        "sum(iif(pde.descricao is not null, pm.qtde/pde.conversao, 0.0000)) QtdePacote, "+
+                                        "group_concat(pm.mes) mes, "+
+                                        'pm.pedido , '+
+                                        "group_concat(pm.idElement,',') ListaId,  "+
+                                        "group_concat(pm.urn ,',') ListaUrn,"+
+                                        "pde.unidadeBasica	,"+
+                                        "pde.pacote,"+
+                                        "pde.conversao,	"+
+                                        "sum(pm.qtde *  20 *  pde.volume * pde.empolamento) volumeTotal,	"+
+                                        "pde.base	,"+
+                                        "pde.largura	,"+
+                                        "pde.altura	,"+
+                                        "pde.formato,"	+
+                                        "pde.empolamento,	"+
+                                        "pde.preco,	"+
+                                        "pde.alturaMaxima,	"+
+                                        "pde.areaBaseMaxima,"+
+                                        "case pde.formato "+
+                                            "when 'Retangular' then pde.base * pde.largura  * pde.alturaMaxima "+
+                                            "when 'Cilindrico' then 3.14 * pde.base * pde.base / 4 * pde.alturaMaxima "+
+                                            "else null "+
+                                            "end VolumeMaximo    "+
+                                                "from pedidoMaterial pm "+
+                                                "left join PacotesDeEntrega pde on pm.descricao = pde.descricao "+
+                                                "group by pm.descricao, pde.pacote,  pm.pedido")
+        #" where pm.pedido = '"+req['pedido']+"'"+
+      # "  group by pm.descricao, pde.pacote,  pm.pedido")
+    criterio = []
+    ifcFile = FuncoesBIM.ifcFuzzy(arquivoBase="")
+
+    x=0.
+    y=0.
+    z=0.
+    pontoDeOrigem =(x,y,z) 
+    for p in mp:
+        
+      
+        volumeMaximo = p.VolumeMaximo
+        volumeMaterial = p.volumeTotal
+        inteiro =int(volumeMaterial//volumeMaximo )
+        parteFracionada= volumeMaterial//volumeMaximo-inteiro
+        i = 0
+        while i<inteiro:
+            i=i+1
+          
+            dadosCanteiro = ObjetoDeTransferencia.DadosCanteiro(pedido=p.pedido, 
+                                                                material=p.descricao,
+                                                                area=0, 
+                                                                volume=volumeMaximo, 
+                                                                base=p.base, 
+                                                                largura=p.largura, 
+                                                                raio=p.base,
+                                                                mesesAplicacao=p.mes, 
+                                                                formato=p.formato, 
+                                                                ponto=pontoDeOrigem,
+                                                                altura=p.alturaMaxima)       
+            match p.formato:
+                case 'Retangular':
+                    ifcFile.CriarVolumeRetangular(dadosCanteiro)
+                case 'Cilindrico':
+                    ifcFile.CriarVolumeCilindrico(dadosCanteiro)
+            funcoes.incrementarPontoDeOrigem(pontoDeOrigem, p.base)          
+        funcoes.incrementarPontoDeOrigem(pontoDeOrigem, p.base)  
+        dadosCanteiro = ObjetoDeTransferencia.DadosCanteiro(pedido=p.pedido, material=p.descricao, area=0, volume=parteFracionada, 
+                                                                base=p.base, largura=p.largura, raio=p.base, mesesAplicacao=p.mes, 
+                                                                formato=p.formato, ponto=pontoDeOrigem, altura=parteFracionada/p.base/p.largura)
+        match p.formato:
+            case 'Retangular':
+                ifcFile.CriarVolumeRetangular(dadosCanteiro)           
+            case 'Cilindrico':
+                ifcFile.CriarVolumeCilindrico(dadosCanteiro)
+    #print(app.config['UPLOAD_FOLDER']+ "Teste.ifc")
+    #ifcFile.ifcfile.write(app.config['UPLOAD_FOLDER']+ "Teste.ifc")
+            
+    #print(criterio)
+    ifcFile.Salvar()
+    
+    del ifcFile
+    criterio.append({"arquivo":"ifcFile.ifcfile.to_string()"})
+    elementIds = json.dumps(criterio)
+    res = make_response(elementIds)
+    return res   
 
 @app.route('/login')
 def login():

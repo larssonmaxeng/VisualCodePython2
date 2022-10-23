@@ -3,6 +3,7 @@ import ifcopenshell.util
 import ifcopenshell.util.element
 import ifcopenshell.file
 from enum import Enum
+from app import ObjetoDeTransferencia
 import os
 import uuid
 import time
@@ -75,6 +76,7 @@ class ifcFuzzy():
             f.write(template.encode())
 
         # Obtain references to instances defined in template
+        
         self.ifcfile = ifcopenshell.open(temp_filename)
 
         self.owner_history = self.ifcfile.by_type("IfcOwnerHistory")[0]
@@ -96,10 +98,11 @@ class ifcFuzzy():
         self.material =  self.ifcfile.createIfcMaterial("Representação do canteiro")
         
         #self.ifc = ifcopenshell.file(schema='IFC4')
-    def CriarVolumeRetangular(self, base, largura, altura, volume, local):
-        
+    def CriarVolumeRetangular(self, dados):
+        dado = ObjetoDeTransferencia.DadosCanteiro(dados.pedido, dados.material, dados.area, dados.volume, 
+                                                   dados.base, dados.largura, dados.alturaMaxima, dados.raio, dados.mesesAplicacao, dados.formato, dados.ponto)
         #142= IFCAXIS2PLACEMENT3D(#140,#20,#12);
-        Variavel142 = self.create_ifcaxis2placement(ifcfile=self.ifcfile, point=local)
+        Variavel142 = self.create_ifcaxis2placement(ifcfile=self.ifcfile, point=dado.ponto)
         #143= IFCCIRCLE(#142,IFCPOSITIVELENGTHMEASURE(100));
         #143= IFCRECTANGLEPROFILEDEF(.AREA.,'Modelos gen\X2\00E9\X0\ricos 1',#142,1992.38939618349,4200.);
         
@@ -107,10 +110,10 @@ class ifcFuzzy():
         dir1 = self.ifcfile.createIfcDirection((1.,0.))
         axis2placement = self.ifcfile.createIfcAxis2Placement2D(point, dir1)
         
-        IfcRectangleProfileDef143 = self.ifcfile.createIfcRectangleProfileDef('AREA',None, axis2placement, base, largura)
+        IfcRectangleProfileDef143 = self.ifcfile.createIfcRectangleProfileDef('AREA',None, axis2placement, dado.base, dado.largura)
         
                
-        pontoInsercao170 = self.ifcfile.createIfcCartesianPoint(local)
+        pontoInsercao170 = self.ifcfile.createIfcCartesianPoint(dado.ponto)
         
         #172= IFCAXIS2PLACEMENT3D(#170,$,$);
         ifcAxisPlacement172 = self.ifcfile.createIfcAxis2Placement3D(pontoInsercao170, None, None)
@@ -118,7 +121,7 @@ class ifcFuzzy():
         ifcdir20 =  self.ifcfile.createIfcDirection((0.0, 0.0, 1.0))
         
         #173= IFCEXTRUDEDAREASOLID(#167,#172,#20,300.);
-        ifcextrudedareasolid173 = self.ifcfile.createIfcExtrudedAreaSolid(IfcRectangleProfileDef143, ifcAxisPlacement172, ifcdir20, altura)
+        ifcextrudedareasolid173 = self.ifcfile.createIfcExtrudedAreaSolid(IfcRectangleProfileDef143, ifcAxisPlacement172, ifcdir20, dado.alturaMaxima)
         #174= IFCSHAPEREPRESENTATION(#105,'Body','SweptSolid',(#173));
         
         body_representation = self.ifcfile.createIfcShapeRepresentation(self.context, "Body", "SweptSolid", [ifcextrudedareasolid173])
@@ -140,8 +143,8 @@ class ifcFuzzy():
         PredefinedType	IfcBuildingElementProxyTypeEnum (ENUM)"""
         data = {"GlobalId": ifcopenshell.guid.new(),#	IfcGloballyUniqueId (STRING)	IfcRoot
                 "OwnerHistory": self.owner_history,#	IfcOwnerHistory (ENTITY)	IfcRoot
-                "Name": 'Teste canteiro',#	IfcLabel (STRING)	IfcRoot
-                "Description": 'Ver se da certo',#	IfcText (STRING)	IfcRoot
+                "Name": dado.material,#	IfcLabel (STRING)	IfcRoot
+                "Description": dado.pedido,#	IfcText (STRING)	IfcRoot
                 "ObjectType": 'Volume 1',#	IfcLabel (STRING)	IfcObject
                 "ObjectPlacement": Variavel142,#	IfcObjectPlacement (ENTITY)	IfcProduct
                 "Representation": product_shape ,#	IfcProductRepresentation (ENTITY)	IfcProduct
@@ -155,34 +158,20 @@ class ifcFuzzy():
          
         
         property_values = [
-            self.ifcfile.createIfcPropertySingleValue("Reference", "Reference", self.ifcfile.create_entity("IfcText", "Describe the Reference"), None),
-            self.ifcfile.createIfcPropertySingleValue("Tipo de instalações", "Qual material", self.ifcfile.create_entity("IfcText", "Hidrossanitário"), None),
+            #self.ifcfile.createIfcPropertySingleValue("Reference", "Reference", self.ifcfile.create_entity("IfcText", "Describe the Reference"), None),
+            #self.ifcfile.createIfcPropertySingleValue("Tipo de instalações", "Qual material", self.ifcfile.create_entity("IfcText", "Hidrossanitário"), None),
             self.ifcfile.createIfcPropertySingleValue("Entregue", "Entregue", self.ifcfile.create_entity("IfcBoolean", False), None),
             
-            self.ifcfile.createIfcPropertySingleValue("IsExternal", "IsExternal", self.ifcfile.create_entity("IfcBoolean", True), None),
-            self.ifcfile.createIfcPropertySingleValue("ThermalTransmittance", "ThermalTransmittance", self.ifcfile.create_entity("IfcLengthMeasure", 2.569), None),
-            self.ifcfile.createIfcPropertySingleValue("Base", "Base", self.ifcfile.create_entity("IfcLengthMeasure", 10), None),
-            self.ifcfile.createIfcPropertySingleValue("Altura", "Altura", self.ifcfile.create_entity("IfcLengthMeasure", 20), None),
-            
-            self.ifcfile.createIfcPropertySingleValue("IntValue", "IntValue", self.ifcfile.create_entity("IfcInteger", 2), None)
+            #self.ifcfile.createIfcPropertySingleValue("IsExternal", "IsExternal", self.ifcfile.create_entity("IfcBoolean", True), None),
+            #self.ifcfile.createIfcPropertySingleValue("ThermalTransmittance", "ThermalTransmittance", self.ifcfile.create_entity("IfcLengthMeasure", 2.569), None),
+            self.ifcfile.createIfcPropertySingleValue("Base", "Base", self.ifcfile.create_entity("IfcLengthMeasure", dado.base), None),
+            self.ifcfile.createIfcPropertySingleValue("Largura", "Largura", self.ifcfile.create_entity("IfcLengthMeasure", dado.largura), None),
+            self.ifcfile.createIfcPropertySingleValue("Altura", "Altura", self.ifcfile.create_entity("IfcLengthMeasure", dado.alturaMaxima), None),
+            self.ifcfile.createIfcPropertySingleValue("Volume", "Volume",  self.ifcfile.create_entity("IfcVolumeMeasure", dado.volume), None)
         ]
         property_set =self.ifcfile.createIfcPropertySet(self.create_guid(), self.owner_history, "Pset_almoxarifado", None, property_values)
         self.ifcfile.createIfcRelDefinesByProperties(self.create_guid(), self.owner_history, None, None, [elementProxy], property_set)
                 
-
-        """Linha 124: #177= IFCMATERIAL('Telhado padr\X2\00E3\X0\o',$,'N\X2\00E3\X0\o atribu\X2\00ED\X0\do');
-        Linha 128: #191= IFCMATERIALDEFINITIONREPRESENTATION($,$,(#188),#177);
-        Linha 231: #462= IFCRELASSOCIATESMATERIAL('1oXALVbMv3IApHMiluYnwE',#42,$,$,(#173,#215),#177);"""
-        #IFCSURFACESTYLERENDERING(#150,0.,$,$,$,$,IFCNORMALISEDRATIOMEASURE(0.5),IFCSPECULAREXPONENT(64.),.NOTDEFINED.);
-        """SurfaceColour	IfcColourRgb (ENTITY)	IfcSurfaceStyleShading
-           Transparency	IfcNormalisedRatioMeasure (REAL)	IfcSurfaceStyleShading
-            DiffuseColour	IfcColourOrFactor (SELECT)	IfcSurfaceStyleRendering
-               TransmissionColour	IfcColourOrFactor (SELECT)	IfcSurfaceStyleRendering
-              DiffuseTransmissionColour	IfcColourOrFactor (SELECT)	IfcSurfaceStyleRendering
-                ReflectionColour	IfcColourOrFactor (SELECT)	IfcSurfaceStyleRendering
-                SpecularColour	IfcColourOrFactor (SELECT)	IfcSurfaceStyleRendering
-                SpecularHighlight	IfcSpecularHighlightSelect (SELECT)	IfcSurfaceStyleRendering
-                ReflectanceMethod	IfcReflectanceMethodEnum (ENUM)"""
         cor = self.ifcfile.createIfcColourRgb(None, 0,0,1)
         render = self.ifcfile.createIfcSurfaceStyleRendering(SurfaceColour = cor,
                                                     Transparency=0.,
@@ -208,7 +197,9 @@ class ifcFuzzy():
                                                              None, 
                                                              [elementProxy], 
                                                              self.building_storey)
-    def CriarVolumeCilindrico(self, raio, altura, volume, local):
+    def CriarVolumeCilindrico(self,dados):
+        dado = ObjetoDeTransferencia.DadosCanteiro(dados.pedido, dados.material, dados.area, dados.volume,
+                                                   dados.base, dados.largura, dados.alturaMaxima, dados.raio, dados.mesesAplicacao, dados.formato, dados.ponto)
         """novoVolume = self.ifc.create_entity('IfcBuildingElementProxy', 
                                             GlobalId=ifcopenshell.guid.new(), 
                                             Name='Wall Name')"""
@@ -273,8 +264,8 @@ class ifcFuzzy():
         PredefinedType	IfcBuildingElementProxyTypeEnum (ENUM)"""
         data = {"GlobalId": ifcopenshell.guid.new(),#	IfcGloballyUniqueId (STRING)	IfcRoot
                 "OwnerHistory": self.owner_history,#	IfcOwnerHistory (ENTITY)	IfcRoot
-                "Name": 'Teste canteiro',#	IfcLabel (STRING)	IfcRoot
-                "Description": 'Ver se da certo',#	IfcText (STRING)	IfcRoot
+                "Name": dado.material,#	IfcLabel (STRING)	IfcRoot
+                "Description": dado.pedido,#	IfcText (STRING)	IfcRoot
                 "ObjectType": 'Volume 1',#	IfcLabel (STRING)	IfcObject
                 "ObjectPlacement": Variavel142,#	IfcObjectPlacement (ENTITY)	IfcProduct
                 "Representation": product_shape ,#	IfcProductRepresentation (ENTITY)	IfcProduct
@@ -282,22 +273,22 @@ class ifcFuzzy():
                 "PredefinedType": None#	IfcBuildingElementProxyTypeEnum (ENUM)"""
             
         }       
+               
         elementProxy = self.ifcfile.create_entity('IfcBuildingElementProxy', **data)
        
         #elementProxy = self.ifcfile.createIfcWallStandardCase(self.create_guid(), , "Wall", "An awesome wall", None, wall_placement, product_shape, None)                                    
          
         
         property_values = [
-            self.ifcfile.createIfcPropertySingleValue("Reference", "Reference", self.ifcfile.create_entity("IfcText", "Describe the Reference"), None),
-            self.ifcfile.createIfcPropertySingleValue("Tipo de instalações", "Qual material", self.ifcfile.create_entity("IfcText", "Hidrossanitário"), None),
+            #self.ifcfile.createIfcPropertySingleValue("Reference", "Reference", self.ifcfile.create_entity("IfcText", "Describe the Reference"), None),
+            #self.ifcfile.createIfcPropertySingleValue("Tipo de instalações", "Qual material", self.ifcfile.create_entity("IfcText", "Hidrossanitário"), None),
             self.ifcfile.createIfcPropertySingleValue("Entregue", "Entregue", self.ifcfile.create_entity("IfcBoolean", False), None),
             
-            self.ifcfile.createIfcPropertySingleValue("IsExternal", "IsExternal", self.ifcfile.create_entity("IfcBoolean", True), None),
-            self.ifcfile.createIfcPropertySingleValue("ThermalTransmittance", "ThermalTransmittance", self.ifcfile.create_entity("IfcLengthMeasure", 2.569), None),
-            self.ifcfile.createIfcPropertySingleValue("Base", "Base", self.ifcfile.create_entity("IfcLengthMeasure", 10), None),
-            self.ifcfile.createIfcPropertySingleValue("Altura", "Altura", self.ifcfile.create_entity("IfcLengthMeasure", 20), None),
-            
-            self.ifcfile.createIfcPropertySingleValue("IntValue", "IntValue", self.ifcfile.create_entity("IfcInteger", 2), None)
+            #self.ifcfile.createIfcPropertySingleValue("IsExternal", "IsExternal", self.ifcfile.create_entity("IfcBoolean", True), None),
+            #self.ifcfile.createIfcPropertySingleValue("ThermalTransmittance", "ThermalTransmittance", self.ifcfile.create_entity("IfcLengthMeasure", 2.569), None),
+            self.ifcfile.createIfcPropertySingleValue("Diâmetro", "Diâmetro", self.ifcfile.create_entity("IfcLengthMeasure", dado.base), None),
+            self.ifcfile.createIfcPropertySingleValue("Altura", "Altura", self.ifcfile.create_entity("IfcLengthMeasure", dado.alturaMaxima), None),
+            self.ifcfile.createIfcPropertySingleValue("Volume", "Volume", self.ifcfile.create_entity("IfcVolumeMeasure", dado.volume), None)
         ]
         property_set =self.ifcfile.createIfcPropertySet(self.create_guid(), self.owner_history, "Pset_almoxarifado", None, property_values)
         self.ifcfile.createIfcRelDefinesByProperties(self.create_guid(), self.owner_history, None, None, [elementProxy], property_set)
@@ -384,14 +375,14 @@ class ifcFuzzy():
         return  uuid.uuid4().hex # ifcopenshell.guid.compress(uuid.uuid1().hex)    
     def Salvar(self):
         self.ifcfile.write(self.filename)   
-        print(self.ifcfile)  
+        print(self.ifcfile.to_string())  
         print(self.ifcfile)  
         
-ifc1 = ifcFuzzy(arquivoBase="")
+"""ifc1 = ifcFuzzy(arquivoBase="")
 ifc1.CriarVolumeCilindrico(altura=2, raio=0.5, volume=0, local=(1.,3.,0.))
 ifc1.CriarVolumeCilindrico(altura=2, raio=1, volume=0, local=(3.,3.,6.))
 ifc1.CriarVolumeRetangular(base=2, largura=6, volume=0, altura=2, local=(3.,3.,6.))
 ifc1.CriarVolumeRetangular(base=2, largura=6, volume=0, altura=2, local=(5.5,3.,6.))
 ifc1.CriarVolumeRetangular(base=2, largura=6, volume=0, altura=2, local=(7.5,3.,6.))
 ifc1.CriarVolumeRetangular(base=2, largura=6, volume=0, altura=2, local=(9.5,3.,6.))
-ifc1.Salvar()        
+ifc1.Salvar()  """      

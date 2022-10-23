@@ -781,6 +781,31 @@ function GetCalculaQtde(noSelecionado, element){
 }
 function GetPropriedadesVisiveis(){
     
+    
+    
+
+    var jsonData = {};
+   
+    jsonData["Teste"] = "Teste";
+    var your_data =  jsonData
+    
+
+    fetch(`${window.origin}/GetCriaCanteiro`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(your_data),
+        cache: "no-cache",
+        headers: new Headers({
+            "content-type": "application/json"
+        })
+        }).then(response => response.json())
+        .then(function(data){ 
+            console.log(data)
+        });
+
+    
+    return undefined;
+    
     arraydb = [];
     EstruturaGridQtde();
     $("#grid").jqGrid('setGridParam',
