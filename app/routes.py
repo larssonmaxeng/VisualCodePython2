@@ -1,3 +1,4 @@
+from math import ceil
 from sklearn.datasets import load_iris
 import base64
 from email.encoders import encode_base64
@@ -5,7 +6,7 @@ import json
 from json import *
 from urllib import response
 from app import app
-from flask import render_template, redirect, jsonify, make_response
+from flask import render_template, redirect, jsonify, make_response, send_file
 import matplotlib.pyplot as mlt
 import numpy as np
 import skfuzzy as fuzz
@@ -136,31 +137,107 @@ def create_ifcextrudedareasolid( ifcfile, point_list, ifcaxis2placement, extrude
 def create_guid():
     return  uuid.uuid4().hex # ifcopenshell.guid.compress(uuid.uuid1().hex)   
 
+def CriarVolumeRetangular(ifcfile, dados):
+       
+        context = ifcfile.by_type("IfcGeometricRepresentationContext")[0]
+        
+        material = ifcfile.by_type("IfcMaterial")[0]
+        building_storey =   ifcfile.by_type("IfcBuildingStorey")[0]
+        owner_history = ifcfile.by_type("IfcOwnerHistory")[0]
+        dado = ObjetoDeTransferencia.DadosCanteiro(dados.pedido, dados.material, dados.area, dados.volume, 
+                                                   dados.base, dados.largura, dados.alturaMaxima, dados.raio, dados.mesesAplicacao, dados.formato, dados.ponto)
+        #142= IFCAXIS2PLACEMENT3D(#140,#20,#12);
+        Variavel142 = create_ifcaxis2placement(ifcfile=ifcfile, point=dado.ponto)
+        #143= IFCCIRCLE(#142,IFCPOSITIVELENGTHMEASURE(100));
+        #143= IFCRECTANGLEPROFILEDEF(.AREA.,'Modelos gen\X2\00E9\X0\ricos 1',#142,1992.38939618349,4200.);
+        
+        point = ifcfile.createIfcCartesianPoint((0.,0.))
+        dir1 = ifcfile.createIfcDirection((1.,0.))
+        axis2placement = ifcfile.createIfcAxis2Placement2D(point, dir1)
+        
+        IfcRectangleProfileDef143 =ifcfile.createIfcRectangleProfileDef('AREA',None, axis2placement, dado.base, dado.largura)
+        
+               
+        pontoInsercao170 =ifcfile.createIfcCartesianPoint(dado.ponto)
+        
+        #172= IFCAXIS2PLACEMENT3D(#170,$,$);
+        ifcAxisPlacement172 = ifcfile.createIfcAxis2Placement3D(pontoInsercao170, None, None)
+        #20
+        ifcdir20 =  ifcfile.createIfcDirection((0.0, 0.0, 1.0))
+        
+        #173= IFCEXTRUDEDAREASOLID(#167,#172,#20,300.);
+        ifcextrudedareasolid173 =ifcfile.createIfcExtrudedAreaSolid(IfcRectangleProfileDef143, ifcAxisPlacement172, ifcdir20, dado.alturaMaxima)
+        #174= IFCSHAPEREPRESENTATION(#105,'Body','SweptSolid',(#173));
+        
+        body_representation = ifcfile.createIfcShapeRepresentation(context, "Body", "SweptSolid", [ifcextrudedareasolid173])
+        
+
+        product_shape = ifcfile.createIfcProductDefinitionShape(None, None, [body_representation])
+        
+       
+        data = {"GlobalId": ifcopenshell.guid.new(),#	IfcGloballyUniqueId (STRING)	IfcRoot
+                "OwnerHistory": owner_history,#	IfcOwnerHistory (ENTITY)	IfcRoot
+                "Name": dado.material,#	IfcLabel (STRING)	IfcRoot
+                "Description": dado.pedido,#	IfcText (STRING)	IfcRoot
+                "ObjectType": 'Volume 1',#	IfcLabel (STRING)	IfcObject
+                "ObjectPlacement": Variavel142,#	IfcObjectPlacement (ENTITY)	IfcProduct
+                "Representation": product_shape ,#	IfcProductRepresentation (ENTITY)	IfcProduct
+                #"TAG": 'xxxx',#	IfcIdentifier (STRING)	IfcElement
+                "PredefinedType": None#	IfcBuildingElementProxyTypeEnum (ENUM)"""
+            
+        }       
+        elementProxy = ifcfile.create_entity('IfcBuildingElementProxy', **data)
+       
+        #elementProxy = self.ifcfile.createIfcWallStandardCase(self.create_guid(), , "Wall", "An awesome wall", None, wall_placement, product_shape, None)                                    
+         
+        
+        property_values = [
+            #self.ifcfile.createIfcPropertySingleValue("Reference", "Reference", self.ifcfile.create_entity("IfcText", "Describe the Reference"), None),
+            #self.ifcfile.createIfcPropertySingleValue("Tipo de instalações", "Qual material", self.ifcfile.create_entity("IfcText", "Hidrossanitário"), None),
+            ifcfile.createIfcPropertySingleValue("Entregue", "Entregue", ifcfile.create_entity("IfcBoolean", False), None),
+            
+            #self.ifcfile.createIfcPropertySingleValue("IsExternal", "IsExternal", self.ifcfile.create_entity("IfcBoolean", True), None),
+            #self.ifcfile.createIfcPropertySingleValue("ThermalTransmittance", "ThermalTransmittance", self.ifcfile.create_entity("IfcLengthMeasure", 2.569), None),
+            ifcfile.createIfcPropertySingleValue("Base", "Base", ifcfile.create_entity("IfcLengthMeasure", dado.base), None),
+            ifcfile.createIfcPropertySingleValue("Largura", "Largura", ifcfile.create_entity("IfcLengthMeasure", dado.largura), None),
+            ifcfile.createIfcPropertySingleValue("Altura", "Altura", ifcfile.create_entity("IfcLengthMeasure", dado.alturaMaxima), None),
+            ifcfile.createIfcPropertySingleValue("Volume", "Volume",  ifcfile.create_entity("IfcVolumeMeasure", dado.volume), None)
+        ]
+        property_set =ifcfile.createIfcPropertySet(create_guid(), owner_history, "Pset_almoxarifado", None, property_values)
+        ifcfile.createIfcRelDefinesByProperties(create_guid(),owner_history, None, None, [elementProxy], property_set)
+                
+        cor = ifcfile.createIfcColourRgb(None, 0,0,1)
+        render = ifcfile.createIfcSurfaceStyleRendering(SurfaceColour = cor,
+                                                    Transparency=0.,
+                                                    SpecularColour = ifcfile.createIfcRatioMeasure( 0.5),
+                                                    SpecularHighlight = ifcfile.createIfcSpecularExponent(64.0))
+        ##152= IFCSURFACESTYLE('Telhado padr\X2\00E3\X0\o',.BOTH.,(#151));
+        ifcSurfaceStyle = ifcfile.createIfcSurfaceStyle("Representação do canteiro", "BOTH", [render])
+         #154= IFCPRESENTATIONSTYLEASSIGNMENT((#152));
+        IFCPRESENTATIONSTYLEASSIGNMENT = ifcfile.createIfcPresentationStyleAssignment([ifcSurfaceStyle])
+        
+       
+        #156= IFCSTYLEDITEM(#149,(#154),$);
+        IFCSTYLEDITEM=ifcfile.createIfcStyledItem(ifcextrudedareasolid173,[IFCPRESENTATIONSTYLEASSIGNMENT], None) 
+        #169= IFCREPRESENTATIONMAP(#168,#159);?
+        #173= IFCBUILDINGELEMENTPROXYTYPE('2fHeoK0OX5zfefqRhXROdu',#42,'Modelos gen\X2\00E9\X0\ricos 1',$,$,$,(#169),'2634',$,.NOTDEFINED.);
+
+        ifcfile.createIfcMaterialDefinitionRepresentation(None, None,[elementProxy], material )
+        
+        ifcfile.createIfcRelAssociatesMaterial(create_guid(), owner_history, None, None, [elementProxy], material )
+         
+        ifcfile.createIfcRelContainedInSpatialStructure(create_guid(), owner_history, 
+                                                             "Building Storey Container", 
+                                                             None, 
+                                                             [elementProxy], 
+                                                             building_storey)
+
+
 @app.route('/GetCriaCanteiro', methods=['POST'])
 def GetCriaCanteiro():
     req = request.get_json()
     #print(req)
     #mp = database.db.session.query(tabelas.PedidoMaterial).filter(tabelas.PedidoMaterial.pedido==req['pedido'])
-    
-    ifcfile = ifcopenshell.open(r"C:\Users\Usuario\Desktop\VisualCodePython2\hello_wall.ifc")
-    ifcfile.begin_transaction()
-    owner_history =  ifcfile.by_type("IfcOwnerHistory")[0]
-    project =  ifcfile.by_type("IfcProject")[0]
-    context =  ifcfile.by_type("IfcGeometricRepresentationContext")[0]
-    site_placement =  create_ifclocalplacement( ifcfile)
-    site =  ifcfile.createIfcSite( create_guid(),  owner_history, "Site", None, None,  site_placement, None, None, "ELEMENT", None, None, None, None, None)
-
-    building_placement =  create_ifclocalplacement( ifcfile, relative_to= site_placement)
-    building =  ifcfile.createIfcBuilding( create_guid(),  owner_history, 'Building', None, None,  building_placement, None, None, "ELEMENT", None, None, None)
-
-    storey_placement =  create_ifclocalplacement( ifcfile, relative_to= building_placement)
-    elevation = 0.0
-    building_storey =  ifcfile.createIfcBuildingStorey( create_guid(),  owner_history, 'Storey', None, None,  storey_placement, None, None, "ELEMENT",  elevation)
-
-    container_storey =  ifcfile.createIfcRelAggregates( create_guid(),  owner_history, "Building Container", None,  building, [ building_storey])
-    container_site =  ifcfile.createIfcRelAggregates( create_guid(),  owner_history, "Site Container", None,  site, [ building])
-    container_project =  ifcfile.createIfcRelAggregates( create_guid(),  owner_history, "Project Container", None,  project, [ site])
-    material =   ifcfile.createIfcMaterial("Representação do canteiro")
     mp = database.db.session.execute( "select pm.descricao, "+
                                         "pde.pacote, "+
                                         "sum(iif(pde.descricao is not null, pm.qtde/pde.conversao, 0.0000)) QtdePacote, "+
@@ -187,21 +264,29 @@ def GetCriaCanteiro():
                                             "end VolumeMaximo    "+
                                                 "from pedidoMaterial pm "+
                                                 "left join PacotesDeEntrega pde on pm.descricao = pde.descricao "+
-                                                "group by pm.descricao, pde.pacote,  pm.pedido")
+                                                " where pm.pedido = '"+req['pedido']+"'" +
+                                                " group by pm.descricao, pde.pacote,  pm.pedido")
         #" where pm.pedido = '"+req['pedido']+"'"+
       # "  group by pm.descricao, pde.pacote,  pm.pedido")
-    criterio = []
-    ifcFile = FuncoesBIM.ifcFuzzy(arquivoBase="")
-
-    x=0.
-    y=0.
-    z=0.
-    pontoDeOrigem =(x,y,z) 
-    for p in mp:
+    try:
+       #ifcfile =FuncoesBIM.ifcFuzzy(arquivoBase="")
+       # BULK.set_bulk_Key(uniqueKey, ifc_file)
+        #return {"key":"uniqueKey"}, 200
+       
+       
+       ifc_file = ifcopenshell.open(r"C:\Users\Usuario\Desktop\VisualCodePython2\hello_wall.ifc")
+       
+       x=0.
+       y=0.
+       z=0.
+       pontoDeOrigem =(x,y,z) 
+       for p in mp:
+        qtdeDePacotes = ceil(p.QtdePacote)
+        qtdeDeInsumoNoVolumeMaximo = p.VolumeMaximo //(p.volume*p.empolamento)   
         volumeMaximo = p.VolumeMaximo
         volumeMaterial = p.volumeTotal
         inteiro =int(volumeMaterial//volumeMaximo )
-        parteFracionada= volumeMaterial//volumeMaximo-inteiro
+        parteFracionada= volumeMaterial/volumeMaximo-inteiro
         i = 0
         while i<inteiro:
             i=i+1
@@ -219,26 +304,35 @@ def GetCriaCanteiro():
                                                                 altura=p.alturaMaxima)       
             match p.formato:
                 case 'Retangular':
-                    ifcFile.CriarVolumeRetangular(dadosCanteiro)
-                case 'Cilindrico':
-                    ifcFile.CriarVolumeCilindrico(dadosCanteiro)
-            funcoes.incrementarPontoDeOrigem(pontoDeOrigem, p.base)          
-        funcoes.incrementarPontoDeOrigem(pontoDeOrigem, p.base)  
-        dadosCanteiro = ObjetoDeTransferencia.DadosCanteiro(pedido=p.pedido, material=p.descricao, area=0, volume=parteFracionada, 
-                                                                base=p.base, largura=p.largura, raio=p.base, mesesAplicacao=p.mes, 
-                                                                formato=p.formato, ponto=pontoDeOrigem, altura=parteFracionada/p.base/p.largura)
-        match p.formato:
-            case 'Retangular':
-                ifcFile.CriarVolumeRetangular(dadosCanteiro)           
-            case 'Cilindrico':
-                ifcFile.CriarVolumeCilindrico(dadosCanteiro)
-    
-    #print(ifcfile.to_string())
-    ifcfile.end_transaction()
-    del ifcfile
-    criterio = []
-    
-    return "teste"
+                      CriarVolumeRetangular(ifcfile=ifc_file, dados= dadosCanteiro)
+
+            pontoDeOrigem = funcoes.incrementarPontoDeOrigem(pontoDeOrigem, p.base)          
+        
+        pontoDeOrigem = funcoes.incrementarPontoDeOrigem(pontoDeOrigem, p.base)  
+        if parteFracionada>0:
+            dadosCanteiro = ObjetoDeTransferencia.DadosCanteiro(pedido=p.pedido, material=p.descricao, area=0, volume=parteFracionada, 
+                                                                    base=p.base, largura=p.largura, raio=p.base, mesesAplicacao=p.mes, 
+                                                                    formato=p.formato, ponto=pontoDeOrigem, altura=parteFracionada/p.base/p.largura)
+            match p.formato:
+                case 'Retangular':
+                      CriarVolumeRetangular(ifcfile=ifc_file, dados= dadosCanteiro)        
+           
+       ifc_file.write(app.config['UPLOAD_FOLDER']+"\\hellow2.ifc") 
+       criterios = []
+       criterios.append({"teste":"teste"})
+       criterio = json.dumps(criterios)  
+       return send_file(app.config['UPLOAD_FOLDER']+"\\hellow2.ifc", as_attachment=True)
+
+       #res = make_response(criterio)
+       #return res
+       
+    except Exception as exc:
+                            criterios = []
+                            criterios.append({"teste":str(exc)})
+                            criterio = json.dumps(criterios)  
+                            res = make_response(criterio)
+                            return res
+   
 
 @app.route('/login')
 def login():

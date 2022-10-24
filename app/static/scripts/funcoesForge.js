@@ -782,17 +782,11 @@ function GetCalculaQtde(noSelecionado, element){
     return false;
     
 }
-function GetPropriedadesVisiveis(){
-    
-    
-    
-
+function fnGerarPedidoDoIFC(){
+    var data = $('#treePedidos').jstree().get_selected(true)[0];
     var jsonData = {};
-   
-    jsonData["Teste"] = "Teste";
-    var your_data =  jsonData
-    
-
+    jsonData["pedido"] = data.data["pedido"];
+    var your_data =  jsonData;
     fetch(`${window.origin}/GetCriaCanteiro`, {
         method: "POST",
         credentials: "include",
@@ -801,9 +795,26 @@ function GetPropriedadesVisiveis(){
         headers: new Headers({
             "content-type": "application/json"
         })
-        });
+        }).then(res=>res.blob())
+        .then(res=>{
+            
+            var a = document.createElement('a');
+            a.setAttribute('download', 'Teste.ifc');
+            const href = URL.createObjectURL(res);
+            a.href = href;
+            a.setAttribute('target', '_blank');
+            a.click();
+            URL.revokeObjectURL(href);
+        }).catch(err=>console.log(err));
     
-    return undefined;
+   
+}
+function GetPropriedadesVisiveis(){
+    
+    
+    
+
+    
     
     arraydb = [];
     EstruturaGridQtde();
