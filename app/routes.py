@@ -145,7 +145,9 @@ def CriarVolumeRetangular(ifcfile, dados):
         building_storey =   ifcfile.by_type("IfcBuildingStorey")[0]
         owner_history = ifcfile.by_type("IfcOwnerHistory")[0]
         dado = ObjetoDeTransferencia.DadosCanteiro(dados.pedido, dados.material, dados.area, dados.volume, 
-                                                   dados.base, dados.largura, dados.alturaMaxima, dados.raio, dados.mesesAplicacao, dados.formato, dados.ponto)
+                                                   dados.base, dados.largura, dados.alturaMaxima, dados.raio, 
+                                                   dados.mesesAplicacao, dados.formato, dados.ponto,
+                                                   dados.unidade, dados.qtde)
         #142= IFCAXIS2PLACEMENT3D(#140,#20,#12);
         Variavel142 = create_ifcaxis2placement(ifcfile=ifcfile, point=dado.ponto)
         #143= IFCCIRCLE(#142,IFCPOSITIVELENGTHMEASURE(100));
@@ -192,7 +194,8 @@ def CriarVolumeRetangular(ifcfile, dados):
          
         
         property_values = [
-            #self.ifcfile.createIfcPropertySingleValue("Reference", "Reference", self.ifcfile.create_entity("IfcText", "Describe the Reference"), None),
+            ifcfile.createIfcPropertySingleValue("Pacote", "Pacote",ifcfile.create_entity("IfcText", dado.unidade), None),
+             ifcfile.createIfcPropertySingleValue("Quantidade", "Quantidade",ifcfile.create_entity("IfcInteger", int(dado.qtde)), None),
             #self.ifcfile.createIfcPropertySingleValue("Tipo de instalações", "Qual material", self.ifcfile.create_entity("IfcText", "Hidrossanitário"), None),
             ifcfile.createIfcPropertySingleValue("Entregue", "Entregue", ifcfile.create_entity("IfcBoolean", False), None),
             
@@ -240,7 +243,7 @@ def GetCriaCanteiro():
     #mp = database.db.session.query(tabelas.PedidoMaterial).filter(tabelas.PedidoMaterial.pedido==req['pedido'])
     mp = database.db.session.execute( "select pm.descricao, "+
                                         "pde.pacote, "+
-                                        "sum(iif(pde.descricao is not null, pm.qtde/pde.conversao, 0.0000)) QtdePacote, "+
+                                        "sum(iif(pde.descricao is not null, pm.qtde/pde.conversao*2000, 0.0000)) QtdePacote, "+
                                         "group_concat(pm.mes) mes, "+
                                         'pm.pedido , '+
                                         "group_concat(pm.idElement,',') ListaId,  "+
@@ -248,8 +251,9 @@ def GetCriaCanteiro():
                                         "pde.unidadeBasica	,"+
                                         "pde.pacote,"+
                                         "pde.conversao,	"+
-                                        "sum(pm.qtde *  20 *  pde.volume * pde.empolamento) volumeTotal,	"+
+                                        "sum(pm.qtde *  2000 *  pde.volume * pde.empolamento) volumeTotal,	"+
                                         "pde.base	,"+
+                                        "pde.volume,"+
                                         "pde.largura	,"+
                                         "pde.altura	,"+
                                         "pde.formato,"	+
@@ -281,10 +285,13 @@ def GetCriaCanteiro():
        z=0.
        pontoDeOrigem =(x,y,z) 
        for p in mp:
-        qtdeDePacotes = ceil(p.QtdePacote)
-        qtdeDeInsumoNoVolumeMaximo = p.VolumeMaximo //(p.volume*p.empolamento)   
-        volumeMaximo = p.VolumeMaximo
-        volumeMaterial = p.volumeTotal
+        qtdeDePacotes = ceil(p.QtdePacote)#417
+        qtdeDeInsumoNoVolumeMaximo = int(p.VolumeMaximo //(p.volume*p.empolamento))
+        volumeReal = qtdeDeInsumoNoVolumeMaximo*p.volume*p.empolamento
+        alturaReal = volumeReal/p.areaBaseMaxima   
+        qtdePacotesParaInserir = ceil(p.QtdePacote)#41
+        volumeMaximo = volumeReal
+        volumeMaterial = qtdeDePacotes * (p.volume*p.empolamento)
         inteiro =int(volumeMaterial//volumeMaximo )
         parteFracionada= volumeMaterial/volumeMaximo-inteiro
         i = 0
@@ -301,18 +308,28 @@ def GetCriaCanteiro():
                                                                 mesesAplicacao=p.mes, 
                                                                 formato=p.formato, 
                                                                 ponto=pontoDeOrigem,
-                                                                altura=p.alturaMaxima)       
+                                                                altura= alturaReal,
+                                                                unidade = p.pacote,
+                                                                qtde = qtdeDeInsumoNoVolumeMaximo)       
             match p.formato:
                 case 'Retangular':
                       CriarVolumeRetangular(ifcfile=ifc_file, dados= dadosCanteiro)
 
-            pontoDeOrigem = funcoes.incrementarPontoDeOrigem(pontoDeOrigem, p.base)          
-        
+            pontoDeOrigem = funcoes.incrementarPontoDeOrigem(pontoDeOrigem, p.base) 
+            qtdePacotesParaInserir = qtdePacotesParaInserir-qtdeDeInsumoNoVolumeMaximo         
+        volumeParaInserir = qtdePacotesParaInserir*p.volume*p.empolamento
         pontoDeOrigem = funcoes.incrementarPontoDeOrigem(pontoDeOrigem, p.base)  
         if parteFracionada>0:
-            dadosCanteiro = ObjetoDeTransferencia.DadosCanteiro(pedido=p.pedido, material=p.descricao, area=0, volume=parteFracionada, 
-                                                                    base=p.base, largura=p.largura, raio=p.base, mesesAplicacao=p.mes, 
-                                                                    formato=p.formato, ponto=pontoDeOrigem, altura=parteFracionada/p.base/p.largura)
+            dadosCanteiro = ObjetoDeTransferencia.DadosCanteiro(pedido=p.pedido, material=p.descricao, area=0, 
+                                                                volume=parteFracionada,base=p.base, 
+                                                                largura=p.largura, 
+                                                                raio=p.base, 
+                                                                mesesAplicacao=p.mes, 
+                                                                formato=p.formato,
+                                                                ponto=pontoDeOrigem, 
+                                                                altura=volumeParaInserir/p.base/p.largura,
+                                                                unidade = p.pacote,
+                                                                qtde = qtdePacotesParaInserir)
             match p.formato:
                 case 'Retangular':
                       CriarVolumeRetangular(ifcfile=ifc_file, dados= dadosCanteiro)        

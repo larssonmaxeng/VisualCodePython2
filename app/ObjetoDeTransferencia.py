@@ -1,5 +1,6 @@
 class DadosCanteiro():
-    def __init__(self, pedido, material, area, volume, base, largura, altura, raio, mesesAplicacao, formato, ponto):
+    def __init__(self, pedido, material, area, volume, base, largura, altura, raio, mesesAplicacao, 
+                 formato, ponto, unidade, qtde):
         self.pedido=pedido
         self.material=material
         self.area=area
@@ -11,5 +12,6 @@ class DadosCanteiro():
         self.mesesAplicacao=mesesAplicacao
         self.formato=formato
         self.ponto = ponto
-        
+        self.unidade = unidade
+        self.qtde = qtde
         
