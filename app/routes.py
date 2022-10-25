@@ -243,7 +243,7 @@ def GetCriaCanteiro():
     #mp = database.db.session.query(tabelas.PedidoMaterial).filter(tabelas.PedidoMaterial.pedido==req['pedido'])
     mp = database.db.session.execute( "select pm.descricao, "+
                                         "pde.pacote, "+
-                                        "sum(iif(pde.descricao is not null, pm.qtde/pde.conversao*2000, 0.0000)) QtdePacote, "+
+                                        "sum(iif(pde.descricao is not null, pm.qtde/pde.conversao, 0.0000)) QtdePacote, "+
                                         "group_concat(pm.mes) mes, "+
                                         'pm.pedido , '+
                                         "group_concat(pm.idElement,',') ListaId,  "+
@@ -251,7 +251,7 @@ def GetCriaCanteiro():
                                         "pde.unidadeBasica	,"+
                                         "pde.pacote,"+
                                         "pde.conversao,	"+
-                                        "sum(pm.qtde *  2000 *  pde.volume * pde.empolamento) volumeTotal,	"+
+                                        "sum(pm.qtde  *  pde.volume * pde.empolamento) volumeTotal,	"+
                                         "pde.base	,"+
                                         "pde.volume,"+
                                         "pde.largura	,"+
