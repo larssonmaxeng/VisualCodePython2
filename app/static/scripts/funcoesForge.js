@@ -446,10 +446,12 @@ function getDataTreeViewModels(){
             })
             }).then(response => response.json())
             .then(function(data){ 
-                var jsonData = [];         
-                //console.log(data);
-
-                data.forEach(function(data1, index) { 
+                var jsonData = data;         
+                console.log(data);
+            
+            
+           
+                /*data.forEach(function(data1, index)  { 
                     var bucket = {};     
                        
                     bucket['text'] = data1["bucketKey"].split("-")[1] ;
@@ -474,9 +476,6 @@ function getDataTreeViewModels(){
                                 if(nivel01['bom']!=undefined){    
                                     console.log(nivel01['bom'])
                                     var nivel02 = (nivel01['bom'])["NIVEL02"];
-                                     
-                                    
-                                    //console.log((nivel01['bom'])["NIVEL01"])
                                     nivel02.forEach(function(nivel2, index) {
                                     //console.log('//for aqui nivel 02');
                                     //console.log(nivel2)
@@ -509,8 +508,8 @@ function getDataTreeViewModels(){
                         bucket['children'] = jsonObjetos;
                         
                         jsonData.push(bucket);
-    
-                    });  
+                           
+                    });*/  
                     //console.log(jsonData); 
                     $('#treeHierarquia').jstree({
                         "core" : {
@@ -557,13 +556,15 @@ function getDataTreeViewModels(){
                           console.log(data.node.data);
                           texto = "";
                           noArvoreSelecionado =data.node.data; 
-                          if(data.node.data['Nivel']==1) texto = data.node.data['objectKey'];
+                          if(data.node.data['Nivel']==-1) texto = data.node.data['MODELO'];
+
+                          if(data.node.data['Nivel']==0) texto = data.node.data['MODELO']+'->'+data.node.data['NIVEL0'];
+                            
+                          if(data.node.data['Nivel']==1) texto = data.node.data['MODELO']+'->'+data.node.data['NIVEL0']+'->'+data.node.data['NIVEL1'];
                           
-                          if(data.node.data['Nivel']==2) texto = data.node.data['objectKey']+'->'+data.node.data['bom']['NIVEL01'];
-                          
-                          if(data.node.data['Nivel']==3) texto = data.node.data['MODELO']+'->'+data.node.data['NIVEL01']+'->'+data.node.data['NIVEL02'];
+                          if(data.node.data['Nivel']==2) texto = data.node.data['MODELO']+'->'+data.node.data['NIVEL0']+'->'+data.node.data['NIVEL01']+'->'+data.node.data['NIVEL02'];
                           document.getElementById("TituloForge").textContent = "BOM - Billing of Material: "+ texto;
-                           if(data.node.data['Nivel']==1){
+                           if(data.node.data['Nivel']==-1){
                            var urn = btoa(data.node.data["objectId"]);
                            urnAberto = urn;
                            
