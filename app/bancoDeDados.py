@@ -62,8 +62,8 @@ def GetCriterios(sheet, nomeDaAba):
 
 def GetListBOM(sheet, nomeDaAba):
     linha = GetLinhaMaxima(nome=nomeDaAba, sheet=sheet)+1
-    planilha = sheet.GetDados(SAMPLE_RANGE_NAME=nomeDaAba+'!B1:E'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
-    df = pd.DataFrame(planilha, columns=[	'MODELO',	'NIVEL01',	'NIVEL02', 'NIVEL00'])
+    planilha = sheet.GetDados(SAMPLE_RANGE_NAME=nomeDaAba+'!B1:G'+str(linha), SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
+    df = pd.DataFrame(planilha, columns=[	'MODELO',	'NIVEL01',	'NIVEL02', 'NIVEL00', 'CHAVEPRIMARIA', 'ExecutadoEm'])
     return df
 
 def GetSubCriterios(sheet):

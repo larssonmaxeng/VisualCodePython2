@@ -49,13 +49,14 @@ class PedidoMaterial(database.db.Model):
   objectId=database.db.Column(database.db.String(100))
   pedidoGuid=database.db.Column(database.db.String(100))
   pedido=database.db.Column(database.db.String(100))
+  nivel00=database.db.Column(database.db.String(100))
   nivel01=database.db.Column(database.db.String(100))
   nivel02=database.db.Column(database.db.String(100))
   idElement=database.db.Column(database.db.Integer)
   urn=database.db.Column(database.db.String(250))
   pedidoId = database.db.Column(database.db.Integer, ForeignKey("pedido.id", name="fk_material_pedido_01"))
   def __init__ (self, descricao,     unid,     qtde,     mes,     objectId,     pedidoGuid,   
-    pedido,     nivel01,     nivel02,     idElement, pedidoId, urn):
+    pedido,     nivel01,     nivel02,     idElement, pedidoId, urn, nivel00):
     self.descricao = descricao
     self.unid=unid
     self.qtde=qtde
@@ -68,6 +69,7 @@ class PedidoMaterial(database.db.Model):
     self.idElement=idElement
     self.urn=urn
     self.pedidoId = pedidoId
+    self.nivel00 = nivel00
 
   def __repr__ (self):
     return self.id

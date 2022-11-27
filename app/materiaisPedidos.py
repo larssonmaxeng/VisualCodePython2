@@ -17,11 +17,11 @@ bp_materialPedidos = Blueprint("materiaisPedidos", __name__, template_folder="te
 def createMaterialPedido():
    
     req = request.get_json()
-    pedido = ''
-    for i in req:
-        pedido = i["pedido"] 
-    database.db.session.execute("delete from pedidoMaterial where pedido = '"+pedido+"'")
-    database.db.session.commit()
+    novo = req[0]["novo"]
+    pedido =  req[0]["pedido"]
+    if novo==0:   
+       database.db.session.execute("delete from pedidoMaterial where pedido = '"+pedido+"'")
+       database.db.session.commit()
     
     for song in req:
         pedido  = tabelas.PedidoMaterial(song['descricao'],
@@ -35,7 +35,8 @@ def createMaterialPedido():
                       song['nivel02'],
                       song['id'], 
                       1,
-                      song['urn'])
+                      song['urn'],
+                      song['nivel00'])
         database.db.session.add(pedido)
         
       

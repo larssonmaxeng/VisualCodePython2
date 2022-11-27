@@ -1345,10 +1345,12 @@ def GetTreeViewModels():
         for item in itens["items"]:
             modelo = item['objectKey']
             m = dfModelos.loc[dfModelos["MODELO"]==modelo]
-            
+            print(m) 
             niveis0 = GetNivel00(dataFrame=m, modelo=modelo)
             vetorNiveis0 = []
+            print(niveis0)
             for nivel0 in niveis0.index:
+                
                 niveis1 = GetNivel01(dataFrame=m, modelo=modelo, NIVEL00=nivel0)
                 vetorNiveis1 = []
                 for nivel1 in niveis1.index:
@@ -1356,7 +1358,7 @@ def GetTreeViewModels():
                     niveis2 = (dfNivel1.loc[dfModelos["NIVEL01"]==nivel1]).groupby("NIVEL02").first()
                     vetorNiveis2 = []
                     for nivel2 in niveis2.index:
-                        vetorNiveis2.append({ "text":nivel2, "data":{"bucket":bucketKey,"objectId":item["objectId"], "MODELO": modelo, "NIVEL0": nivel0, "NIVEL1":nivel1,"NIVEL02":nivel2, "Nivel":2}})
+                        vetorNiveis2.append({ "text":nivel2, "data":{"bucket":bucketKey,"objectId":item["objectId"], "MODELO": modelo, "NIVEL0": nivel0, "NIVEL1":nivel1,"NIVEL2":nivel2, "Nivel":2}})
                     vetorNiveis1.append({"text":nivel1,  "children":vetorNiveis2, "data":{"bucket":bucketKey,"objectId":item["objectId"], "MODELO": modelo, "NIVEL0": nivel0, "NIVEL1":nivel1, "Nivel":1}})
                 vetorNiveis0.append({"text":nivel0, "children":vetorNiveis1,"data":{"bucket":bucketKey,"objectId":item["objectId"], "MODELO":modelo, "NIVEL0":nivel0, "Nivel":0}})
             modelos.append({"text":modelo, "children":vetorNiveis0, "data":{"bucket":bucketKey,"objectId":item["objectId"], "MODELO": modelo, "Nivel":-1}})
@@ -1371,6 +1373,17 @@ def GetBucket(token):
     res = requests.get("https://developer.api.autodesk.com/oss/v2/buckets",  headers=header)
     buckets = res.json()
     return buckets
+
+
+
+#inutilzado
+@app.route("/GetEstruturaBOM",  methods=["GET", "POST", "PUT"])
+def GetEstruturaBOM():
+    sheet = googleSheet.GoogleSheet()
+    dataFrame = bancoDeDados.GetListBOM(nomeDaAba="EstruturaBOM",sheet=sheet)
+    res = make_response(dataFrame.to_json(orient='records'))
+    return res
+#inutilzado
 @app.route("/GetListBOM",  methods=["GET", "POST", "PUT"])
 def GetListBOM():
     sheet = googleSheet.GoogleSheet()
