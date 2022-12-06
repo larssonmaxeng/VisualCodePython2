@@ -244,18 +244,18 @@ def GetCriaCanteiro():
     mp = database.db.session.execute( "select pm.descricao, "+
                                         "pde.pacote, "+
                                         "sum(iif(pde.descricao is not null, pm.qtde/pde.conversao, 0.0000)) QtdePacote, "+
-                                        "group_concat(pm.mes) mes, "+
-                                        'pm.pedido , '+
+                                        "group_concat(pm.mes,', ') mes, "+
+                                        "pm.pedido , "+
                                         "group_concat(pm.idElement,',') ListaId,  "+
                                         "group_concat(pm.urn ,',') ListaUrn,"+
                                         "pde.unidadeBasica	,"+
                                         "pde.pacote,"+
                                         "pde.conversao,	"+
                                         "sum(pm.qtde  *  pde.volume * pde.empolamento) volumeTotal,	"+
-                                        "pde.base	,"+
+                                        "pde.base,"+
                                         "pde.volume,"+
-                                        "pde.largura	,"+
-                                        "pde.altura	,"+
+                                        "pde.largura 	,"+
+                                        "pde.altura 	,"+
                                         "pde.formato,"	+
                                         "pde.empolamento,	"+
                                         "pde.preco,	"+
@@ -268,8 +268,20 @@ def GetCriaCanteiro():
                                             "end VolumeMaximo    "+
                                                 "from pedidoMaterial pm "+
                                                 "left join PacotesDeEntrega pde on pm.descricao = pde.descricao "+
-                                                " where pm.pedido = '"+req['pedido']+"'" +
-                                                " group by pm.descricao, pde.pacote,  pm.pedido")
+                                                " where pm.pedido = '"+req['pedido']+"'   and pm.descricao is not null and pm.descricao <>'' and pm.descricao <>'Inexistente' " +
+                                                " group by pm.descricao,  "+
+                                                "    pde.pacote,         "+
+                                                  "   pde.unidadeBasica	, "+
+                                                  "   pde.pacote, "+
+                                                  "   pde.conversao,	 "+
+                                                  "   pde.base	, "+
+                                                  "   pde.volume, "+
+                                                   "  pde.largura	, "+
+                                                   "  pde.altura	, "+
+                                                   "  pde.formato,	 "+
+                                                   "  pde.empolamento,	 "+
+                                                    " pde.preco,	 "+
+                                                    " pde.areaBaseMaxima")
         #" where pm.pedido = '"+req['pedido']+"'"+
       # "  group by pm.descricao, pde.pacote,  pm.pedido")
     try:
@@ -287,13 +299,14 @@ def GetCriaCanteiro():
        for p in mp:
         qtdeDePacotes = ceil(p.QtdePacote)#417
         qtdeDeInsumoNoVolumeMaximo = int(p.VolumeMaximo //(p.volume*p.empolamento))
-        volumeReal = qtdeDeInsumoNoVolumeMaximo*p.volume*p.empolamento
-        alturaReal = volumeReal/p.areaBaseMaxima   
+        volumeRealMaximo = qtdeDeInsumoNoVolumeMaximo*p.volume*p.empolamento
+        volumeReal = qtdeDePacotes * p.volume*p.empolamento
+        alturaRealMaxima = volumeRealMaximo/p.areaBaseMaxima   
         qtdePacotesParaInserir = ceil(p.QtdePacote)#41
-        volumeMaximo = volumeReal
-        volumeMaterial = qtdeDePacotes * (p.volume*p.empolamento)
-        inteiro =int(volumeMaterial//volumeMaximo )
-        parteFracionada= volumeMaterial/volumeMaximo-inteiro
+        volumeTotalDoMaterial = qtdeDePacotes * (p.volume*p.empolamento)
+        
+        inteiro =int(volumeTotalDoMaterial//volumeRealMaximo )
+        parteFracionada= volumeTotalDoMaterial/volumeRealMaximo-inteiro
         i = 0
         while i<inteiro:
             i=i+1
@@ -301,14 +314,14 @@ def GetCriaCanteiro():
             dadosCanteiro = ObjetoDeTransferencia.DadosCanteiro(pedido=p.pedido, 
                                                                 material=p.descricao,
                                                                 area=0, 
-                                                                volume=volumeMaximo, 
+                                                                volume=volumeRealMaximo, 
                                                                 base=p.base, 
                                                                 largura=p.largura, 
                                                                 raio=p.base,
                                                                 mesesAplicacao=p.mes, 
                                                                 formato=p.formato, 
                                                                 ponto=pontoDeOrigem,
-                                                                altura= alturaReal,
+                                                                altura= alturaRealMaxima,
                                                                 unidade = p.pacote,
                                                                 qtde = qtdeDeInsumoNoVolumeMaximo)       
             match p.formato:
