@@ -1,3 +1,4 @@
+from math import ceil
 from sklearn.datasets import load_iris
 import base64
 from email.encoders import encode_base64
@@ -5,7 +6,7 @@ import json
 from json import *
 from urllib import response
 from app import app
-from flask import render_template, redirect, jsonify, make_response
+from flask import render_template, redirect, jsonify, make_response, send_file
 import matplotlib.pyplot as mlt
 import numpy as np
 import skfuzzy as fuzz
@@ -16,18 +17,24 @@ from app import funcoes
 import requests
 import pandas as pd
 import string
-import os
+from app import database 
+from flask_migrate import Migrate
+from app import materiaisPedidos
 
 import io
 
 from app import googleSheet
 from app import bancoDeDados
-
+O = 0., 0., 0.
+X = 1., 0., 0.
+Y = 0., 1., 0.
+Z = 0., 0., 1.
 @app.route('/')
 @app.route('/index')
 def index():
     nome = "dissertação2"
     criterio = {"nome":"Preço", "nota":"Médio"}
+    
     medio = 'médio'
     muitoAlto = 'muito alto'
     alto = 'alto'
@@ -87,8 +94,6 @@ def index():
     figura.append(encodes_img_data)
     #print(nome)
     return render_template('index.html', nome=nome, criterio=criterio, fig = figura )
-
-
 
 @app.route('/login')
 def login():
@@ -1056,7 +1061,7 @@ def GetItensRota():
     return itens
 @app.route("/GetTreeViewModels",  methods=["GET", "POST", "PUT"])
 def GetTreeViewModels():
-    treeViewModels = []
+    
     
     token = access_tokenTeste()
     
@@ -1067,40 +1072,64 @@ def GetTreeViewModels():
     buketsItem = GetBucket(jtoken)
     ##print(buketsItem["items"])
     #for buketItem in buketsItem:
-    modelosBom = GetListBOM()
+    sheet = googleSheet.GoogleSheet()
+    
+    dfModelos = bancoDeDados.GetListBOM(nomeDaAba="EstruturaBOM",sheet=sheet)
+    treeViewModels = []
     #print(modelosBom)
     for bucket in buketsItem["items"]:
         
         ##print(bucket["bucketKey"])
-        bucket = bucket["bucketKey"]   
+        bucketKey = bucket["bucketKey"]
+        textBucket = bucketKey.split('-')[1]   
         header= {"Authorization": "Bearer "+jtoken}   
-        res = requests.get("https://developer.api.autodesk.com/oss/v2/buckets/"+bucket+"/objects",  headers=header)
+        res = requests.get("https://developer.api.autodesk.com/oss/v2/buckets/"+bucketKey+"/objects",  headers=header)
         itens = res.json()
         ##print(itens)
         modelos = []
         i = 0
         for item in itens["items"]:
-            listBom = []
-            for itemBom in modelosBom:
-                """#print(type(itemBom).__name__)
-                #print(str(i)+'********************Item bOM*******************')
-                #print(itemBom)
-                #print(itemBom["MODELO"]) """
-                i=i+1
-                if(itemBom["MODELO"]==item["objectKey"]):
-                    listBom.append({"bucketKey":bucket, "objectId":item["objectId"], "objectKey":item["objectKey"], "Nivel":2, "bom":itemBom})
-            modelos.append({"bucketKey":bucket, "objectId":item["objectId"], "objectKey":item["objectKey"], "Nivel":1, "ListBom": listBom})           
-        treeViewModels.append({"bucketKey":bucket, "Nivel":0, "objetos":modelos })    
+            modelo = item['objectKey']
+            m = dfModelos.loc[dfModelos["MODELO"]==modelo]
+            print(m) 
+            niveis0 = GetNivel00(dataFrame=m, modelo=modelo)
+            vetorNiveis0 = []
+            print(niveis0)
+            for nivel0 in niveis0.index:
+                
+                niveis1 = GetNivel01(dataFrame=m, modelo=modelo, NIVEL00=nivel0)
+                vetorNiveis1 = []
+                for nivel1 in niveis1.index:
+                    dfNivel1 = m.loc[(m["NIVEL01"]==nivel1) & (m["NIVEL00"]==nivel0)]
+                    niveis2 = (dfNivel1.loc[dfModelos["NIVEL01"]==nivel1]).groupby("NIVEL02").first()
+                    vetorNiveis2 = []
+                    for nivel2 in niveis2.index:
+                        vetorNiveis2.append({ "text":nivel2, "data":{"bucket":bucketKey,"objectId":item["objectId"], "MODELO": modelo, "NIVEL0": nivel0, "NIVEL1":nivel1,"NIVEL2":nivel2, "Nivel":2}})
+                    vetorNiveis1.append({"text":nivel1,  "children":vetorNiveis2, "data":{"bucket":bucketKey,"objectId":item["objectId"], "MODELO": modelo, "NIVEL0": nivel0, "NIVEL1":nivel1, "Nivel":1}})
+                vetorNiveis0.append({"text":nivel0, "children":vetorNiveis1,"data":{"bucket":bucketKey,"objectId":item["objectId"], "MODELO":modelo, "NIVEL0":nivel0, "Nivel":0}})
+            modelos.append({"text":modelo, "children":vetorNiveis0, "data":{"bucket":bucketKey,"objectId":item["objectId"], "MODELO": modelo, "Nivel":-1}})
+        treeViewModels.append({"text":textBucket, "children":modelos, "data":{"bucket":bucketKey, "Nivel":-2} })
+        
     criterio = json.dumps(treeViewModels)
     res = make_response(criterio)
-    ##print(criterio)
-    
+    ##print(criterio)  
     return res
 def GetBucket(token):
     header= {"Authorization": "Bearer "+token}     
     res = requests.get("https://developer.api.autodesk.com/oss/v2/buckets",  headers=header)
     buckets = res.json()
     return buckets
+
+
+
+#inutilzado
+@app.route("/GetEstruturaBOM",  methods=["GET", "POST", "PUT"])
+def GetEstruturaBOM():
+    sheet = googleSheet.GoogleSheet()
+    dataFrame = bancoDeDados.GetListBOM(nomeDaAba="EstruturaBOM",sheet=sheet)
+    res = make_response(dataFrame.to_json(orient='records'))
+    return res
+#inutilzado
 @app.route("/GetListBOM",  methods=["GET", "POST", "PUT"])
 def GetListBOM():
     sheet = googleSheet.GoogleSheet()
@@ -1115,38 +1144,47 @@ def GetListBOM():
     ##print(Modelos)
 
     vetorModelos = []
-    vetorNiveis1 = []
+    
     for modelo in Modelos.index:
         m = dataFrame.loc[dataFrame["MODELO"]==modelo]
-        ##print('***************Modelo filtrado**************************')
-       # #print(m)
-        niveis1 = GetNivel01(dataFrame=m, modelo=modelo)
-        
-        for nivel1 in niveis1.index:
-            ##print('***************Modelo filtrado nivel 1**************************')
-            dfNivel1 = m.loc[m["NIVEL01"]==nivel1]
-            ###print(dfNivel1)
-            niveis2 = (dfNivel1.loc[dataFrame["NIVEL01"]==nivel1]).groupby("NIVEL02").first()
-           # #print('***************Modelo filtrado nivel 2**************************')
-            ##print(niveis2) 
-            vetorNiveis2 = []
-            for nivel2 in niveis2.index:
-                vetorNiveis2.append({"MODELO":modelo, "NIVEL01":nivel1, "NIVEL02":nivel2, "Nivel":3})
-            vetorNiveis1.append({"MODELO":modelo, "NIVEL01":nivel1, "NIVEL02":vetorNiveis2})
-        vetorModelos.append({"MODELO":modelo, "NIVEL01":vetorNiveis1})
+        print('***************Modelo filtrado**************************')
+        print(m)
+        niveis0 = GetNivel00(dataFrame=m, modelo=modelo)
+        vetorNiveis0 = []
+        for nivel0 in niveis0.index:
+            niveis1 = GetNivel01(dataFrame=m, modelo=modelo, NIVEL00=nivel0)
+            vetorNiveis1 = []
+            for nivel1 in niveis1.index:
+                ##print('***************Modelo filtrado nivel 1**************************')
+                dfNivel1 = m.loc[(m["NIVEL01"]==nivel1) & (m["NIVEL00"]==nivel0)]
+                ###print(dfNivel1)
+                niveis2 = (dfNivel1.loc[dataFrame["NIVEL01"]==nivel1]).groupby("NIVEL02").first()
+            # #print('***************Modelo filtrado nivel 2**************************')
+                ##print(niveis2) 
+                vetorNiveis2 = []
+                for nivel2 in niveis2.index:
+                    vetorNiveis2.append({ "text":nivel2, "data":{"MODELO": modelo, "NIVEL0": nivel0, "NIVEL1":nivel1,"NIVEL02":nivel2}})
+                vetorNiveis1.append({ "text":nivel1,  "children":vetorNiveis2, "data":{"MODELO": modelo, "NIVEL0": nivel0, "NIVEL1":nivel1}})               
+        vetorNiveis0.append({"text":nivel0, "children":vetorNiveis1,"data":{"MODELO": modelo, "NIVEL0": nivel0}})
+    vetorModelos.append({"text":modelo, "children":vetorNiveis0})
     #print(vetorNiveis1)        
-    
-    return vetorNiveis1
+    return json.dumps(vetorModelos)
     
 def GetModelos(dataFrame):
     df = (dataFrame.filter(items=["MODELO"])).groupby(["MODELO"]).first()
     return df
     
-def GetNivel01(dataFrame, modelo):
-    df = (dataFrame.loc[dataFrame["MODELO"]==modelo]).groupby("NIVEL01").first()
+def GetNivel01(dataFrame, modelo, NIVEL00):
+    df = (dataFrame.loc[(dataFrame["MODELO"]==modelo) & 
+                        (dataFrame["NIVEL00"]==NIVEL00)]).groupby("NIVEL01").first()
    # #print('******************GetMNivel01*********************')
     ##print(df)
     return df    
+def GetNivel00(dataFrame, modelo):
+    df = (dataFrame.loc[dataFrame["MODELO"]==modelo]).groupby("NIVEL00").first()
+   # #print('******************GetMNivel01*********************')
+    ##print(df)
+    return df  
 @app.route("/GetTreeViewPedidos",  methods=["GET", "POST", "PUT"])
 def GetTreeViewPedidos():
 

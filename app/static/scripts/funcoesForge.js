@@ -21,9 +21,14 @@ var noArvoreSelecionado;
 var noArvoreSelecionadoMaterialPedido;
 var dadosModelo;
 var listaDeCores = [];
+var vetorCategoriasAnalisadas = ['Revit Acessórios do tubo','Revit Dispositivos de segurança',
+      'Revit Modelos genéricos','Revit Peças hidrossanitárias', 'Revit Tubulação', 'Revit Conexões de tubo'];
+   
+
 var listaOriginal = [];
 var urnAberto;
 var filtroPivot;
+var jsonCronograma;
 $(document).ready(function () {
     console.log("foi?")
    
@@ -31,7 +36,7 @@ $(document).ready(function () {
    
 
     j = 0;
-    while (j<30){
+    while (j<36){
         dia.setMonth(dia.getMonth() + 1 );
         j = j+1;
         
@@ -55,6 +60,21 @@ $(document).ready(function () {
       document.getElementById("abaHierarquiBOMButton").click();
       document.getElementById("dadosBOMButton").click();
       "use strict";
+     var your_data = {}
+      fetch(`${window.origin}/GetEstruturaBOM`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(your_data),
+        cache: "no-cache",
+        headers: new Headers({
+            "content-type": "application/json"
+        })
+        }).then(response => response.json())
+        .then(function(data){ 
+            jsonCronograma = data;         
+            console.log(data);
+        });
+
       //$("#grid").remove();
       
       //$("#divGridMaterial").prepend('<table id="grid"></table>');
@@ -443,10 +463,12 @@ function getDataTreeViewModels(){
             })
             }).then(response => response.json())
             .then(function(data){ 
-                var jsonData = [];         
-                //console.log(data);
-
-                data.forEach(function(data1, index) { 
+                var jsonData = data;         
+                console.log(data);
+            
+            
+           
+                /*data.forEach(function(data1, index)  { 
                     var bucket = {};     
                        
                     bucket['text'] = data1["bucketKey"].split("-")[1] ;
@@ -471,9 +493,6 @@ function getDataTreeViewModels(){
                                 if(nivel01['bom']!=undefined){    
                                     console.log(nivel01['bom'])
                                     var nivel02 = (nivel01['bom'])["NIVEL02"];
-                                     
-                                    
-                                    //console.log((nivel01['bom'])["NIVEL01"])
                                     nivel02.forEach(function(nivel2, index) {
                                     //console.log('//for aqui nivel 02');
                                     //console.log(nivel2)
@@ -506,8 +525,8 @@ function getDataTreeViewModels(){
                         bucket['children'] = jsonObjetos;
                         
                         jsonData.push(bucket);
-    
-                    });  
+                           
+                    });*/  
                     //console.log(jsonData); 
                     $('#treeHierarquia').jstree({
                         "core" : {
@@ -554,13 +573,15 @@ function getDataTreeViewModels(){
                           console.log(data.node.data);
                           texto = "";
                           noArvoreSelecionado =data.node.data; 
-                          if(data.node.data['Nivel']==1) texto = data.node.data['objectKey'];
+                          if(data.node.data['Nivel']==-1) texto = data.node.data['MODELO'];
+
+                          if(data.node.data['Nivel']==0) texto = data.node.data['MODELO']+'->'+data.node.data['NIVEL0'];
+                            
+                          if(data.node.data['Nivel']==1) texto = data.node.data['MODELO']+'->'+data.node.data['NIVEL0']+'->'+data.node.data['NIVEL1'];
                           
-                          if(data.node.data['Nivel']==2) texto = data.node.data['objectKey']+'->'+data.node.data['bom']['NIVEL01'];
-                          
-                          if(data.node.data['Nivel']==3) texto = data.node.data['MODELO']+'->'+data.node.data['NIVEL01']+'->'+data.node.data['NIVEL02'];
+                          if(data.node.data['Nivel']==2) texto = data.node.data['MODELO']+'->'+data.node.data['NIVEL0']+'->'+data.node.data['NIVEL01']+'->'+data.node.data['NIVEL02'];
                           document.getElementById("TituloForge").textContent = "BOM - Billing of Material: "+ texto;
-                           if(data.node.data['Nivel']==1){
+                           if(data.node.data['Nivel']==-1){
                            var urn = btoa(data.node.data["objectId"]);
                            urnAberto = urn;
                            
@@ -759,25 +780,59 @@ function GetIdProp(objeto, campoProcurado){
 
 }
 function GetCalculaQtde(noSelecionado, element){
-    vetorCategoriasAnalisadas = ['Revit Peças hidrossanitárias', 'Revit Tubulação', 'Revit Conexões de tubo'];
-    //console.log(noSelecionado);
-    if(noSelecionado.Nivel==1){
+     //console.log(element.properties[CategoriaId].displayValue);
+    if(noSelecionado.Nivel==0){
+
+        return (element.properties[nivel00].displayValue==(noArvoreSelecionado["NIVEL0"]))&
+                (vetorCategoriasAnalisadas.indexOf(element.properties[CategoriaId].displayValue)!=-1);
+    }
+    if(noSelecionado.Nivel==-1){
 
         return (vetorCategoriasAnalisadas.indexOf(element.properties[CategoriaId].displayValue)!=-1);
     }
-    if(noSelecionado.Nivel==2){
-        return (element.properties[pavimentoId].displayValue==(noArvoreSelecionado['bom'])["NIVEL01"])&
-               (vetorCategoriasAnalisadas.indexOf(element.properties[CategoriaId].displayValue)!=-1) ;
+    
+    if(noSelecionado.Nivel==1){
+        return (element.properties[nivel00].displayValue==(noArvoreSelecionado["NIVEL0"]))&
+               (element.properties[nivel01].displayValue==(noArvoreSelecionado["NIVEL1"]))&
+               (vetorCategoriasAnalisadas.indexOf(element.properties[CategoriaId].displayValue)!=-1);
         
     }
-    if(noSelecionado.Nivel==3){
+    if(noSelecionado.Nivel==2){
         
-        return (element.properties[localizacaoId].displayValue==noArvoreSelecionado["NIVEL02"])&
-               (element.properties[pavimentoId].displayValue==noArvoreSelecionado["NIVEL01"])&
+        return (element.properties[nivel00].displayValue==(noArvoreSelecionado["NIVEL0"]))&
+               (element.properties[nivel01].displayValue==(noArvoreSelecionado["NIVEL1"]))&
+               (element.properties[nivel02].displayValue==(noArvoreSelecionado["NIVEL2"]))&
                (vetorCategoriasAnalisadas.indexOf(element.properties[CategoriaId].displayValue)!=-1) ;
     }
     return false;
     
+}
+function fnGerarPedidoDoIFC(){
+    var data = $('#treePedidos').jstree().get_selected(true)[0];
+    var jsonData = {};
+    jsonData["pedido"] = data.data["pedido"];
+    var your_data =  jsonData;
+    fetch(`${window.origin}/GetCriaCanteiro`, {
+        method: "POST",
+        credentials: "include",
+        body: JSON.stringify(your_data),
+        cache: "no-cache",
+        headers: new Headers({
+            "content-type": "application/json"
+        })
+        }).then(res=>res.blob())
+        .then(res=>{
+            
+            var a = document.createElement('a');
+            a.setAttribute('download', 'Teste.ifc');
+            const href = URL.createObjectURL(res);
+            a.href = href;
+            a.setAttribute('target', '_blank');
+            a.click();
+            URL.revokeObjectURL(href);
+        }).catch(err=>console.log(err));
+    
+   
 }
 function GetPropriedadesVisiveis(){
     
@@ -816,27 +871,26 @@ function GetPropriedadesVisiveis(){
     if(noArvoreSelecionado!=undefined){
         viewer.search('Floor',function(dbIds){
         
-            viewer.model.getBulkProperties(dbIds, ['Category', 'ExecutarEm', 'Pavimento', 'Localizacao','Comentários', 'HID-Descrição',  'Comprimento'],
+            viewer.model.getBulkProperties(dbIds, ['Category','Descrição do Insumo', 'ExecutarEm', 'Nivel00','Nivel01', 'Nivel02','Unidade', 'Comprimento'],
             function(elements){
                 var v = [];
                 dadosModelo = [];
                 categoriasListadas = [];
                 for(var i=0; i<elements.length; i++){
-                    //console.log('-------------------------------------------------');
-
-                        
-                    localizacaoId = GetIdProp(elements[i],'Localizacao');
-                    unidId = GetIdProp(elements[i],'Comentários');
-                    pavimentoId = GetIdProp(elements[i],'Pavimento');
+                    nivel01 = GetIdProp(elements[i],'Nivel01');
+                    nivel02 = GetIdProp(elements[i],'Nivel02');
+                    
+                    unidId = GetIdProp(elements[i],'Unidade');
+                    nivel00 = GetIdProp(elements[i],'Nivel00');
                     comprimentoId = GetIdProp(elements[i],'Comprimento');
-                    hidDescricao = GetIdProp(elements[i],'HID-Descrição');
-                    ExecutarEmId = GetIdProp(elements[i],'ExecutarEm');
+                    hidDescricao = GetIdProp(elements[i],'Descrição do Insumo');
+                    //ExecutarEmId = GetIdProp(elements[i],'ExecutarEm');
                     // ifcGuidId = GetIdProp(elements[i],'IfcGUID');
                     CategoriaId = GetIdProp(elements[i],'Category');
                       
-                            if((localizacaoId!=undefined)&
+                            if((nivel01!=undefined)&
                                (unidId!=undefined)&
-                               (pavimentoId!=undefined)&
+                               (nivel00!=undefined)&
                                (hidDescricao!=undefined)){
                                 if(GetCalculaQtde(noArvoreSelecionado, elements[i])){
                                     
@@ -845,20 +899,31 @@ function GetPropriedadesVisiveis(){
                                     dadoModelo['id']=elements[i].dbId
                                     dadoModelo['descricao'] = elements[i].properties[hidDescricao].displayValue;
                                     dadoModelo['unid'] = elements[i].properties[unidId].displayValue;
-                                    executarEm = elements[i].properties[ExecutarEmId].displayValue;
+                                    if(nivel00>=0) dadoModelo['nivel0'] =elements[i].properties[nivel00].displayValue;        
+                                    if(nivel01>=0) dadoModelo['nivel1'] =elements[i].properties[nivel01].displayValue;
+                                    if(nivel02>=0) dadoModelo['nivel2'] =elements[i].properties[nivel02].displayValue;        
                                     
-                                    if((executarEm!=undefined)&
-                                       (executarEm!="")&
-                                       (executarEm!='') ){
-                                        var arrDia = executarEm.split('/');
-                                        var stringFormatada = arrDia[2] + '-' + arrDia[1] + '-' +arrDia[0];  
-                                        dadoModelo['mes'] = /*new Date(*/stringFormatada /*)*/;
-                                       
-                                    }else{
-                                        //console.log(executarEm);
-                                        
+                                    executarEm = jsonCronograma.find(o => 
+                                        (String(o.MODELO) === noArvoreSelecionado['MODELO']) & 
+                                        (String(o.NIVEL00) === dadoModelo['nivel0']) &
+                                        (String(o.NIVEL01) === dadoModelo['nivel1']) &
+                                        (String(o.NIVEL02) === dadoModelo['nivel2']));
+                                   
+                                    
+                                    if(executarEm!=undefined){
+                                        if((executarEm.ExecutadoEm!="") ){
+                                            var arrDia = executarEm.ExecutadoEm.split('/');
+                                            var stringFormatada = arrDia[2] + '-' + arrDia[1] + '-01';// +arrDia[0];  
+                                            dadoModelo['mes'] = /*new Date(*/stringFormatada /*)*/;
+                                           
+                                            }else{
+                                                dadoModelo['mes'] ="2022-01-01";
+                                              }
+                                    }
+                                    else{
                                         dadoModelo['mes'] ="2022-01-01";
                                     }
+                                    
                                     if(elements[i].properties[unidId].displayValue=='m'){
                                        try{
                                         dadoModelo['qtde'] = elements[i].properties[comprimentoId].displayValue;
@@ -869,8 +934,6 @@ function GetPropriedadesVisiveis(){
                                     } else{
                                         dadoModelo['qtde'] = 1;        
                                     }
-                                    if(pavimentoId>=0) dadoModelo['nivel01'] =elements[i].properties[pavimentoId].displayValue;        
-                                    if(localizacaoId>=0) dadoModelo['nivel02'] =elements[i].properties[pavimentoId].displayValue;        
                                     dadoModelo['modelo'] =GetObjectId()[0];
                                    
                                     dadosModelo.push(dadoModelo);
@@ -910,9 +973,7 @@ function GetPropriedadesVisiveis(){
                         }
                     });
                     
-                      
-                     
-                    
+                 
                    
                 resumo = [];
 
@@ -1059,55 +1120,60 @@ function GetEelemnets(){
     $("#tabelaDeCores").remove();
       
     mesesUsado =[];
-    vetorCategoriasAnalisadas = ['Revit Peças hidrossanitárias', 'Revit Tubulação', 'Revit Conexões de tubo'];
+    
     if(noArvoreSelecionado!=undefined){
         viewer.search('Floor',function(dbIds){
         
-            
-            viewer.model.getBulkProperties(dbIds, ['Category', 'ExecutarEm', 'Pavimento', 'Localizacao','Comentários', 'HID-Descrição',  'Comprimento'],
-            function(elements){
+            viewer.model.getBulkProperties(dbIds, ['Category','Descrição do Insumo', 'ExecutarEm', 'Nivel00','Nivel01', 'Nivel02','Unidade', 'Comprimento'],
+             function(elements){
                 var v = [];
                
                
                
                 for(var i=0; i<elements.length; i++){
-                    //console.log('-------------------------------------------------');
-                    //console.log(elements[i]);
-                    /*try
-                    {*/
-                        if(noArvoreSelecionado["NIVEL02"]!=undefined){
-                            localizacaoId = GetIdProp(elements[i],'Localizacao');
-                            unidId = GetIdProp(elements[i],'Comentários');
-                            pavimentoId = GetIdProp(elements[i],'Pavimento');
+
+                       if(vetorCategoriasAnalisadas.indexOf(elements[i].properties[CategoriaId].displayValue)!=-1){
+                            nivel01 = GetIdProp(elements[i],'Nivel01');
+                            unidId = GetIdProp(elements[i],'Unidade');
+                            nivel02 = GetIdProp(elements[i],'Nivel02');
+                            nivel00 = GetIdProp(elements[i],'Nivel00');
                             comprimentoId = GetIdProp(elements[i],'Comprimento');
-                            hidDescricao = GetIdProp(elements[i],'HID-Descrição');
-                            ExecutarEmId = GetIdProp(elements[i],'ExecutarEm');
+                            hidDescricao = GetIdProp(elements[i],'Descrição do Insumo');
                             // ifcGuidId = GetIdProp(elements[i],'IfcGUID');
                             CategoriaId = GetIdProp(elements[i],'Category');
-                            if((localizacaoId!=undefined)&
+                            if((nivel01!=undefined)&
                                (unidId!=undefined)&
-                               (pavimentoId!=undefined)&
+                               (nivel00!=undefined)&
                                (hidDescricao!=undefined)){
-                                if((elements[i].properties[localizacaoId].displayValue==noArvoreSelecionado["NIVEL02"])&
-                                (elements[i].properties[pavimentoId].displayValue==noArvoreSelecionado["NIVEL01"])&
-                                (vetorCategoriasAnalisadas.indexOf(elements[i].properties[CategoriaId].displayValue)!=-1)){
+                                
                                    
                                     v.push(elements[i].dbId);
                                     var dadoModelo = {};
                                     dadoModelo['descricao'] = elements[i].properties[hidDescricao].displayValue;
                                     dadoModelo['unid'] = elements[i].properties[unidId].displayValue;
-                                    executarEm = elements[i].properties[ExecutarEmId].displayValue;
+                                    if(nivel00>=0) dadoModelo['nivel0'] =elements[i].properties[nivel00].displayValue;        
+                                    if(nivel01>=0) dadoModelo['nivel1'] =elements[i].properties[nivel01].displayValue;
+                                    if(nivel02>=0) dadoModelo['nivel2'] =elements[i].properties[nivel02].displayValue;      
                                     
-                                    if((executarEm!=undefined)&
-                                       (executarEm!="")&
-                                       (executarEm!='') ){
-                                        var arrDia = executarEm.split('/');
-                                        var stringFormatada = arrDia[2] + '-' + arrDia[1] + '-' +arrDia[0];  
-                                        dadoModelo['mes'] = /*new Date(*/stringFormatada /*)*/;
-                                       
-                                    }else{
-                                        //console.log(executarEm);
-                                        
+                                    
+                                    executarEm = jsonCronograma.find(o => 
+                                        (String(o.MODELO) === noArvoreSelecionado['MODELO']) & 
+                                        (String(o.NIVEL00) === dadoModelo['nivel0']) &
+                                        (String(o.NIVEL01) === dadoModelo['nivel1']) &
+                                        (String(o.NIVEL02) === dadoModelo['nivel2']));
+                                   
+                                    
+                                    if(executarEm!=undefined){
+                                        if((executarEm.ExecutadoEm!="") ){
+                                            var arrDia = executarEm.ExecutadoEm.split('/');
+                                            var stringFormatada = arrDia[2] + '-' + arrDia[1] + '-01';// +arrDia[0];  
+                                            dadoModelo['mes'] = /*new Date(*/stringFormatada /*)*/;
+                                           
+                                            }else{
+                                                dadoModelo['mes'] ="2022-01-01";
+                                              }
+                                    }
+                                    else{
                                         dadoModelo['mes'] ="2022-01-01";
                                     }
                                    
@@ -1116,7 +1182,12 @@ function GetEelemnets(){
                                     if(cor!=undefined){
                                         
                                         viewer.setThemingColor(elements[i].dbId,cor.cor);
-                                        mesUsado = mesesUsado.find(o => String(o.mes) === String(dadoModelo['mes']));
+
+                                        var arrDia = dadoModelo['mes'].split('-');
+                                        var stringFormatada1 = arrDia[0] + '-' + arrDia[1] + '-01';  
+                                        
+                                        
+                                        mesUsado = mesesUsado.find(o => String(o.mes) === String(stringFormatada1));
                                         if(mesUsado==undefined){
                                             mesesUsado.push(cor);
                                         }    
@@ -1124,7 +1195,7 @@ function GetEelemnets(){
 
                                 }
                             }
-                        }
+                        
 
                    
                 };
@@ -1177,7 +1248,7 @@ function GetEelemnets(){
     }  
     return (S4() + S4() + "-" + S4() + "-4" + S4().substr(0,3) + "-" + S4() + "-" + S4() + S4() + S4()).toLowerCase();  
  }  
-  function GetFilterPivot (){
+  function GetFilterPivot (novo){
  
    
     /*fetch(`${window.origin}/materiaisPedidos/GetMaterialPedido`, {
@@ -1200,12 +1271,11 @@ function GetEelemnets(){
     listaParaPedir = [];
     objectId = GetObjectId();
     
-    console.log(filtroPivot)
+    var x = filtroPivot["inclusions"]['mes'];
     console.log(filtroPivot["inclusions"])
     if (name != null) {
-      if((filtroPivot!=undefined)&
-         (filtroPivot["inclusions"]!=undefined)&
-         (filtroPivot["inclusions"]!={})){
+      if(filtroPivot!=undefined) 
+         if(filtroPivot["inclusions"]['mes']!=undefined){
           filtroPivot["inclusions"]['mes'].forEach(function(inclusao, index){
                 console.log(inclusao)
                 var reg = listaOriginal.filter(function(entry){
@@ -1220,11 +1290,12 @@ function GetEelemnets(){
                 itemPedido["objectId"] = objectId[0];
                 itemPedido["pedidoGuid"] = pedidoId;
                 itemPedido["pedido"] = name;
-                itemPedido["nivel01"] = elemento["nivel01"];
-                itemPedido["nivel02"] = elemento["nivel02"];
+                itemPedido["nivel00"] = elemento["nivel0"];
+                itemPedido["nivel01"] = elemento["nivel1"];
+                itemPedido["nivel02"] = elemento["nivel2"];
                 itemPedido["id"] = elemento["id"];
                 itemPedido["urn"] = urnAberto;
-                
+                itemPedido["novo"] = novo;
                 listaParaPedir.push(itemPedido);
                 
                 
@@ -1241,10 +1312,12 @@ function GetEelemnets(){
             itemPedido["objectId"] = objectId[0];
             itemPedido["pedidoGuid"] = pedidoId;
             itemPedido["pedido"] = name;
-            itemPedido["nivel01"] = elemento["nivel01"];
-            itemPedido["nivel02"] = elemento["nivel02"];
+            itemPedido["nivel00"] = elemento["nivel0"];
+            itemPedido["nivel01"] = elemento["nivel1"];
+            itemPedido["nivel02"] = elemento["nivel2"];
             itemPedido["id"] = elemento["id"];
             itemPedido["urn"] = urnAberto;
+            itemPedido["novo"] = novo;
             listaParaPedir.push(itemPedido);
 
             });
@@ -1270,19 +1343,23 @@ function GetEelemnets(){
    
   }
   function GetObjectId(){
-    vetorCategoriasAnalisadas = ['Revit Peças hidrossanitárias', 'Revit Tubulação', 'Revit Conexões de tubo'];
     //console.log(noSelecionado);
-    if(noArvoreSelecionado.Nivel==1){
+    
+    if(noArvoreSelecionado.Nivel==-1){
 
-        return [noArvoreSelecionado['objectKey'], '','' ]
+        return [noArvoreSelecionado['MODELO'], '','', '' ]
     }
-    if(noArvoreSelecionado.Nivel==2){
-        return [(noArvoreSelecionado['bom'])['MODELO'], (noArvoreSelecionado['bom'])["NIVEL01"],'']
+    if(noArvoreSelecionado.Nivel==0){
+
+        return [noArvoreSelecionado['MODELO'], noArvoreSelecionado['NIVEL0'],'', '' ]
+    }
+    if(noArvoreSelecionado.Nivel==1){
+        return [noArvoreSelecionado['MODELO'], noArvoreSelecionado['NIVEL0'],noArvoreSelecionado['NIVEL1'], '' ]
         
     }
-    if(noArvoreSelecionado.Nivel==3){
-        return [noArvoreSelecionado['MODELO'], noArvoreSelecionado["NIVEL01"],noArvoreSelecionado["NIVEL02"]]
+    if(noArvoreSelecionado.Nivel==2){
+        return [noArvoreSelecionado['MODELO'], noArvoreSelecionado['NIVEL0'],noArvoreSelecionado['NIVEL1'], noArvoreSelecionado['NIVEL2'] ]
     }
-    return ['','',''];
+    return ['','','', ''];
     
 }
