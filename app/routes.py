@@ -16,10 +16,7 @@ from app import funcoes
 import requests
 import pandas as pd
 import string
-from app import database 
-from flask_migrate import Migrate
-from app import materiaisPedidos
-
+import os
 
 import io
 
@@ -31,7 +28,6 @@ from app import bancoDeDados
 def index():
     nome = "dissertação2"
     criterio = {"nome":"Preço", "nota":"Médio"}
-    
     medio = 'médio'
     muitoAlto = 'muito alto'
     alto = 'alto'
@@ -91,6 +87,8 @@ def index():
     figura.append(encodes_img_data)
     #print(nome)
     return render_template('index.html', nome=nome, criterio=criterio, fig = figura )
+
+
 
 @app.route('/login')
 def login():

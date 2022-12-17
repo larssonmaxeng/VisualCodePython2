@@ -2,7 +2,6 @@ import base64
 from email.encoders import encode_base64
 import json
 from json import *
-from app import app
 import matplotlib.pyplot as mlt
 import numpy as np
 from time import sleep
@@ -16,3 +15,8 @@ def Desfuzzificar(nota):
                 return 5
             case "Bom":
                 return 8
+def incrementarPontoDeOrigem(pontoAtual, distanciaX):
+    lista = list(pontoAtual)
+    lista[0] = lista[0] + distanciaX + 0.5
+    return tuple(lista)
+                    
