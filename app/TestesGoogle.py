@@ -58,5 +58,4 @@ planilha = sheet.GetDados(SAMPLE_RANGE_NAME='dados!A2:C11', SAMPLE_SPREADSHEET_I
 index = sheet.GetDados(SAMPLE_RANGE_NAME='dados!A2:A11', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
 colunas = sheet.GetDados(SAMPLE_RANGE_NAME='dados!A1:C1', SAMPLE_SPREADSHEET_ID='13uGK7sZM0z2YOkJPiLJ_Tby0dwsooCaIIOg__FTdFig')
 
-dataFrame = pd.DataFrame(planilha,index=index, columns=colunas)
 
